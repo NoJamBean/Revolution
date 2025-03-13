@@ -1,5 +1,5 @@
 #!/bin/bash
-hostname api_server1
+hostname api_server
 (
 echo "qwe123"
 echo "qwe123"
