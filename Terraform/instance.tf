@@ -15,18 +15,7 @@ resource "aws_instance" "api_server1" {
   key_name      = module.ssh_key.key_name
   security_groups = [aws_security_group.SG.id]
 
-  user_data = <<-EOF
-#!/bin/bash
-hostname api_server1
-(
-echo "qwe123"
-echo "qwe123"
-) | passwd --stdin root
-sed -i "s/^PasswordAuthentication no/PasswordAuthentication yes/g" /etc/ssh/sshd_config
-sed -i "s/^#PermitRootLogin yes/PermitRootLogin yes/g" /etc/ssh/sshd_config
-service sshd restart
-yum update -y
-EOF
+  user_data = file("uesrdatas/apiserver.sh")
 
   tags = {
     Name = "api-server1"

@@ -14,4 +14,3 @@ variable "egress_rules" {
     all    = { port = 0,   protocol = "-1", cidr = ["0.0.0.0/0"] }
   }
 }
-

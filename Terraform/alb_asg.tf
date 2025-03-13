@@ -63,14 +63,8 @@ resource "aws_launch_template" "template" {
   key_name      = module.ssh_key.key_name
   vpc_security_group_ids = [aws_security_group.SG.id]
 
-  user_data = base64encode(<<-EOF
-#!/bin/bash
-yum update -y
-yum install -y httpd
-systemctl enable --now httpd
-EOF
-  )
-
+  user_data = file("userdatas/webserver.sh")
+  
   tag_specifications {
     resource_type = "instance"
     tags = { Name = "web-server" }
