@@ -1,5 +1,7 @@
 # aws_vpc.vpc 10.0.0.0/16
-# aws_subnet.subnet[sn1-4] 10.0.[1-4].0/24 ap-northeast-2[a,b]
+# aws_subnet.subnet[sn1-4] 10.0.[1-4].0/24
+# aws_internet_gateway.igw aws_vpc.vpc
+
 
 terraform {
   required_providers {
@@ -59,6 +61,10 @@ resource "aws_internet_gateway" "igw" {
 
   tags = {
     Name = "vpc-igw"
+    # 수정자 : 김주관 031310 / MMDDHH
+    # 수정 코드 :
+    # Name = "vpc-igw" -> Name = "vpc-internet"
+    # 수정 사유 : 이름이 꼴받음
   }
 }
 
