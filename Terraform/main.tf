@@ -40,19 +40,13 @@ resource "aws_vpc" "vpc" {
 
 # Subnet
 resource "aws_subnet" "subnet" {
-  for_each = {
-    sn1 = {cidr_block="10.0.1.0/24",availability_zone=var.zone["a"]}
-    sn2 = {cidr_block="10.0.2.0/24",availability_zone=var.zone["c"]}
-    sn3 = {cidr_block="10.0.3.0/24",availability_zone=var.zone["a"]}
-    sn4 = {cidr_block="10.0.4.0/24",availability_zone=var.zone["c"]}
-  }
-  vpc_id     = aws_vpc.vpc.id
-  cidr_block = each.value.cidr_block
-  availability_zone = each.value.availability_zone
+  for_each                = var.subnets
+  vpc_id                  = aws_vpc.vpc.id
+  cidr_block              = each.value.cidr_block
+  availability_zone       = each.value.availability_zone
   map_public_ip_on_launch = true
-  tags = {
-    Name = each.key
-  }
+
+  tags = { Name = each.key }
 }
 
 #Gateway
@@ -89,14 +83,9 @@ resource "aws_route" "internet_access" {
 
 # 서브넷과 라우트 테이블 연결
 resource "aws_route_table_association" "routetable_association" {
-    for_each = {
-      asn1 = {route_table_id=aws_route_table.routetable["rt1"].id, subnet_id=aws_subnet.subnet["sn1"].id}
-      asn2 = {route_table_id=aws_route_table.routetable["rt1"].id, subnet_id=aws_subnet.subnet["sn2"].id}
-      asn3 = {route_table_id=aws_route_table.routetable["rt2"].id, subnet_id=aws_subnet.subnet["sn3"].id}
-      asn4 = {route_table_id=aws_route_table.routetable["rt2"].id, subnet_id=aws_subnet.subnet["sn4"].id}
-    }
-  route_table_id = each.value.route_table_id
-  subnet_id = each.value.subnet_id
+  for_each     = var.route_table_associations
+  route_table_id = aws_route_table.routetable[each.value.route_table_id].id
+  subnet_id     = aws_subnet.subnet[each.value.subnet_id].id
 }
 
 # 키페어
@@ -105,20 +94,17 @@ resource "aws_route_table_association" "routetable_association" {
 # }
 
 # 보안그룹
+# 수정자 : 정원빈 031311
+# 수정코드 : 
+# dynamic & variable.tf -> ingress_value
+# 수정 사유 : 코드 간편화?
 resource "aws_security_group" "SG" {
   name        = "SG"
   description = "Security group"
   vpc_id      = aws_vpc.vpc.id
 
   dynamic "ingress" {
-    for_each = [
-      { from_port = 22, to_port = 22, protocol = "tcp", cidr_blocks = ["0.0.0.0/0"] },
-      { from_port = 80, to_port = 80, protocol = "tcp", cidr_blocks = ["0.0.0.0/0"] },
-      { from_port = 443, to_port = 443, protocol = "tcp", cidr_blocks = ["0.0.0.0/0"] },
-      { from_port = 3306, to_port = 3306, protocol = "tcp", cidr_blocks = ["0.0.0.0/0"] },
-      { from_port = 5000, to_port = 5000, protocol = "tcp", cidr_blocks = ["0.0.0.0/0"] },
-      { from_port = -1, to_port = -1, protocol = "icmp", cidr_blocks = ["10.0.0.0/16"] }
-    ]
+    for_each = var.ingress_rules
     content {
       from_port   = ingress.value.from_port
       to_port     = ingress.value.to_port
