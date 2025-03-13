@@ -18,10 +18,10 @@ resource "aws_security_group" "SG" {
       { from_port = -1, to_port = -1, protocol = "icmp", cidr_blocks = ["10.0.0.0/16"] }
     ]
     content {
-      from_port   = ingress.value.from_port
-      to_port     = ingress.value.to_port
-      protocol    = ingress.value.protocol
-      cidr_blocks = ingress.value.cidr_blocks
+      from_port   = for_each.value.from_port
+      to_port     = for_each.value.to_port
+      protocol    = for_each.value.protocol
+      cidr_blocks = for_each.value.cidr_blocks
     }
   }
 
