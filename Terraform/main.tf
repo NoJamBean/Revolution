@@ -1,3 +1,6 @@
+# aws_vpc.vpc 10.0.0.0/16
+# aws_subnet.subnet[sn1-4] 10.0.[1-4].0/24 ap-northeast-2[a,b]
+
 terraform {
   required_providers {
     aws = {
@@ -36,10 +39,10 @@ resource "aws_vpc" "vpc" {
 # Subnet
 resource "aws_subnet" "subnet" {
   for_each = {
-    sn1 = {cidr_block="10.0.1.0/24",availability_zone="ap-northeast-2a"}
-    sn2 = {cidr_block="10.0.2.0/24",availability_zone="ap-northeast-2c"}
-    sn3 = {cidr_block="10.0.3.0/24",availability_zone="ap-northeast-2a"}
-    sn4 = {cidr_block="10.0.4.0/24",availability_zone="ap-northeast-2c"}
+    sn1 = {cidr_block="10.0.1.0/24",availability_zone=var.zone["a"]}
+    sn2 = {cidr_block="10.0.2.0/24",availability_zone=var.zone["c"]}
+    sn3 = {cidr_block="10.0.3.0/24",availability_zone=var.zone["a"]}
+    sn4 = {cidr_block="10.0.4.0/24",availability_zone=var.zone["c"]}
   }
   vpc_id     = aws_vpc.vpc.id
   cidr_block = each.value.cidr_block
@@ -91,9 +94,9 @@ resource "aws_route_table_association" "routetable_association" {
 }
 
 # 키페어
-module "ssh_key" {
-  source = "../modules/ssh_key"
-}
+# module "ssh_key" {
+#   source = "../modules/ssh_key"
+# }
 
 # 보안그룹
 resource "aws_security_group" "SG" {
