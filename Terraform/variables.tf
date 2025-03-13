@@ -1,3 +1,5 @@
+# 코드 재사용률이 높거나, Production과 Staging 환경을 다르게 설정할 변수만 등록
+
 variable "zone" {
   type = map(string)
   default = {
