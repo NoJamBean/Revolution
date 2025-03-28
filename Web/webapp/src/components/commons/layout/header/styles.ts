@@ -5,8 +5,9 @@ export const Wrapper = styled.div`
   /* min-height: 20px; */
   border-bottom: 5px solid gold;
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
+  padding: 0 calc((1400px - 872px) / 2) 0 calc((1400px - 872px) / 2);
 `;
 
 export const LogoImg = styled.div`
@@ -20,8 +21,6 @@ export const Bar = styled.ul`
   display: flex;
   justify-content: space-between;
   width: 50vw;
-  margin-left: 100px;
-  border: 3px solid blue;
 `;
 
 export const Menu = styled.li`
@@ -33,4 +32,25 @@ export const MenuLink = styled(Link)`
   text-decoration: none;
   font-size: 22px;
   font-weight: 700;
+`;
+
+export const Sign_Container = styled.div`
+  width: 140px;
+  display: flex;
+  justify-content: space-between;
+  /* border: 2px solid green; */
+`;
+
+export const SignIn = styled.button`
+  width: 65px;
+  height: 100%;
+  border: 1px solid black;
+  background-color: white;
+`;
+
+export const SignUp = styled.button`
+  width: 65px;
+  height: 100%;
+  border: 1px solid black;
+  background-color: white;
 `;

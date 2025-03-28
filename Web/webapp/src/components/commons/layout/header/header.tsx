@@ -22,6 +22,10 @@ export default function Header() {
         <S.Menu>
           <S.MenuLink href={'/'}>고객센터</S.MenuLink>
         </S.Menu>
+        <S.Sign_Container>
+          <S.SignIn>로그인</S.SignIn>
+          <S.SignUp>회원가입</S.SignUp>
+        </S.Sign_Container>
       </S.Bar>
     </S.Wrapper>
   );
