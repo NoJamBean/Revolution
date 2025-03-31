@@ -16,10 +16,12 @@ resource "aws_vpc" "vpc" {
 # Subnet
 resource "aws_subnet" "subnet" {
   for_each = {
-    sn1 = {cidr_block="10.0.1.0/24",availability_zone=var.zone["a"]}
-    sn2 = {cidr_block="10.0.2.0/24",availability_zone=var.zone["c"]}
-    sn3 = {cidr_block="10.0.3.0/24",availability_zone=var.zone["a"]}
-    sn4 = {cidr_block="10.0.4.0/24",availability_zone=var.zone["c"]}
+    sn1 = {cidr_block="10.0.1.0/24",availability_zone=var.zone["a"]} #앱 서버 1
+    sn2 = {cidr_block="10.0.2.0/24",availability_zone=var.zone["c"]} #앱 서버 2
+    sn3 = {cidr_block="10.0.3.0/24",availability_zone=var.zone["a"]} #백 서버 1
+    sn4 = {cidr_block="10.0.4.0/24",availability_zone=var.zone["c"]} #백 서버 2
+    sn5 = {cidr_block="10.0.5.0/24",availability_zone=var.zone["a"]} #DB 서버 1
+    sn6 = {cidr_block="10.0.6.0/24",availability_zone=var.zone["c"]} #DB 서버 2
   }
   vpc_id     = aws_vpc.vpc.id
   cidr_block = each.value.cidr_block
@@ -28,6 +30,14 @@ resource "aws_subnet" "subnet" {
   tags = {
     Name = each.key
   }
+}
+
+# RDS 서브넷 그룹 생성
+# 정원빈 수정
+resource "aws_db_subnet_group" "rds_subnet_group" {
+  name       = "rds-subnet-group"
+  subnet_ids = [data.aws_subnets.subnet["sn5"].id, data.aws_subnets.subnet["sn6"].id]
+  tags       = { Name = "RDS Subnet Group" }
 }
 
 #Gateway
@@ -73,6 +83,9 @@ resource "aws_route_table_association" "routetable_association" {
   route_table_id = each.value.route_table_id
   subnet_id = each.value.subnet_id
 }
+
+
+
 
 # 키페어
 # module "ssh_key" {

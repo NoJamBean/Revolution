@@ -1,5 +1,13 @@
 # 코드 재사용률이 높거나, Production과 Staging 환경을 다르게 설정할 변수만 등록
 
+variable "aws_region" { default = "ap-northeast-2" }
+variable "db_username" { default = "admin" }
+variable "db_password" { default = "securepassword123" }
+variable "db_allocated_storage" { default = 20 }
+variable "seoul_key_name" { default = "temp" }
+variable "region_image_id" { default = "/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2" }
+variable "instance_type" { default = "t2.micro" }
+
 variable "zone" {
   type = map(string)
   default = {

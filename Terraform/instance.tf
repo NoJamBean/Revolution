@@ -1,47 +1,33 @@
 # 
 
-# 프라이빗 인스턴스 생성
-resource "aws_instance" "api_server1" {
-  for_each      = {
-    sn3 = { subnet_id = aws_subnet.subnet["sn3"].id, az = "ap-northeast-2a" }
-  }
+#DotNet Backend Server1
+#정원빈 수정
+resource "aws_instance" "dotnet_api_server" {
+  ami             = data.aws_ami.amazon_linux.id
+  instance_type   = var.instance_type
+  subnet_id       = data.aws_subnets.subnet["sn3"].id
+  security_groups = [aws_security_group.api_sg.id]
+  key_name        = var.seoul_key_name
 
-  ami           = data.aws_ami.amazon_linux.id
-  instance_type = "t2.micro"
-  subnet_id     = each.value.subnet_id
-  availability_zone = each.value.az
-  private_ip = "10.0.3.100"
-
-  associate_public_ip_address = false
-  key_name      = module.ssh_key.key_name
-  security_groups = [aws_security_group.SG.id]
-
-  user_data = file("uesrdatas/apiserver.sh")
+  user_data = data.template_file.api_server.rendered
 
   tags = {
-    Name = "api-server1"
+    Name = "DotNet-API-SERVER"
   }
 }
 
-# 프라이빗 인스턴스 생성
-resource "aws_instance" "api_server2" {
-  for_each      = {
-    sn4 = { subnet_id = aws_subnet.subnet["sn4"].id, az = "ap-northeast-2c" }
-  }
+#DB접근용 인스턴스
+#정원빈
+resource "aws_instance" "rds_access_instance" {
+  provider                    = aws
+  ami                         = data.aws_ami.amazon_linux
+  instance_type               = var.instance_type
+  key_name                    = var.seoul_key_name
+  subnet_id                   = data.aws_subnets.subnet["sn3"].id
+  security_groups             = [aws_security_group.sg.id]
+  associate_public_ip_address = true
 
-  ami           = data.aws_ami.amazon_linux.id
-  instance_type = "t2.micro"
-  subnet_id     = each.value.subnet_id
-  availability_zone = each.value.az
-  private_ip = "10.0.4.100"
+  tags = { Name = "Instance1" }
 
-  associate_public_ip_address = false
-  key_name      = module.ssh_key.key_name
-  security_groups = [aws_security_group.SG.id]
-
-  user_data = file("uesrdatas/apiserver.sh")
-
-  tags = {
-    Name = "api-server2"
-  }
+  user_data = data.template_file.rds_user_data.rendered
 }

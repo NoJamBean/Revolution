@@ -3,8 +3,8 @@
 # 수정코드 : 
 # dynamic & variable.tf -> ingress_value
 # 수정 사유 : 코드 간편화?
-resource "aws_security_group" "SG" {
-  name        = "SG"
+resource "aws_security_group" "default_sg" {
+  name        = "default_sg"
   description = "Security group"
   vpc_id      = aws_vpc.vpc.id
 
@@ -36,6 +36,67 @@ resource "aws_security_group" "SG" {
     }
   }
   tags = {
-    Name = "Security_Group"
+    Name = "default_sg"
   }
+}
+
+resource "aws_security_group" "api_sg" {
+  vpc_id = data.aws_vpc.vpc.id
+  name   = "example-security-group"
+
+  # SSH (22번 포트) 허용
+  dynamic "ingress" {
+    for_each = [
+      { port = 22, protocol = "tcp", cidr_blocks = ["0.0.0.0/0"] },
+      { port = 80, protocol = "tcp", cidr_blocks = ["0.0.0.0/0"] },
+      { port = 443, protocol = "tcp", cidr_blocks = ["0.0.0.0/0"] },
+      { port = 3306, protocol = "tcp", cidr_blocks = ["0.0.0.0/0"] },
+      { port = 5000, protocol = "tcp", cidr_blocks = ["0.0.0.0/0"] }
+    ]
+    content {
+      from_port   = ingress.value.port
+      to_port     = ingress.value.port
+      protocol    = ingress.value.protocol
+      cidr_blocks = ingress.value.cidr_blocks
+    }
+  }
+
+  # 아웃바운드 트래픽 모두 허용
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "api-sg"
+  }
+}
+
+resource "aws_security_group" "rds_sg" {
+  vpc_id = data.aws_vpc.vpc.id
+
+  ingress {
+    from_port   = 3306
+    to_port     = 3306
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    description = "Allow all outbound traffic"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  tags = { Name = "RDS Security Group" }
 }
