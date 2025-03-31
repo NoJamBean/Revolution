@@ -36,7 +36,7 @@ resource "aws_subnet" "subnet" {
 # 정원빈 수정
 resource "aws_db_subnet_group" "rds_subnet_group" {
   name       = "rds-subnet-group"
-  subnet_ids = [data.aws_subnets.subnet["sn5"].id, data.aws_subnets.subnet["sn6"].id]
+  subnet_ids = [aws_subnet.subnet["sn5"].id, aws_subnet.subnet["sn6"].id]
   tags       = { Name = "RDS Subnet Group" }
 }
 

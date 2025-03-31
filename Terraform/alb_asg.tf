@@ -4,7 +4,7 @@ resource "aws_lb" "alb" {
   name               = "alb"
   internal           = false
   load_balancer_type = "application"
-  security_groups    = [aws_security_group.SG.id]
+  security_groups    = [aws_security_group.default_sg.id]
   subnets            = [
     aws_subnet.subnet["sn1"].id,
     aws_subnet.subnet["sn2"].id
@@ -60,8 +60,8 @@ resource "aws_launch_template" "template" {
   # iam_instance_profile {
   #   name = ""
   # }
-  key_name      = module.ssh_key.key_name
-  vpc_security_group_ids = [aws_security_group.SG.id]
+  key_name      = var.seoul_key_name
+  vpc_security_group_ids = [aws_security_group.default_sg.id]
 
   user_data = file("userdatas/webserver.sh")
   
