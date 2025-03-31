@@ -63,7 +63,7 @@ resource "aws_launch_template" "template" {
   key_name      = var.seoul_key_name
   vpc_security_group_ids = [aws_security_group.default_sg.id]
 
-  user_data = file("userdatas/webserver.sh")
+  user_data = base64encode(data.template_file.app_server.rendered)
   
   tag_specifications {
     resource_type = "instance"

@@ -10,12 +10,9 @@ wget https://packages.microsoft.com/config/rhel/7/prod.repo
 sudo mv prod.repo /etc/yum.repos.d/microsoft-prod.repo
 sudo yum install -y dotnet-sdk-6.0
 
-# 애플리케이션 디렉토리 생성
+# 애플리케이션 디렉토리 생성 및 프로젝트 생성
 sudo mkdir -p /var/www/dotnet-api/MyApi
-
 cd /var/www/dotnet-api/MyApi
-
-# 새 ASP.NET Core Web API 프로젝트 생성
 sudo dotnet new webapi
 
 # Entity Framework Core 패키지 추가
@@ -29,20 +26,17 @@ sudo dotnet add package Serilog --version 2.10.0
 sudo dotnet add package Serilog.Sinks.Console --version 4.1.0
 sudo dotnet add package Serilog.AspNetCore --version 4.1.0
 
-sudo dotnet remove package Swashbuckle.AspNetCore
-
-
 # ValuesController.cs 파일 생성
 # curl -u "username:your_personal_access_token" -sL https://raw.githubusercontent.com/사용자명/저장소명/브랜치명/경로/파일명 | sudo tee /경로/파일명 > /dev/null
-sudo tee Controllers/UsersController.cs > /dev/null <<'EOF'
+sudo tee Controllers/UsersController.cs > /dev/null <<EOF
 ${file_userscontroller}
 EOF
 
-sudo tee Controllers/GamesController.cs > /dev/null <<'EOF'
+sudo tee Controllers/GamesController.cs > /dev/null <<EOF
 ${file_gamescontroller}
 EOF
 
-sudo tee /var/www/dotnet-api/MyApi/Program.cs > /dev/null <<'EOF'
+sudo tee /var/www/dotnet-api/MyApi/Program.cs > /dev/null <<EOF
 ${file_programcs}
 EOF
 
@@ -53,7 +47,7 @@ sudo chown -R ec2-user:ec2-user /var/log/api
 sudo chmod -R 755 /var/log/api
 
 
-sudo tee appsettings.json > /dev/null <<'EOL'
+sudo tee appsettings.json > /dev/null <<EOL
 {
   "ConnectionStrings": {
     "UserDbConnection": "Server=${db_endpoint};Database=userDB;User=${db_username};Password=${db_password};SslMode=Preferred;",
@@ -90,11 +84,11 @@ EOL
 sudo mkdir -p Data
 
 # DbContext.cs 생성
-sudo tee Data/UserDbContext.cs > /dev/null <<'EOF'
+sudo tee Data/UserDbContext.cs > /dev/null <<EOF
 ${file_userdbcontext}
 EOF
 
-sudo tee Data/GameDbContext.cs > /dev/null <<'EOF'
+sudo tee Data/GameDbContext.cs > /dev/null <<EOF
 ${file_gamedbcontext}
 EOF
 
@@ -128,17 +122,14 @@ sudo systemctl daemon-reload
 sudo systemctl enable dotnet-api
 sudo systemctl start dotnet-api
 
-# Nginx 설치
+# Nginx 설치 및 설정
 sudo amazon-linux-extras enable nginx1
 sudo yum install -y nginx
-
-# Nginx 활성화 및 시작
 sudo systemctl enable nginx
 sudo systemctl start nginx
 
-INSTANCE_PUBLIC_IP=$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4)
-
 # Nginx 프록시 설정
+INSTANCE_PUBLIC_IP=$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4)
 sudo tee /etc/nginx/conf.d/dotnet-api.conf > /dev/null <<EOL
 server {
     listen 80;
@@ -159,15 +150,10 @@ server {
 }
 EOL
 
-# Nginx 재시작
 sudo systemctl restart nginx
 
-sudo tee ~/run > /dev/null <<'EOL'
-sudo dotnet restore /var/www/dotnet-api/MyApi
-sudo dotnet build /var/www/dotnet-api/MyApi
-sudo dotnet publish -c Release -o /var/www/dotnet-api/MyApi/published
-sudo systemctl restart dotnet-api
-sudo systemctl restart nginx
-EOL
+sudo tee ~/run > /dev/null <<EOF
+${file_dotnet_run}
+EOF
 
 sudo chmod +x ~/run
