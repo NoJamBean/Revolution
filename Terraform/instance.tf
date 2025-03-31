@@ -1,5 +1,3 @@
-# 
-
 #DotNet Backend Server1
 #정원빈 수정
 resource "aws_instance" "dotnet_api_server" {

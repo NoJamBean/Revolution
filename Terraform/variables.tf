@@ -5,7 +5,6 @@ variable "db_username" { default = "admin" }
 variable "db_password" { default = "securepassword123" }
 variable "db_allocated_storage" { default = 20 }
 variable "seoul_key_name" { default = "temp" }
-variable "region_image_id" { default = "/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2" }
 variable "instance_type" { default = "t2.micro" }
 
 variable "zone" {
