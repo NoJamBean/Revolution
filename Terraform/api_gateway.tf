@@ -44,7 +44,7 @@ resource "aws_api_gateway_integration" "proxy_integration" {
   http_method             = aws_api_gateway_method.proxy_method.http_method
   integration_http_method = "ANY"
   type                    = "HTTP_PROXY"
-  uri                     = "http://${aws_instance.dotnet_api_server.public_ip}:5000/{proxy}"
+  uri                     = "http://${aws_instance.dotnet_api_server.private_ip}:80/{proxy}"
 
   request_parameters = {
     "integration.request.path.proxy" = "method.request.path.proxy"

@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using MyApi.Data;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Security.Claims;
 
 namespace MyApi.Controllers
 {
@@ -12,10 +14,12 @@ namespace MyApi.Controllers
     public class UsersController : ControllerBase
     {
         private readonly UserDbContext _userContext;
+        private readonly IConfiguration _configuration;
 
-        public UsersController(UserDbContext userContext)
+        public UsersController(UserDbContext userContext, IConfiguration configuration)
         {
             _userContext = userContext;
+            _configuration = configuration;
         }
 
         // 특정 사용자의 잔액 조회
@@ -28,7 +32,7 @@ namespace MyApi.Controllers
                                              .Select(u => (long?)u.Balance)
                                              .SingleOrDefaultAsync();
 
-            if (balance == null)
+            if (!balance.HasValue)
             {
                 return NotFound(new { message = $"사용자 {id}의 잔액을 찾을 수 없습니다." });
             }
@@ -41,15 +45,15 @@ namespace MyApi.Controllers
         public IActionResult GetUserProfile()
         {
             // 현재 사용자의 Cognito ID를 추출 (JWT 토큰에서 sub 값을 추출)
-            string userId = User.FindFirst("sub")?.Value;
-        
+            string userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
             if (userId == null)
             {
                 return Unauthorized("사용자 인증 실패");
             }
 
             // DB에서 사용자 정보를 조회
-            User user = _userContext.Users.SingleOrDefault(u => u.CognitoUserId == userId);
+            User user = _userContext.Users.SingleOrDefault(u => u.Uid == userId);
         
             if (user == null)
             {

@@ -1,18 +1,19 @@
 #!/bin/bash
-set -e  # 에러 발생 시 스크립트 중단
 
-# 시스템 업데이트 및 필수 패키지 설치
+sudo source /etc/environment
+
 sudo yum update -y
-sudo yum install -y wget curl unzip amazon-linux-extras
+sudo yum install -y amazon-linux-extras
 
 # Microsoft 리포지토리 추가
 wget https://packages.microsoft.com/config/rhel/7/prod.repo
 sudo mv prod.repo /etc/yum.repos.d/microsoft-prod.repo
 sudo yum install -y dotnet-sdk-6.0
 
-# 애플리케이션 디렉토리 생성 및 프로젝트 생성
-sudo mkdir -p /var/www/dotnet-api/MyApi
-cd /var/www/dotnet-api/MyApi
+# 디렉토리 생성
+sudo mkdir -p $LOCAL_PATH $LOCAL_PATH/Controllers $LOCAL_PATH/Data /var/log/api
+sudo chown -R ec2-user:ec2-user /var/www/dotnet-api
+cd $LOCAL_PATH
 sudo dotnet new webapi
 
 # Entity Framework Core 패키지 추가
@@ -25,86 +26,45 @@ sudo dotnet add package System.Text.Json --version 6.0.0
 sudo dotnet add package Serilog --version 2.10.0
 sudo dotnet add package Serilog.Sinks.Console --version 4.1.0
 sudo dotnet add package Serilog.AspNetCore --version 4.1.0
+sudo dotnet add package AWSSDK.S3 --version 3.7.0
+sudo dotnet add package Microsoft.AspNetCore.Authentication.JwtBearer --version 6.0.26
+sudo dotnet add package Microsoft.AspNetCore.Authorization --version 6.0.0
 
-# ValuesController.cs 파일 생성
 # curl -u "username:your_personal_access_token" -sL https://raw.githubusercontent.com/사용자명/저장소명/브랜치명/경로/파일명 | sudo tee /경로/파일명 > /dev/null
-sudo tee Controllers/UsersController.cs > /dev/null <<EOF
-${file_userscontroller}
-EOF
-
-sudo tee Controllers/GamesController.cs > /dev/null <<EOF
-${file_gamescontroller}
-EOF
-
-sudo tee /var/www/dotnet-api/MyApi/Program.cs > /dev/null <<EOF
-${file_programcs}
-EOF
-
-sudo mkdir -p /var/log/api
 
 # /var/log/api 디렉토리의 소유자를 ec2-user로 변경합니다.
 sudo chown -R ec2-user:ec2-user /var/log/api
 sudo chmod -R 755 /var/log/api
 
+# S3에서 설정 파일 다운로드
+sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/appsettings.json $LOCAL_PATH/appsettings.json
 
-sudo tee appsettings.json > /dev/null <<EOL
-{
-  "ConnectionStrings": {
-    "UserDbConnection": "Server=${db_endpoint};Database=userDB;User=${db_username};Password=${db_password};SslMode=Preferred;",
-    "GameDbConnection": "Server=${db_endpoint};Database=gameDB;User=${db_username};Password=${db_password};SslMode=Preferred;"
-  },
-  "Logging": {
-    "LogLevel": {
-      "Default": "Information",
-      "Microsoft": "Warning",
-      "Microsoft.Hosting.Lifetime": "Information"
-    }
-  },
-  "Serilog": {
-    "Using": [ "Serilog.Sinks.File" ],
-    "WriteTo": [
-      {
-        "Name": "File",
-        "Args": {
-          "path": "/var/log/api/myapi.log",
-          "rollingInterval": "Day",
-          "retainedFileCountLimit": 7
-        }
-      }
-    ]
-  },
-  "Cognito": {
-    "UserPoolId": "${cognito_user_pool}",
-    "AppClientId": "${cognito_app_client}"
-  }
-}
-EOL
+# S3에서 컨트롤러 파일 다운로드
+sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/UsersController.cs $LOCAL_PATH/Controllers/UsersController.cs
+sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/GamesController.cs $LOCAL_PATH/Controllers/GamesController.cs
 
-# 모델 및 DB 컨텍스트 추가
-sudo mkdir -p Data
+# S3에서 주요 프로젝트 파일 다운로드
+sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/Program.cs $LOCAL_PATH/Program.cs
+sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/UserDbContext.cs $LOCAL_PATH/Data/UserDbContext.cs
+sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/GameDbContext.cs $LOCAL_PATH/Data/GameDbContext.cs
 
-# DbContext.cs 생성
-sudo tee Data/UserDbContext.cs > /dev/null <<EOF
-${file_userdbcontext}
-EOF
-
-sudo tee Data/GameDbContext.cs > /dev/null <<EOF
-${file_gamedbcontext}
-EOF
+sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/dotnet_run.sh ~/run
 
 # 종속성 복원 및 빌드
+cd $LOCAL_PATH
 sudo dotnet restore
-sudo dotnet publish -c Release -o /var/www/dotnet-api/MyApi/published
+sudo dotnet publish -c Release -o $LOCAL_PATH/published
+
 
 # systemd 서비스 설정
-sudo tee /etc/systemd/system/dotnet-api.service > /dev/null <<'EOL'
+sudo tee /etc/systemd/system/dotnet-api.service > /dev/null <<EOL
 [Unit]
 Description=My .NET API Application
 After=network.target
 
 [Service]
-WorkingDirectory=/var/www/dotnet-api/MyApi/published
-ExecStart=/usr/bin/dotnet /var/www/dotnet-api/MyApi/published/MyApi.dll
+WorkingDirectory=$LOCAL_PATH/published
+ExecStart=/usr/bin/dotnet $LOCAL_PATH/published/MyApi.dll
 Restart=always
 RestartSec=10
 SyslogIdentifier=dotnet-api
@@ -129,11 +89,11 @@ sudo systemctl enable nginx
 sudo systemctl start nginx
 
 # Nginx 프록시 설정
-INSTANCE_PUBLIC_IP=$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4)
+INSTANCE_PRIVATE_IP=$(curl -s http://169.254.169.254/latest/meta-data/private-ipv4)
 sudo tee /etc/nginx/conf.d/dotnet-api.conf > /dev/null <<EOL
 server {
     listen 80;
-    server_name $INSTANCE_PUBLIC_IP;
+    server_name $INSTANCE_PRIVATE_IP;
 
     location / {
         proxy_pass http://localhost:5000;
@@ -151,9 +111,5 @@ server {
 EOL
 
 sudo systemctl restart nginx
-
-sudo tee ~/run > /dev/null <<EOF
-${file_dotnet_run}
-EOF
 
 sudo chmod +x ~/run

@@ -58,6 +58,7 @@ resource "aws_route_table" "routetable" {
   for_each = {
     rt1 = {}
     rt2 = {}
+    rt3 = {}
   }
   vpc_id = aws_vpc.vpc.id
   tags = {
@@ -67,7 +68,11 @@ resource "aws_route_table" "routetable" {
 
 # 기본 라우트 테이블 설정
 resource "aws_route" "internet_access" {
-  route_table_id         = aws_route_table.routetable["rt1"].id
+  for_each = {
+    rt1 = aws_route_table.routetable["rt1"].id
+    rt2 = aws_route_table.routetable["rt2"].id
+  }
+  route_table_id         = each.value
   destination_cidr_block = "0.0.0.0/0"  # 모든 트래픽
   gateway_id             = aws_internet_gateway.igw.id
 }
@@ -79,6 +84,8 @@ resource "aws_route_table_association" "routetable_association" {
       asn2 = {route_table_id=aws_route_table.routetable["rt1"].id, subnet_id=aws_subnet.subnet["sn2"].id}
       asn3 = {route_table_id=aws_route_table.routetable["rt2"].id, subnet_id=aws_subnet.subnet["sn3"].id}
       asn4 = {route_table_id=aws_route_table.routetable["rt2"].id, subnet_id=aws_subnet.subnet["sn4"].id}
+      asn1 = {route_table_id=aws_route_table.routetable["rt3"].id, subnet_id=aws_subnet.subnet["sn5"].id}
+      asn2 = {route_table_id=aws_route_table.routetable["rt3"].id, subnet_id=aws_subnet.subnet["sn6"].id}
     }
   route_table_id = each.value.route_table_id
   subnet_id = each.value.subnet_id

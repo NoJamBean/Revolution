@@ -12,6 +12,7 @@ CREATE DATABASE IF NOT EXISTS gameDB;
 USE userDB;
 CREATE TABLE IF NOT EXISTS userTBL ( 
     id VARCHAR(10) NOT NULL PRIMARY KEY, 
+    uid VARCHAR(255) NOT NULL,
     password CHAR(60) NOT NULL, 
     phone_number VARCHAR(10) NOT NULL, 
     balance BIGINT DEFAULT 0,
@@ -47,6 +48,11 @@ CREATE TABLE IF NOT EXISTS gameresultTBL (
 );
 
 USE userDB;
-INSERT IGNORE INTO userTBL (id, password, phone_number, balance)
-VALUES ('user123', '$2y$10$abcdefghijklmnopqrstuvwx', '01012345678', 10000);
+INSERT IGNORE INTO userTBL (id, uid, password, phone_number, balance)
+VALUES ('user123', "${cognito_user_id}", '$2y$10$abcdefghijklmnopqrstuvwx', '01012345678', 10000);
+ON DUPLICATE KEY UPDATE 
+    uid = VALUES(uid),
+    password = VALUES(password),
+    phone_number = VALUES(phone_number),
+    balance = VALUES(balance);
 EOF

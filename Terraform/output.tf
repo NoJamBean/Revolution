@@ -10,7 +10,7 @@ output "api_address" {
 
 # API Gateway의 URL 출력
 output "api_gateway_url" {
-  value = "https://${aws_api_gateway_rest_api.rest_api.id}.execute-api.ap-northeast-2.amazonaws.com/${aws_api_gateway_stage.api_stage.stage_name}/"
+  value = "https://${aws_api_gateway_rest_api.rest_api.id}.execute-api.ap-northeast-2.amazonaws.com/${aws_api_gateway_stage.api_stage.stage_name}/api/users/test"
 }
 
 # EC2의 퍼블릭 IP 출력

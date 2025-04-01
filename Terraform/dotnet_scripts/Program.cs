@@ -1,4 +1,8 @@
+using Amazon;
+using Amazon.S3;
+using Amazon.S3.Transfer;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
@@ -10,6 +14,10 @@ using Microsoft.IdentityModel.Tokens;
 using MyApi.Data;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Serilog;
+using System;
+using System.IO;
+using System.Security.Claims;
+using System.Threading.Tasks;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
@@ -28,8 +36,8 @@ builder.Host.UseSerilog((context, services, configuration) =>
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
-        options.Authority = "https://cognito-idp.ap-northeast-2.amazonaws.com/YOUR_USER_POOL_ID";
-        options.Audience = "YOUR_APP_CLIENT_ID";
+        options.Authority = "https://cognito-idp.ap-northeast-2.amazonaws.com/" + cognitoUserPoolId;
+        options.Audience = cognitoAppClientId;
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
@@ -78,6 +86,34 @@ app.UseCors("AllowAll");
 app.UseAuthorization();
 
 app.MapControllers();
+
+// S3 파일 업로드 기능 추가
+Task.Run(async () =>
+{
+    try
+    {
+        string bucketName = "dotnet-log-bucket";
+        string directoryPath = "/var/log/api/"; // 업로드할 디렉터리
+        string s3Folder = ""; // S3 내 저장할 폴더 경로
+
+        using var s3Client = new AmazonS3Client(RegionEndpoint.APNortheast2);
+        var fileTransferUtility = new TransferUtility(s3Client);
+
+        // 디렉터리 내 모든 파일 가져오기
+        foreach (string filePath in Directory.GetFiles(directoryPath))
+        {
+            string fileName = Path.GetFileName(filePath); // 파일명만 추출
+            string keyName = $"{s3Folder}{fileName}"; // S3 경로 설정
+
+            await fileTransferUtility.UploadAsync(filePath, bucketName, keyName);
+            Console.WriteLine($"파일 업로드 성공: {fileName}");
+        }
+    }
+    catch (Exception e)
+    {
+        Console.WriteLine("파일 업로드 실패: " + e.Message);
+    }
+});
 
 app.Run();
 
