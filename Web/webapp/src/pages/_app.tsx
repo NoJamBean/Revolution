@@ -2,14 +2,17 @@ import { Global } from '@emotion/react';
 import type { AppProps } from 'next/app';
 import globalStyle from '../styles/globalstyles';
 import Layout from '../components/commons/layout/layout';
+import { ModalProvider } from '../components/commons/modal/modalprovider';
 
 export default function App({ Component, pageProps }: AppProps) {
   return (
     <>
       <Global styles={globalStyle} />
-      <Layout>
-        <Component {...pageProps} />
-      </Layout>
+      <ModalProvider>
+        <Layout>
+          <Component {...pageProps} />
+        </Layout>
+      </ModalProvider>
     </>
   );
 }
