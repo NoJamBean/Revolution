@@ -11,15 +11,20 @@ resource "aws_s3_bucket" "long_user_data_bucket" {
   }
 }
 
-resource "aws_s3_bucket" "dotnet_log_bucket" {
-  bucket = "dotnet-log-bucket"
+
+resource "random_id" "bucket_suffix" {
+  byte_length = 8
+}
+
+resource "aws_s3_bucket" "log_bucket" {
+  bucket = "logs-${random_id.bucket_suffix.hex}"
   
   lifecycle {
     prevent_destroy = false  # S3 버킷 삭제가 가능하도록 설정
   }
 
   tags = {
-    Name        = "Long User Data Bucket"
+    Name        = "LOG BUCKET"
     Environment = "Dev"
   }
 }

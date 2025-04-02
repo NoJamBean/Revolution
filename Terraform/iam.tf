@@ -48,6 +48,11 @@ resource "aws_iam_policy_attachment" "s3_full_access" {
   policy_arn = aws_iam_policy.s3_full_access_policy.arn
 }
 
+resource "aws_iam_role_policy_attachment" "ssm_core_attachment" {
+  role       = aws_iam_role.ec2_s3_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+}
+
 # 3. IAM 인스턴스 프로파일 생성 (EC2에 연결하기 위함)
 resource "aws_iam_instance_profile" "ec2_s3_profile" {
   name = "ec2_s3_profile"

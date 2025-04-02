@@ -28,10 +28,10 @@ namespace MyApi.Data
         [StringLength(10)]
         public string? Id { get; set; }
 
-        [Column("uid")]
+        [Column("uuid")]
         [Required]
         [StringLength(255)]
-        public string? Uid { get; set; }
+        public string? Uuid { get; set; }
 
         [Required]
         [Column("password")]

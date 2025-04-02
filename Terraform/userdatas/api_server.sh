@@ -23,7 +23,7 @@ sudo dotnet add package Pomelo.EntityFrameworkCore.MySql --version 6.0.0
 sudo dotnet add package System.IO.Pipelines --version 6.0.0
 sudo dotnet add package Microsoft.Bcl.AsyncInterfaces --version 6.0.0
 sudo dotnet add package System.Text.Json --version 6.0.0
-sudo dotnet add package Serilog --version 2.10.0
+sudo dotnet add package Serilog --version 4.1.0
 sudo dotnet add package Serilog.Sinks.Console --version 4.1.0
 sudo dotnet add package Serilog.AspNetCore --version 4.1.0
 sudo dotnet add package AWSSDK.S3 --version 3.7.0
@@ -32,12 +32,18 @@ sudo dotnet add package Microsoft.AspNetCore.Authorization --version 6.0.0
 
 # curl -u "username:your_personal_access_token" -sL https://raw.githubusercontent.com/사용자명/저장소명/브랜치명/경로/파일명 | sudo tee /경로/파일명 > /dev/null
 
+sudo chown -R ec2-user:ec2-user ~/.dotnet
+sudo chmod -R 755 ~/.dotnet
+
 # /var/log/api 디렉토리의 소유자를 ec2-user로 변경합니다.
 sudo chown -R ec2-user:ec2-user /var/log/api
-sudo chmod -R 755 /var/log/api
+sudo chmod -R 777 /var/log/api
+
+sudo chown -R ec2-user:ec2-user /usr/share/dotnet
+sudo chmod -R 755 /usr/share/dotnet
 
 # S3에서 설정 파일 다운로드
-sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/appsettings.json $LOCAL_PATH/appsettings.json
+# sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/appsettings.json $LOCAL_PATH/appsettings.json
 
 # S3에서 컨트롤러 파일 다운로드
 sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/UsersController.cs $LOCAL_PATH/Controllers/UsersController.cs
@@ -63,6 +69,8 @@ Description=My .NET API Application
 After=network.target
 
 [Service]
+EnvironmentFile=/etc/environment
+Environment="S3_LOG_BUCKET=$S3_LOG_BUCKET"
 WorkingDirectory=$LOCAL_PATH/published
 ExecStart=/usr/bin/dotnet $LOCAL_PATH/published/MyApi.dll
 Restart=always
@@ -89,7 +97,7 @@ sudo systemctl enable nginx
 sudo systemctl start nginx
 
 # Nginx 프록시 설정
-INSTANCE_PRIVATE_IP=$(curl -s http://169.254.169.254/latest/meta-data/private-ipv4)
+INSTANCE_PRIVATE_IP=$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4)
 sudo tee /etc/nginx/conf.d/dotnet-api.conf > /dev/null <<EOL
 server {
     listen 80;

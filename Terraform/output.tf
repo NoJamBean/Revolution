@@ -18,3 +18,7 @@ output "ec2_public_ip" {
   description = "EC2의 퍼블릭 IP"
   value       = aws_instance.dotnet_api_server.public_ip
 }
+
+output "cognito_user_pool_arn" {
+  value = aws_cognito_user_pool.user_pool.arn
+}

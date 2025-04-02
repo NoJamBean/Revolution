@@ -53,7 +53,7 @@ namespace MyApi.Controllers
             }
 
             // DB에서 사용자 정보를 조회
-            User user = _userContext.Users.SingleOrDefault(u => u.Uid == userId);
+            User user = _userContext.Users.SingleOrDefault(u => u.Uuid == userId);
         
             if (user == null)
             {

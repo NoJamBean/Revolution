@@ -26,8 +26,11 @@ COGNITO_USER_POOL="${aws_cognito_user_pool.user_pool.id}"
 COGNITO_APP_CLIENT="${aws_cognito_user_pool_client.app_client.id}"
 
 S3_BUCKET="${aws_s3_bucket.long_user_data_bucket.bucket}"
+S3_LOG_BUCKET="${aws_s3_bucket.log_bucket.bucket}"
 LOCAL_PATH="/var/www/dotnet-api/MyApi"
 EOL
+
+source /etc/environment
 
 export S3_BUCKET="${aws_s3_bucket.long_user_data_bucket.bucket}"
 export LOCAL_PATH="/var/www/dotnet-api/MyApi"

@@ -6,6 +6,7 @@ variable "db_password" { default = "securepassword123" }
 variable "db_allocated_storage" { default = 20 }
 variable "seoul_key_name" { default = "temp" }
 variable "instance_type" { default = "t2.micro" }
+variable "agwlog_role_arn" { default = "arn:aws:iam::248189921892:role/agwlog"}
 
 variable "zone" {
   type = map(string)
