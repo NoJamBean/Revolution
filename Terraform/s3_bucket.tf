@@ -18,10 +18,12 @@ resource "random_id" "bucket_suffix" {
 
 resource "aws_s3_bucket" "log_bucket" {
   bucket = "logs-${random_id.bucket_suffix.hex}"
+  force_destroy = true
   
   lifecycle {
     prevent_destroy = false  # S3 버킷 삭제가 가능하도록 설정
   }
+  
 
   tags = {
     Name        = "LOG BUCKET"
