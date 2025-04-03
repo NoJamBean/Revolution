@@ -39,6 +39,9 @@ sudo chmod -R 755 ~/.dotnet
 sudo chown -R ec2-user:ec2-user /var/log/api
 sudo chmod -R 777 /var/log/api
 
+sudo chown nginx:nginx /var/log/nginx
+sudo chmod -R 777 /var/log/nginx
+
 sudo chown -R ec2-user:ec2-user /usr/share/dotnet
 sudo chmod -R 755 /usr/share/dotnet
 
@@ -105,16 +108,23 @@ server {
 
     location / {
         proxy_pass http://localhost:5000;
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \$scheme;
-    }
+        # proxy_pass_request_headers on;
 
-    # CORS 헤더 추가
-    add_header 'Access-Control-Allow-Origin' '*' always;
-    add_header 'Access-Control-Allow-Methods' 'GET, POST' always;
-    add_header 'Access-Control-Allow-Headers' 'Origin, X-Requested-With, Content-Type, Accept, Authorization' always;
+        # CORS 설정 추가
+        add_header 'Access-Control-Allow-Origin' '*' always;
+        add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS' always;
+        add_header 'Access-Control-Allow-Headers' '*' always;
+        add_header 'Access-Control-Allow-Credentials' 'true' always; # Credential 허용
+
+        # OPTIONS 요청 처리 (Preflight 요청에 응답)
+        if (\$request_method = OPTIONS) {
+            add_header 'Access-Control-Allow-Origin' '*';
+            add_header 'Access-Control-Allow-Methods' 'GET, POST';
+            add_header 'Access-Control-Allow-Headers' '*';
+            add_header 'Access-Control-Allow-Credentials' 'true';
+            return 204; # No Content 응답
+        }
+    }
 }
 EOL
 

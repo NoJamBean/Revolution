@@ -35,7 +35,7 @@ resource "aws_db_instance" "mysql_multi_az" {
   multi_az                            = true # 다중 AZ 활성화
   db_subnet_group_name                = aws_db_subnet_group.rds_subnet_group.name
   vpc_security_group_ids              = [aws_security_group.rds_sg.id]
-  backup_retention_period             = 7
+  backup_retention_period             = 0
   apply_immediately                   = true # 수정 즉시적용
   skip_final_snapshot                 = true
   deletion_protection                 = false

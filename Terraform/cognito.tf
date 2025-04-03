@@ -23,8 +23,8 @@ resource "aws_cognito_user_pool_client" "app_client" {
   callback_urls = ["http://localhost:5000/callback"] #프런트앱서버 주소 오토스케일링 그룹을 쓴다면 ALB주소
 
   # 토큰 유효 기간 설정
-  access_token_validity = 1  # Access token validity in seconds (1 hour)
-  id_token_validity     = 1  # ID token validity in seconds (1 hour)
+  access_token_validity = 10  # Access token validity in seconds (1 hour)
+  id_token_validity     = 10  # ID token validity in seconds (1 hour)
 }
 
 #더미데이터

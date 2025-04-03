@@ -39,6 +39,42 @@ resource "aws_security_group" "default_sg" {
   }
 }
 
+resource "aws_security_group" "dotnet_sg" {
+  name        = "dotnet_sg"
+  description = "Security group"
+  vpc_id      = aws_vpc.vpc.id
+
+  dynamic "ingress" {
+    for_each = {
+      ssh     = { from_port = 22, to_port = 22, protocol = "tcp", cidr_blocks = ["0.0.0.0/0"] }
+      http    = { from_port = 80, to_port = 80, protocol = "tcp", cidr_blocks = ["0.0.0.0/0"] }
+      https   = { from_port = 443, to_port = 443, protocol = "tcp", cidr_blocks = ["0.0.0.0/0"] }
+      mysql   = { from_port = 3306, to_port = 3306, protocol = "tcp", cidr_blocks = ["10.0.0.0/16"] }
+      dotnet  = { from_port = 5000, to_port = 5000, protocol = "tcp", cidr_blocks = ["10.0.0.0/16"] }
+      icmp    = { from_port = -1, to_port = -1, protocol = "icmp", cidr_blocks = ["10.0.0.0/16"] }
+    }
+
+    content {
+      from_port   = ingress.value.from_port
+      to_port     = ingress.value.to_port
+      protocol    = ingress.value.protocol
+      cidr_blocks = ingress.value.cidr_blocks
+    }
+  }
+
+  # 아웃바운드 트래픽 모두 허용
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "default_sg"
+  }
+}
+
 
 resource "aws_security_group" "rds_sg" {
   vpc_id = aws_vpc.vpc.id
@@ -47,7 +83,7 @@ resource "aws_security_group" "rds_sg" {
     from_port   = 3306
     to_port     = 3306
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = ["10.0.0.0/10"]
   }
 
   ingress {

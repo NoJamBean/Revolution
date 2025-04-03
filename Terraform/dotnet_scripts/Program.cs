@@ -16,6 +16,7 @@ using MyApi.Data;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Serilog;
 using System;
+using System.Collections.Concurrent;
 using System.IO;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -39,6 +40,7 @@ builder.Host.UseSerilog((context, services, loggerConfiguration) =>
 });
 
 // 환경 변수에서 데이터베이스 및 Cognito 정보 가져오기
+// string agw_url = Environment.GetEnvironmentVariable("AGW_URL") ??;
 string dbEndpoint = Environment.GetEnvironmentVariable("DB_ENDPOINT") ?? configuration["ConnectionStrings:UserDbConnection"];
 string dbUsername = Environment.GetEnvironmentVariable("DB_USERNAME") ?? "root";
 string dbPassword = Environment.GetEnvironmentVariable("DB_PASSWORD") ?? "";
@@ -76,21 +78,23 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-// CORS 정책 설정
+//CORS 정책 설정
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll",
         policy =>
         {
-            policy.AllowAnyOrigin()   // 모든 도메인에서 요청 허용
-                  .AllowAnyHeader()   // 모든 헤더 허용
-                  .AllowAnyMethod(); // 모든 HTTP 메서드 허용
+            // policy.WithOrigins($"{agw_url}") // 모든 도메인 허용 (Nginx의 `Access-Control-Allow-Origin: *` 과 동일)
+                policy.WithOrigins("http://localhost:3000")
+                  .WithMethods("GET", "POST") // GET, POST 메서드만 허용
+                  .AllowAnyHeader() // 특정 헤더만 허용
+                  .AllowCredentials(); // 인증 정보 포함 허용
         });
 });
 
 builder.Services.AddDbContext<UserDbContext>(options =>
     options.UseMySql(
-        configuration.GetConnectionString("UserDbConnection"),
+        builder.Configuration.GetConnectionString("UserDbConnection"),
         new MySqlServerVersion(new Version(8, 0, 40)),
         mySqlOptions => mySqlOptions.EnableRetryOnFailure(5)
 ));
@@ -98,7 +102,7 @@ builder.Services.AddDbContext<UserDbContext>(options =>
 
 builder.Services.AddDbContext<GameDbContext>(options =>
 options.UseMySql(
-        configuration.GetConnectionString("GameDbConnection"),
+        builder.Configuration.GetConnectionString("GameDbConnection"),
         new MySqlServerVersion(new Version(8, 0, 40)),
         mySqlOptions => mySqlOptions.EnableRetryOnFailure(5)
 ));
@@ -125,16 +129,24 @@ var fileTransferUtility = new TransferUtility(s3Client);
 
 var watcher = new FileSystemWatcher(directoryPath)
 {
-    NotifyFilter = NotifyFilters.FileName | NotifyFilters.LastWrite, // 파일 생성 또는 수정 감지
-    Filter = "*.log", // .log 파일만 감지
+    NotifyFilter = NotifyFilters.FileName | NotifyFilters.LastWrite,
+    Filter = "*.log",
     EnableRaisingEvents = true
 };
 
-
 ConcurrentQueue<string> uploadQueue = new ConcurrentQueue<string>();
+ConcurrentDictionary<string, bool> processedFiles = new ConcurrentDictionary<string, bool>();
 
-watcher.Created += (sender, e) => uploadQueue.Enqueue(e.FullPath);
-watcher.Changed += (sender, e) => uploadQueue.Enqueue(e.FullPath);
+watcher.Created += (sender, e) => EnqueueFile(e.FullPath);
+
+void EnqueueFile(string filePath)
+{
+    if (!processedFiles.ContainsKey(filePath))
+    {
+        uploadQueue.Enqueue(filePath);
+        processedFiles[filePath] = true;
+    }
+}
 
 Task.Run(async () =>
 {
@@ -144,9 +156,27 @@ Task.Run(async () =>
         {
             await UploadToS3(filePath);
         }
-        await Task.Delay(5000); // 5초마다 체크
+        await Task.Delay(5000);
     }
 });
+
+async Task UploadToS3(string filePath)
+{
+    string bucketName = Environment.GetEnvironmentVariable("S3_LOG_BUCKET") ?? "my-log-bucket";
+    string fileName = Path.GetFileName(filePath);
+    string keyName = $"{s3Folder}{fileName}";
+
+    try
+    {
+        await fileTransferUtility.UploadAsync(filePath, bucketName, keyName);
+        Console.WriteLine($"파일 업로드 성공: {fileName}");
+        processedFiles.TryRemove(filePath, out _); // 업로드 완료 후 제거
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"파일 업로드 중 오류 발생: {fileName}, 오류: {ex.Message}");
+    }
+}
 
 try
 {

@@ -6,11 +6,15 @@ locals {
 
 resource "aws_instance" "dotnet_api_server" {
   ami             = data.aws_ami.amazon_linux.id
-  instance_type   = "t3.micro"//var.instance_type
+  instance_type   = "t3.medium"//var.instance_type
   subnet_id       = aws_subnet.subnet["sn3"].id
-  security_groups = [aws_security_group.default_sg.id]
+  security_groups = [aws_security_group.dotnet_sg.id]
   key_name        = var.seoul_key_name
   iam_instance_profile = aws_iam_instance_profile.ec2_s3_profile.name
+
+  credit_specification {
+    cpu_credits = "standard"
+  }
 
   #user_data = data.template_file.api_server.rendered
   user_data = <<-EOT
@@ -19,6 +23,7 @@ resource "aws_instance" "dotnet_api_server" {
 set -e
 
 sudo tee -a /etc/environment > /dev/null <<EOL
+AGW_URL="https://${aws_api_gateway_rest_api.rest_api.id}.execute-api.ap-northeast-2.amazonaws.com"
 DB_ENDPOINT="${local.db_host}"
 DB_USERNAME="${var.db_username}"
 DB_PASSWORD="${var.db_password}"
