@@ -1,6 +1,5 @@
 services:
   elasticsearch:
-    # 기존 Elastic 공식 이미지 대신 Docker Hub에 업로드한 이미지 사용
     image: timang/log_application:elastic_v1
     environment:
       - discovery.type=single-node
@@ -11,23 +10,19 @@ services:
       - esdata:/usr/share/elasticsearch/data
 
   logstash:
-    # 기존 Elastic 공식 이미지 대신 Docker Hub에 업로드한 이미지 사용
     image: timang/log_application:logstash_v1
     ports:
       - "5000:5000"
     volumes:
-      # logstash.conf 파일은 여전히 로컬 경로에서 마운트됩니다.
       - ./logstash.conf:/usr/share/logstash/pipeline/logstash.conf
     depends_on:
       - elasticsearch
 
   kibana:
-    # 기존 Elastic 공식 이미지 대신 Docker Hub에 업로드한 이미지 사용
     image: timang/log_application:kibana_v1
     ports:
       - "5601:5601"
     environment:
-      # Elasticsearch 연결 정보는 그대로 유지됩니다.
       ELASTICSEARCH_URL: http://elasticsearch:9200
       ELASTICSEARCH_HOSTS: http://elasticsearch:9200
     depends_on:

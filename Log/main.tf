@@ -1,27 +1,55 @@
-# EC2 인스턴스 리소스 정의
-resource "aws_instance" "docker" {
-  ami                         = data.aws_ami.amazon_linux_2.id
-  instance_type               = "t2.micro"
-  associate_public_ip_address = true
-  key_name                    = "Instance-key" # 실제 사용하는 키 이름으로 변경하세요.
-  # iam_instance_profile      = data.aws_iam_instance_profile.ec2_admin_profile.name # 필요시 주석 해제
+# 10.0.[100-103].0/24 Private Subnet 
+# 10.0.[104,105].0/24 Public Subnet (route Internet Gateway)
 
+resource "aws_subnet" "log" {
+  count = 6
+  vpc_id = var.vpc_id
+  cidr_block = "10.0.${count.index+100}.0/24"
+  availability_zone = data.aws_availability_zones.available.names[count.index % 4]
   tags = {
-    Name = "docker"
+    Name = "${var.h}sub${count.index+100}"
   }
-
-  # user_data 설정: Base64 인코딩 사용
-  user_data = templatefile("${path.module}/user_data.sh.tpl", {
-    # 파일 내용을 Base64로 인코딩하여 전달
-    docker_compose_b64 = base64encode(file("${path.module}/docker-compose.yml"))
-  })
-
-  user_data_replace_on_change = true
 }
 
-output "aws_instance_docker_instance_id" {
-  value = aws_instance.docker.id
+resource "aws_route_table" "log" {
+  count = 2
+  vpc_id = var.vpc_id
+  tags = {
+    Name = "${var.h}rt${count.index}"
+  }
 }
-output "aws_instance_docker_public_ip" {
-  value = aws_instance.docker.public_ip
+
+resource "aws_route_table_association" "log" {
+  count = 4
+  subnet_id = aws_subnet.log[count.index].id
+  route_table_id = aws_route_table.log[0].id
 }
+
+resource "aws_route_table_association" "internet" {
+  count = 2
+  subnet_id = aws_subnet.log[count.index+4].id
+  route_table_id = aws_route_table.log[1].id
+}
+
+resource "aws_route" "existing_igw" {
+  count = var.use_existing_igw ? 1 : 0
+  route_table_id = aws_route_table.log[1].id
+  destination_cidr_block = "0.0.0.0/0"
+  gateway_id = data.aws_internet_gateway.existing_igw[0].id
+}
+
+resource "aws_internet_gateway" "igw" {
+  count = var.use_existing_igw ? 0 : 1
+  vpc_id = var.vpc_id
+  tags = {
+    Name = "${var.h}igw"
+  }
+}
+
+resource "aws_route" "igw" {
+  count = var.use_existing_igw ? 0 : 1
+  route_table_id = aws_route_table.log[1].id
+  destination_cidr_block = "0.0.0.0/0"
+  gateway_id = aws_internet_gateway.igw[0].id
+}
+
