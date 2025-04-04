@@ -10,17 +10,20 @@ CREATE DATABASE IF NOT EXISTS gameDB;
 
 #Table생성
 USE userDB;
-CREATE TABLE IF NOT EXISTS userTBL ( 
+DROP TABLE IF EXISTS gameinfoTBL;
+CREATE TABLE userTBL ( 
     id VARCHAR(10) NOT NULL PRIMARY KEY, 
     uuid VARCHAR(255) NOT NULL,
-    password CHAR(60) NOT NULL, 
+    password CHAR(60) NOT NULL,
+    e_mail VARCHAR(320) NOT NULL, 
     phone_number VARCHAR(10) NOT NULL, 
     balance BIGINT DEFAULT 0,
     modified_date DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
 USE gameDB;
-CREATE TABLE IF NOT EXISTS gameinfoTBL ( 
+DROP TABLE IF EXISTS gameinfoTBL;
+CREATE TABLE gameinfoTBL ( 
     id VARCHAR(10) NOT NULL,
     type ENUM('soccer', 'basketball', 'baseball', 'ladder') NOT NULL, 
     gameDate DATETIME NOT NULL,
@@ -33,7 +36,8 @@ CREATE TABLE IF NOT EXISTS gameinfoTBL (
     PRIMARY KEY (id, gameDate)
 );
 
-CREATE TABLE IF NOT EXISTS gameresultTBL ( 
+DROP TABLE IF EXISTS gameresultTBL;
+CREATE TABLE gameresultTBL ( 
     id VARCHAR(10) NOT NULL,
     type ENUM('soccer', 'basketball', 'baseball', 'ladder') NOT NULL, 
     gameDate DATETIME NOT NULL,
@@ -48,11 +52,12 @@ CREATE TABLE IF NOT EXISTS gameresultTBL (
 );
 
 USE userDB;
-INSERT INTO userTBL (id, uuid, password, phone_number, balance)
-VALUES ('user123', "${cognito_user_id}", '$2y$10$abcdefghijklmnopqrstuvwx', '01012345678', 10000)
+INSERT INTO userTBL (id, uuid, password, e_mail, phone_number, balance)
+VALUES ('dummyuser', "${cognito_user_id}", '$2y$10$abcdefghijklmnopqrstuvwx', 'dummyuser@example.com', '01012345678', 10000)
 ON DUPLICATE KEY UPDATE 
     uuid = VALUES(uuid),
     password = VALUES(password),
+    e_mail = VALUES(e_mail),
     phone_number = VALUES(phone_number),
     balance = VALUES(balance);
 EOF

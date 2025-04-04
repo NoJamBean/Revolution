@@ -81,6 +81,14 @@ resource "aws_s3_object" "game_db_context" {
   source_hash  = filemd5("${path.module}/dotnet_scripts/GameDbContext.cs")
 }
 
+resource "aws_s3_object" "cognito_service" {
+  bucket       = aws_s3_bucket.long_user_data_bucket.id
+  key          = "dotnet_scripts/CognitoService.cs"
+  source       = "${path.module}/dotnet_scripts/CognitoService.cs"
+  acl          = "private"
+  source_hash  = filemd5("${path.module}/dotnet_scripts/CognitoService.cs")
+}
+
 resource "aws_s3_object" "dotnet_run_script" {
   bucket       = aws_s3_bucket.long_user_data_bucket.id
   key          = "dotnet_scripts/dotnet_run.sh"

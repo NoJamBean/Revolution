@@ -8,19 +8,22 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using MyApi.Data;
+using MyApi.Services;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Serilog;
 using System;
 using System.Collections.Concurrent;
 using System.IO;
+using System.Net;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using System.Net;
+
 
 var configBuilder = new ConfigurationBuilder()
     .SetBasePath(Directory.GetCurrentDirectory())
@@ -109,6 +112,7 @@ options.UseMySql(
 
 // Add services to the container.
 builder.Services.AddControllers();
+builder.Services.AddScoped<CognitoService>();
 
 WebApplication app = builder.Build();
 
@@ -125,7 +129,7 @@ string directoryPath = "/var/log/api/";
 string s3Folder = "DotNet/";
 
 using var s3Client = new AmazonS3Client(Amazon.RegionEndpoint.APNortheast2);
-var fileTransferUtility = new TransferUtility(s3Client);
+TransferUtility fileTransferUtility = new TransferUtility(s3Client);
 
 var watcher = new FileSystemWatcher(directoryPath)
 {

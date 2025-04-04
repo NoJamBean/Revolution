@@ -11,24 +11,25 @@ sudo mv prod.repo /etc/yum.repos.d/microsoft-prod.repo
 sudo yum install -y dotnet-sdk-6.0
 
 # 디렉토리 생성
-sudo mkdir -p $LOCAL_PATH $LOCAL_PATH/Controllers $LOCAL_PATH/Data /var/log/api
+sudo mkdir -p $LOCAL_PATH $LOCAL_PATH/Controllers $LOCAL_PATH/Data /var/log/api $LOCAL_PATH/Service
 sudo chown -R ec2-user:ec2-user /var/www/dotnet-api
 cd $LOCAL_PATH
 sudo dotnet new webapi
 
 # Entity Framework Core 패키지 추가
-sudo dotnet add package Microsoft.EntityFrameworkCore.SqlServer --version 6.0.0
-sudo dotnet add package Microsoft.EntityFrameworkCore.Design --version 6.0.0
-sudo dotnet add package Pomelo.EntityFrameworkCore.MySql --version 6.0.0
-sudo dotnet add package System.IO.Pipelines --version 6.0.0
-sudo dotnet add package Microsoft.Bcl.AsyncInterfaces --version 6.0.0
-sudo dotnet add package System.Text.Json --version 6.0.0
-sudo dotnet add package Serilog --version 4.1.0
-sudo dotnet add package Serilog.Sinks.Console --version 4.1.0
-sudo dotnet add package Serilog.AspNetCore --version 4.1.0
+sudo dotnet add package AWSSDK.CognitoIdentityProvider
 sudo dotnet add package AWSSDK.S3 --version 3.7.0
 sudo dotnet add package Microsoft.AspNetCore.Authentication.JwtBearer --version 6.0.26
 sudo dotnet add package Microsoft.AspNetCore.Authorization --version 6.0.0
+sudo dotnet add package Microsoft.Bcl.AsyncInterfaces --version 6.0.0
+sudo dotnet add package Microsoft.EntityFrameworkCore.Design --version 6.0.0
+sudo dotnet add package Microsoft.EntityFrameworkCore.SqlServer --version 6.0.0
+sudo dotnet add package Pomelo.EntityFrameworkCore.MySql --version 6.0.0
+sudo dotnet add package Serilog --version 4.1.0
+sudo dotnet add package Serilog.AspNetCore --version 4.1.0
+sudo dotnet add package Serilog.Sinks.Console --version 4.1.0
+sudo dotnet add package System.IO.Pipelines --version 6.0.0
+sudo dotnet add package System.Text.Json --version 6.0.0
 
 # curl -u "username:your_personal_access_token" -sL https://raw.githubusercontent.com/사용자명/저장소명/브랜치명/경로/파일명 | sudo tee /경로/파일명 > /dev/null
 
@@ -48,14 +49,13 @@ sudo chmod -R 755 /usr/share/dotnet
 # S3에서 설정 파일 다운로드
 # sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/appsettings.json $LOCAL_PATH/appsettings.json
 
-# S3에서 컨트롤러 파일 다운로드
-sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/UsersController.cs $LOCAL_PATH/Controllers/UsersController.cs
-sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/GamesController.cs $LOCAL_PATH/Controllers/GamesController.cs
-
 # S3에서 주요 프로젝트 파일 다운로드
 sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/Program.cs $LOCAL_PATH/Program.cs
 sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/UserDbContext.cs $LOCAL_PATH/Data/UserDbContext.cs
 sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/GameDbContext.cs $LOCAL_PATH/Data/GameDbContext.cs
+sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/UsersController.cs $LOCAL_PATH/Controllers/UsersController.cs
+sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/GamesController.cs $LOCAL_PATH/Controllers/GamesController.cs
+sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/CognitoService.cs $LOCAL_PATH/Service/CognitoService.cs
 
 sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/dotnet_run.sh ~/run
 

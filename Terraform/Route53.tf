@@ -1,10 +1,4 @@
-# 기존 퍼블릭 호스팅 영역이 있으면 사용, 없으면 생성
-# data "aws_route53_zone" "public_zone" {
-#   name         = var.public_domain_name
-#   private_zone = false
-# }
-
-# resource "aws_route53_zone" "public_zone" {
+# resource "aws_route53_zone" "public" {
 #   count = length(data.aws_route53_zone.public_zone.id) > 0 ? 0 : 1
 
 #   name = var.public_domain_name
@@ -14,27 +8,23 @@
 #   }
 # }
 
-# 기존 프라이빗 호스팅 영역이 있으면 사용, 없으면 생성
-data "aws_route53_zone" "private_zone" {
-  name         = var.private_domain_name
-  # private_zone = true
-}
 
-resource "aws_route53_zone" "primary" {
-  count = length(data.aws_route53_zone.private_zone.id) > 0 ? 0 : 1
-  name         = var.private_domain_name
-  # private_zone = true
-  vpc {
-    vpc_id = aws_vpc.vpc.id
-  }
+#존은 생성되어있으면 주석처리하고 data쪽을 주석처리 풀어야함
+# resource "aws_route53_zone" "private" {
+#   # count = length(data.aws_route53_zone.private.id) > 0 ? 0 : 1
+#   name         = var.private_domain_name
+#   vpc {
+#     vpc_id = aws_vpc.vpc.id
+#   }
 
-  lifecycle {
-    prevent_destroy = true # terraform destroy 시 삭제되지 않도록 보호
-  }
-}
+#   lifecycle {
+#     prevent_destroy = true # terraform destroy 시 삭제되지 않도록 보호
+#     ignore_changes = [vpc] 
+#   }
+# }
 
 resource "aws_route53_record" "api" {
-  zone_id = data.aws_route53_zone.private_zone.id
+  zone_id = data.aws_route53_zone.private.id
   name    = "api"
   type    = "A"
   ttl     = "300"
@@ -42,7 +32,7 @@ resource "aws_route53_record" "api" {
 }
 
 resource "aws_route53_record" "db" {
-  zone_id = data.aws_route53_zone.private_zone.id
+  zone_id = data.aws_route53_zone.private.id
   name    = "db"
   type    = "A"
   ttl     = "300"

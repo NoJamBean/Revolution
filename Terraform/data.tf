@@ -44,3 +44,14 @@ data "template_file" "rds_user_data" {
     cognito_user_id = aws_cognito_user.dummy_user.id
   }
 }
+
+#Route53
+# data "aws_route53_zone" "public" {
+#   name         = var.public_domain_name
+#   private_zone = false
+# }
+
+data "aws_route53_zone" "private" {
+  name         = var.private_domain_name
+  private_zone = true
+}

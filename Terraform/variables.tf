@@ -8,8 +8,8 @@ variable "db_allocated_storage" { default = 20 }
 variable "seoul_key_name" { default = "temp" }
 variable "instance_type" { default = "t2.micro" }
 variable "agwlog_role_arn" { default = "arn:aws:iam::248189921892:role/agwlog"}
-variable "private_domain_name" { default = "backend" } # 원하는 도메인명으로 변경
-variable "public_domain_name" { default = "frontend" } # 원하는 도메인명으로 변경
+variable "private_domain_name" { default = "backend.internal" } # 원하는 도메인명으로 변경
+variable "public_domain_name" { default = "frontend.com" } # 원하는 도메인명으로 변경
 
 variable "zone" {
   type = map(string)

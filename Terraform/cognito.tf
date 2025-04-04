@@ -25,6 +25,14 @@ resource "aws_cognito_user_pool_client" "app_client" {
   # 토큰 유효 기간 설정
   access_token_validity = 10  # Access token validity in seconds (1 hour)
   id_token_validity     = 10  # ID token validity in seconds (1 hour)
+
+  explicit_auth_flows = [
+    "ALLOW_ADMIN_USER_PASSWORD_AUTH",
+    # "ALLOW_USER_PASSWORD_AUTH",
+    "ALLOW_REFRESH_TOKEN_AUTH",
+    "ALLOW_CUSTOM_AUTH",
+    "ALLOW_USER_SRP_AUTH"
+  ]
 }
 
 #더미데이터

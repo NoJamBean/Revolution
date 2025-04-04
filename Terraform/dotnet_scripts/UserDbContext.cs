@@ -39,8 +39,13 @@ namespace MyApi.Data
         public string? Password { get; set; }
 
         [Required]
+        [Column("e_mail")]
+        [StringLength(320)]
+        public string? Email { get; set; }
+
+        // [Required]
         [Column("phone_number")]
-        [StringLength(10)]
+        [StringLength(20)]
         public string? PhoneNumber { get; set; }
 
         [Column("balance")]
@@ -48,7 +53,7 @@ namespace MyApi.Data
         public long Balance { get; set; } = 0;
 
         [Column("modified_date")]
-        public DateTime ModifiedDate { get; set; } = DateTime.UtcNow;
+        public DateTime ModifiedDate { get; set; } = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("Korea Standard Time"));
 
         public User() {}
     }

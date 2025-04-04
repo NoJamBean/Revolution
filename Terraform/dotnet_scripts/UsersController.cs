@@ -1,11 +1,12 @@
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MyApi.Data;
+using MyApi.Services;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace MyApi.Controllers
 {
@@ -13,15 +14,19 @@ namespace MyApi.Controllers
     [ApiController]
     public class UsersController : ControllerBase
     {
-        private readonly UserDbContext _userContext;
         private readonly IConfiguration _configuration;
+        private readonly UserDbContext _userContext;
+        private readonly CognitoService _cognitoService;
 
-        public UsersController(UserDbContext userContext, IConfiguration configuration)
+        public UsersController(UserDbContext userContext, IConfiguration configuration, CognitoService cognitoService)
         {
             _userContext = userContext;
             _configuration = configuration;
+            _cognitoService = cognitoService;
         }
 
+
+        //GET
         // 특정 사용자의 잔액 조회
         [HttpGet("{id}/balance")]
         public async Task<ActionResult<long>> GetBalance(string id)
@@ -98,21 +103,6 @@ namespace MyApi.Controllers
             return Ok(user);
         }
 
-        // 새로운 사용자 추가
-        [HttpPost]
-        public async Task<ActionResult<User>> PostUser([FromBody] User newUser)
-        {
-            if (newUser == null)
-            {
-                return BadRequest("유효하지 않은 사용자 정보입니다.");
-            }
-
-            _userContext.Users.Add(newUser);
-            await _userContext.SaveChangesAsync();
-
-            return CreatedAtAction(nameof(GetUser), new { id = newUser.Id }, newUser);
-        }
-
          // 기본적인 값을 반환하는 예시
         [HttpGet("test")]
         public ActionResult<IEnumerable<string>> Test()
@@ -120,6 +110,45 @@ namespace MyApi.Controllers
             // 명시적으로 타입 변경 (string[] -> IEnumerable<string>)
             IEnumerable<string> testValues = new string[] { "송현섭", "바보아니다", "일한다" };
             return Ok(testValues);
+        }
+
+        //POST
+        // 새로운 사용자 추가
+        [HttpPost("register")]
+        public async Task<IActionResult> RegisterUser([FromBody] User user)
+        {
+            if (user == null || string.IsNullOrEmpty(user.Id) || string.IsNullOrEmpty(user.Password) || string.IsNullOrEmpty(user.Password))
+            {
+                return BadRequest("아이디와 비밀번호와 이메일은 필수입니다.");
+            }
+
+            try
+            {
+                var uuid = await _cognitoService.CreateUserAsync(user.Id, user.Password, user.Email);
+
+                DateTime koreaTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("Korea Standard Time"));
+
+                // 2. DB에 저장
+                var newUser = new User
+                {
+                    Id = user.Id,
+                    Uuid = uuid,
+                    Password = user.Password,
+                    Email = user.Email,
+                    PhoneNumber = user.PhoneNumber,
+                    Balance = user.Balance,
+                    ModifiedDate = koreaTime
+                };
+
+                _userContext.Users.Add(newUser);
+                await _userContext.SaveChangesAsync();
+
+                return Ok(new { message = "사용자 등록 성공", user = newUser });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "사용자 등록 실패", error = ex.Message });
+            }
         }
     }
 }
