@@ -1,12 +1,3 @@
-
-variable "private_domain_name" {
-  default = "backend" # 원하는 도메인명으로 변경
-}
-
-variable "public_domain_name" {
-  default = "frontend" # 원하는 도메인명으로 변경
-}
-
 # 기존 퍼블릭 호스팅 영역이 있으면 사용, 없으면 생성
 # data "aws_route53_zone" "public_zone" {
 #   name         = var.public_domain_name
