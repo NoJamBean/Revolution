@@ -1,4 +1,4 @@
-resource "aws_vpc_endpoint" "apigateway_endpoint" {
+resource "aws_vpc_endpoint" "agw_endpoint" {
   vpc_id            = aws_vpc.vpc.id
   service_name      = "com.amazonaws.ap-northeast-2.execute-api"
   vpc_endpoint_type = "Interface"

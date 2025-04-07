@@ -88,16 +88,17 @@ resource "aws_route" "internet_access" {
 
 resource "aws_route" "nat_instance_route" {
   for_each = {
-    rt3 = { rt_id = aws_route_table.routetable["back1"].id, instance_id = aws_instance.nat_instance1.id }
-    rt4 = { rt_id = aws_route_table.routetable["back2"].id, instance_id = aws_instance.nat_instance2.id }
-    rt5 = { rt_id = aws_route_table.routetable["log1"].id, instance_id = aws_instance.nat_instance1.id }
-    rt6 = { rt_id = aws_route_table.routetable["log2"].id, instance_id = aws_instance.nat_instance2.id }
+    rt3 = { rt_id = aws_route_table.routetable["back1"].id, eni = aws_instance.nat_instance1.primary_network_interface_id }
+    rt4 = { rt_id = aws_route_table.routetable["back2"].id, eni = aws_instance.nat_instance2.primary_network_interface_id }
+    rt5 = { rt_id = aws_route_table.routetable["log1"].id, eni = aws_instance.nat_instance1.primary_network_interface_id }
+    rt6 = { rt_id = aws_route_table.routetable["log2"].id, eni = aws_instance.nat_instance2.primary_network_interface_id }
   }
 
   route_table_id         = each.value.rt_id
   destination_cidr_block = "0.0.0.0/0"
-  instance_id            = each.value.instance_id
+  network_interface_id   = each.value.eni
 }
+
 # 서브넷과 라우트 테이블 연결
 resource "aws_route_table_association" "routetable_association" {
     for_each = {
@@ -108,7 +109,7 @@ resource "aws_route_table_association" "routetable_association" {
       api1 = {route_table_id=aws_route_table.routetable["back1"].id, subnet_id=aws_subnet.subnet["api1"].id}
       api2 = {route_table_id=aws_route_table.routetable["back2"].id, subnet_id=aws_subnet.subnet["api2"].id}
       rds1 = {route_table_id=aws_route_table.routetable["back1"].id, subnet_id=aws_subnet.subnet["rds1"].id}
-      rds2 = {route_table_id=aws_route_table.routetable["bakc2"].id, subnet_id=aws_subnet.subnet["rds2"].id}
+      rds2 = {route_table_id=aws_route_table.routetable["back2"].id, subnet_id=aws_subnet.subnet["rds2"].id}
       log1 = {route_table_id=aws_route_table.routetable["log1"].id, subnet_id=aws_subnet.subnet["log1"].id}
       log2 = {route_table_id=aws_route_table.routetable["log1"].id, subnet_id=aws_subnet.subnet["log2"].id}
       log3 = {route_table_id=aws_route_table.routetable["log2"].id, subnet_id=aws_subnet.subnet["log3"].id}

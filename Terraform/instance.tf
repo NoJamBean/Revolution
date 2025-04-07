@@ -17,8 +17,7 @@ resource "aws_instance" "nat_instance1" {
     cpu_credits = "standard"
   }
 
-  #user_data = data.template_file.api_server.rendered
-  user_data = file("userdatas/nat.sh").rendered
+  user_data = file("userdatas/nat.sh")
 
   tags = {
     Name = "NAT-INSTANCE-1"
@@ -37,8 +36,7 @@ resource "aws_instance" "nat_instance2" {
     cpu_credits = "standard"
   }
 
-  #user_data = data.template_file.api_server.rendered
-  user_data = file("userdatas/nat.sh").rendered
+  user_data = file("userdatas/nat.sh")
 
   tags = {
     Name = "NAT-INSTANCE-2"
@@ -46,6 +44,7 @@ resource "aws_instance" "nat_instance2" {
 }
 
 resource "aws_instance" "dotnet_api_server" {
+  depends_on = [ aws_instance.nat_instance1 ]
   ami             = data.aws_ami.amazon_linux.id
   instance_type   = "t3.medium"//var.instance_type
   subnet_id       = aws_subnet.subnet["api1"].id
@@ -97,6 +96,7 @@ EOT
 #DB접근용 인스턴스
 #정원빈
 resource "aws_instance" "rds_access_instance" {
+  depends_on = [ aws_instance.nat_instance1 ]
   provider                    = aws
   ami                         = data.aws_ami.amazon_linux.id
   instance_type               = var.instance_type
