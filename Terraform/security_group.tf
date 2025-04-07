@@ -39,6 +39,30 @@ resource "aws_security_group" "default_sg" {
   }
 }
 
+resource "aws_security_group" "nat_sg" {
+  name        = "nat_sg"
+  description = "Security group"
+  vpc_id      = aws_vpc.vpc.id
+
+  ingress {
+  from_port   = 0
+  to_port     = 0
+  protocol    = "-1"
+  cidr_blocks = ["10.0.0.0/16"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "NAT_SG"
+  }
+}
+
 resource "aws_security_group" "dotnet_sg" {
   name        = "dotnet_sg"
   description = "Security group"
@@ -71,10 +95,9 @@ resource "aws_security_group" "dotnet_sg" {
   }
 
   tags = {
-    Name = "default_sg"
+    Name = "dotnet_sg"
   }
 }
-
 
 resource "aws_security_group" "rds_sg" {
   vpc_id = aws_vpc.vpc.id
@@ -101,4 +124,29 @@ resource "aws_security_group" "rds_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
   tags = { Name = "RDS Security Group" }
+}
+
+resource "aws_security_group" "vpc_endpoint_sg" {
+  name        = "vpc-endpoint-sg"
+  description = "Security group for API Gateway interface VPC endpoint"
+  vpc_id      = aws_vpc.vpc.id
+
+  ingress {
+    description = "Allow API server to access endpoint"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["10.0.0.0/16"] # 또는 API 서버가 있는 CIDR만
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "sg-vpc-endpoint"
+  }
 }

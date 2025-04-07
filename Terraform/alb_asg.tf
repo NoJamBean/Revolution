@@ -6,8 +6,8 @@
 #   load_balancer_type = "application"
 #   security_groups    = [aws_security_group.default_sg.id]
 #   subnets            = [
-#     aws_subnet.subnet["sn1"].id,
-#     aws_subnet.subnet["sn2"].id
+#     aws_subnet.subnet["app1"].id,
+#     aws_subnet.subnet["app2"].id
 #   ]
 #   enable_deletion_protection = false
 #   # access_logs {
@@ -76,7 +76,7 @@
 #   desired_capacity     = 2
 #   max_size            = 4
 #   min_size            = 2
-#   vpc_zone_identifier = [ aws_subnet.subnet["sn1"].id, aws_subnet.subnet["sn2"].id]
+#   vpc_zone_identifier = [ aws_subnet.subnet["app1"].id, aws_subnet.subnet["app2"].id]
 
 #   launch_template {
 #     id      = aws_launch_template.template.id

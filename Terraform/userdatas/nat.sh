@@ -1,8 +1,8 @@
 #!/bin/bash
-
-# IP 포워딩 활성화
-echo "net.ipv4.ip_forward = 1" >> /etc/sysctl.conf
-sysctl -p
-
-# NAT 마스커레이딩 설정
+yum update -y
+yum install -y iptables-services
+echo 1 > /proc/sys/net/ipv4/ip_forward
 iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
+service iptables save
+systemctl enable iptables
+systemctl start iptables
