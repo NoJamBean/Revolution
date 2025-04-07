@@ -16,12 +16,14 @@ resource "aws_vpc" "vpc" {
 # Subnet
 resource "aws_subnet" "subnet" {
   for_each = {
-    sn1 = {cidr_block="10.0.1.0/24",availability_zone=var.zone["a"]} #앱 서버 1
-    sn2 = {cidr_block="10.0.2.0/24",availability_zone=var.zone["c"]} #앱 서버 2
-    sn3 = {cidr_block="10.0.3.0/24",availability_zone=var.zone["a"]} #백 서버 1
-    sn4 = {cidr_block="10.0.4.0/24",availability_zone=var.zone["c"]} #백 서버 2
-    sn5 = {cidr_block="10.0.5.0/24",availability_zone=var.zone["a"]} #DB 서버 1
-    sn6 = {cidr_block="10.0.6.0/24",availability_zone=var.zone["c"]} #DB 서버 2
+    sn1 = {cidr_block="10.0.10.0/24",availability_zone=var.zone["a"]} #앱 서버 1
+    sn2 = {cidr_block="10.0.11.0/24",availability_zone=var.zone["c"]} #앱 서버 2
+    sn3 = {cidr_block="10.0.20.0/24",availability_zone=var.zone["a"]} #NAT1
+    sn4 = {cidr_block="10.0.21.0/24",availability_zone=var.zone["c"]} #NAT2
+    sn5 = {cidr_block="10.0.100.0/24",availability_zone=var.zone["a"]} #백 서버 1
+    sn6 = {cidr_block="10.0.101.0/24",availability_zone=var.zone["c"]} #백 서버 2
+    sn7 = {cidr_block="10.0.50.0/24",availability_zone=var.zone["a"]} #DB 서버 1
+    sn8 = {cidr_block="10.0.51.0/24",availability_zone=var.zone["c"]} #DB 서버 2
   }
   vpc_id     = aws_vpc.vpc.id
   cidr_block = each.value.cidr_block
@@ -36,7 +38,7 @@ resource "aws_subnet" "subnet" {
 # 정원빈 수정
 resource "aws_db_subnet_group" "rds_subnet_group" {
   name       = "rds-subnet-group"
-  subnet_ids = [aws_subnet.subnet["sn5"].id, aws_subnet.subnet["sn6"].id]
+  subnet_ids = [aws_subnet.subnet["sn7"].id, aws_subnet.subnet["sn8"].id]
   tags       = { Name = "RDS Subnet Group" }
 }
 
@@ -84,8 +86,8 @@ resource "aws_route_table_association" "routetable_association" {
       asn2 = {route_table_id=aws_route_table.routetable["rt1"].id, subnet_id=aws_subnet.subnet["sn2"].id}
       asn3 = {route_table_id=aws_route_table.routetable["rt2"].id, subnet_id=aws_subnet.subnet["sn3"].id}
       asn4 = {route_table_id=aws_route_table.routetable["rt2"].id, subnet_id=aws_subnet.subnet["sn4"].id}
-      asn1 = {route_table_id=aws_route_table.routetable["rt3"].id, subnet_id=aws_subnet.subnet["sn5"].id}
-      asn2 = {route_table_id=aws_route_table.routetable["rt3"].id, subnet_id=aws_subnet.subnet["sn6"].id}
+      asn5 = {route_table_id=aws_route_table.routetable["rt3"].id, subnet_id=aws_subnet.subnet["sn5"].id}
+      asn6 = {route_table_id=aws_route_table.routetable["rt3"].id, subnet_id=aws_subnet.subnet["sn6"].id}
     }
   route_table_id = each.value.route_table_id
   subnet_id = each.value.subnet_id

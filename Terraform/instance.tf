@@ -4,10 +4,49 @@ locals {
   db_host = split(":", aws_db_instance.mysql_multi_az.endpoint)[0]
 }
 
+
+resource "aws_instance" "nat_instance1" {
+  ami             = data.aws_ami.amazon_linux.id
+  instance_type   = "t3.micro"
+  subnet_id       = aws_subnet.subnet["sn3"].id
+  security_groups = [aws_security_group.default_sg.id]
+  key_name        = var.seoul_key_name
+  
+  credit_specification {
+    cpu_credits = "standard"
+  }
+
+  #user_data = data.template_file.api_server.rendered
+  user_data = file("userdatas/nat.sh").rendered
+
+  tags = {
+    Name = "NAT-INSTANCE-1"
+  }
+}
+
+resource "aws_instance" "nat_instance2" {
+  ami             = data.aws_ami.amazon_linux.id
+  instance_type   = "t3.micro"
+  subnet_id       = aws_subnet.subnet["sn4"].id
+  security_groups = [aws_security_group.default_sg.id]
+  key_name        = var.seoul_key_name
+
+  credit_specification {
+    cpu_credits = "standard"
+  }
+
+  #user_data = data.template_file.api_server.rendered
+  user_data = file("userdatas/nat.sh").rendered
+
+  tags = {
+    Name = "NAT-INSTANCE-2"
+  }
+}
+
 resource "aws_instance" "dotnet_api_server" {
   ami             = data.aws_ami.amazon_linux.id
   instance_type   = "t3.medium"//var.instance_type
-  subnet_id       = aws_subnet.subnet["sn3"].id
+  subnet_id       = aws_subnet.subnet["sn5"].id
   security_groups = [aws_security_group.dotnet_sg.id]
   key_name        = var.seoul_key_name
   iam_instance_profile = aws_iam_instance_profile.ec2_s3_profile.name
@@ -60,7 +99,7 @@ resource "aws_instance" "rds_access_instance" {
   ami                         = data.aws_ami.amazon_linux.id
   instance_type               = var.instance_type
   key_name                    = var.seoul_key_name
-  subnet_id                   = aws_subnet.subnet["sn3"].id
+  subnet_id                   = aws_subnet.subnet["sn7"].id
   security_groups             = [aws_security_group.default_sg.id]
   associate_public_ip_address = true
 
