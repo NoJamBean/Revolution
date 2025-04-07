@@ -39,30 +39,7 @@ resource "aws_security_group" "default_sg" {
   }
 }
 
-resource "aws_security_group" "nat_sg" {
-  name        = "nat_sg"
-  description = "Security group"
-  vpc_id      = aws_vpc.vpc.id
-
-  ingress {
-  from_port   = 0
-  to_port     = 0
-  protocol    = "-1"
-  cidr_blocks = ["10.0.0.0/16"]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = {
-    Name = "NAT_SG"
-  }
-}
-
+#API SERVER SG
 resource "aws_security_group" "dotnet_sg" {
   name        = "dotnet_sg"
   description = "Security group"
@@ -86,7 +63,6 @@ resource "aws_security_group" "dotnet_sg" {
     }
   }
 
-  # 아웃바운드 트래픽 모두 허용
   egress {
     from_port   = 0
     to_port     = 0
@@ -99,6 +75,7 @@ resource "aws_security_group" "dotnet_sg" {
   }
 }
 
+#RDS SG
 resource "aws_security_group" "rds_sg" {
   vpc_id = aws_vpc.vpc.id
 
@@ -126,6 +103,7 @@ resource "aws_security_group" "rds_sg" {
   tags = { Name = "RDS Security Group" }
 }
 
+#VPC Endpoit SG
 resource "aws_security_group" "vpc_endpoint_sg" {
   name        = "vpc-endpoint-sg"
   description = "Security group for API Gateway interface VPC endpoint"

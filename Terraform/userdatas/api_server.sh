@@ -100,11 +100,11 @@ sudo systemctl enable nginx
 sudo systemctl start nginx
 
 # Nginx 프록시 설정
-INSTANCE_PRIVATE_IP=$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4)
+# INSTANCE_PRIVATE_IP=$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4)
 sudo tee /etc/nginx/conf.d/dotnet-api.conf > /dev/null <<EOL
 server {
     listen 80;
-    server_name $INSTANCE_PRIVATE_IP;
+    server_name ${API_SERVER_DNS};
 
     location / {
         proxy_pass http://localhost:5000;

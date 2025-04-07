@@ -9,7 +9,7 @@ resource "aws_instance" "nat_instance1" {
   ami             = data.aws_ami.amazon_linux.id
   instance_type   = "t3.micro"
   subnet_id       = aws_subnet.subnet["nat1"].id
-  security_groups = [aws_security_group.nat_sg.id]
+  security_groups = [aws_security_group.default_sg.id]
   key_name        = var.seoul_key_name
   source_dest_check = false
 
@@ -24,26 +24,26 @@ resource "aws_instance" "nat_instance1" {
   }
 }
 
-resource "aws_instance" "nat_instance2" {
-  ami             = data.aws_ami.amazon_linux.id
-  instance_type   = "t3.micro"
-  subnet_id       = aws_subnet.subnet["nat2"].id
-  security_groups = [aws_security_group.nat_sg.id]
-  key_name        = var.seoul_key_name
-  source_dest_check = false
+# resource "aws_instance" "nat_instance2" {
+#   ami             = data.aws_ami.amazon_linux.id
+#   instance_type   = "t3.micro"
+#   subnet_id       = aws_subnet.subnet["nat2"].id
+#   security_groups = [aws_security_group.default_sg.id]
+#   key_name        = var.seoul_key_name
+#   source_dest_check = false
 
-  credit_specification {
-    cpu_credits = "standard"
-  }
+#   credit_specification {
+#     cpu_credits = "standard"
+#   }
 
-  user_data = file("userdatas/nat.sh")
+#   user_data = file("userdatas/nat.sh")
 
-  tags = {
-    Name = "NAT-INSTANCE-2"
-  }
-}
+#   tags = {
+#     Name = "NAT-INSTANCE-2"
+#   }
+# }
 
-resource "aws_instance" "dotnet_api_server" {
+resource "aws_instance" "api_server_1" {
   depends_on = [ aws_instance.nat_instance1 ]
   ami             = data.aws_ami.amazon_linux.id
   instance_type   = "t3.medium"//var.instance_type
@@ -51,6 +51,7 @@ resource "aws_instance" "dotnet_api_server" {
   security_groups = [aws_security_group.dotnet_sg.id]
   key_name        = var.seoul_key_name
   iam_instance_profile = aws_iam_instance_profile.ec2_s3_profile.name
+  private_ip = "10.0.1.100"
 
   credit_specification {
     cpu_credits = "standard"
@@ -63,12 +64,12 @@ resource "aws_instance" "dotnet_api_server" {
 set -e
 
 sudo tee -a /etc/environment > /dev/null <<EOL
-AGW_URL="https://${aws_api_gateway_rest_api.rest_api.id}.execute-api.ap-northeast-2.amazonaws.com"
 DB_ENDPOINT="${local.db_host}"
 DB_USERNAME="${var.db_username}"
 DB_PASSWORD="${var.db_password}"
 COGNITO_USER_POOL="${aws_cognito_user_pool.user_pool.id}"
 COGNITO_APP_CLIENT="${aws_cognito_user_pool_client.app_client.id}"
+API_SERVER_DNS="${var.api_dns}"
 
 S3_BUCKET="${aws_s3_bucket.long_user_data_bucket.bucket}"
 S3_LOG_BUCKET="${aws_s3_bucket.log_bucket.bucket}"
@@ -89,7 +90,7 @@ EOT
     Name = "DotNet-API-SERVER"
   }
 }
-
+# AGW_URL="https://${aws_api_gateway_rest_api.rest_api.id}.execute-api.ap-northeast-2.amazonaws.com"
 
 
 

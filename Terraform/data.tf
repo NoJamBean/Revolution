@@ -55,3 +55,5 @@ data "aws_route53_zone" "private" {
   name         = var.private_domain_name
   private_zone = true
 }
+
+data "aws_caller_identity" "current" {}

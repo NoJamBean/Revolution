@@ -10,6 +10,7 @@ variable "instance_type" { default = "t2.micro" }
 variable "agwlog_role_arn" { default = "arn:aws:iam::248189921892:role/agwlog"}
 variable "private_domain_name" { default = "backend.internal" } # 원하는 도메인명으로 변경
 variable "public_domain_name" { default = "frontend.com" } # 원하는 도메인명으로 변경
+variable "api_dns" {default = "api.backend.internal"}
 
 variable "zone" {
   type = map(string)

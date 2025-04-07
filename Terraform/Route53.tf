@@ -23,12 +23,13 @@
 #   }
 # }
 
+#Private Records
 resource "aws_route53_record" "api" {
   zone_id = data.aws_route53_zone.private.id
   name    = "api"
   type    = "A"
   ttl     = "300"
-  records = [aws_instance.dotnet_api_server.private_ip] # API 서버의 프라이빗 IP 주소 입력
+  records = [aws_instance.api_server_1.private_ip] # API 서버의 프라이빗 IP 주소 입력
 }
 
 resource "aws_route53_record" "db" {
