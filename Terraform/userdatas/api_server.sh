@@ -5,6 +5,20 @@ sudo source /etc/environment
 sudo yum update -y
 sudo yum install -y amazon-linux-extras
 
+#inotify 설치
+sudo yum groupinstall "Development Tools" -y
+sudo yum install -y wget gcc make autoconf
+
+cd /tmp
+wget https://github.com/rvoicilas/inotify-tools/archive/refs/tags/3.20.11.0.tar.gz -O inotify-tools.tar.gz
+tar -xzf inotify-tools.tar.gz
+cd inotify-tools-3.20.11.0
+
+./autogen.sh
+./configure
+make
+sudo make install
+
 # Microsoft 리포지토리 추가
 wget https://packages.microsoft.com/config/rhel/7/prod.repo
 sudo mv prod.repo /etc/yum.repos.d/microsoft-prod.repo
@@ -40,7 +54,7 @@ sudo chmod -R 755 ~/.dotnet
 sudo chown -R ec2-user:ec2-user /var/log/api
 sudo chmod -R 777 /var/log/api
 
-sudo chown nginx:nginx /var/log/nginx
+sudo chown -R ec2-user:ec2-user /var/log/nginx
 sudo chmod -R 777 /var/log/nginx
 
 sudo chown -R ec2-user:ec2-user /usr/share/dotnet
@@ -65,6 +79,32 @@ sudo dotnet restore
 sudo dotnet publish -c Release -o $LOCAL_PATH/published
 
 
+sudo tee /usr/local/bin/watch_nginx_log_upload.sh > /dev/null <<'EOL'
+#!/bin/bash
+
+LOG_FILES=("/var/log/nginx/access.log" "/var/log/nginx/error.log")
+WATCH_LOG="/var/log/api/nginx_watch.log"
+
+echo "[Watcher] Starting Nginx log watcher..." >> "${WATCH_LOG}"
+
+for LOG_FILE in "${LOG_FILES[@]}"; do
+  (
+    S3_DEST="s3://${S3_LOG_BUCKET}/nginx/$(basename "${LOG_FILE}")"
+    echo "[Watcher] Watching ${LOG_FILE} for changes..." >> "${WATCH_LOG}"
+
+    while inotifywait -e modify "${LOG_FILE}"; do
+      echo "[Watcher] Change detected in ${LOG_FILE}, uploading to S3..." >> "${WATCH_LOG}"
+      aws s3 cp "${LOG_FILE}" "${S3_DEST}" >> "${WATCH_LOG}" 2>&1
+    done
+  ) &
+done
+
+wait
+EOL
+
+# 실행 권한 부여
+sudo chmod +x /usr/local/bin/watch_nginx_log_upload.sh
+
 # systemd 서비스 설정
 sudo tee /etc/systemd/system/dotnet-api.service > /dev/null <<EOL
 [Unit]
@@ -88,10 +128,31 @@ Environment=HOME=/home/ec2-user
 WantedBy=multi-user.target
 EOL
 
+sudo tee /etc/systemd/system/nginx-log-watcher.service > /dev/null <<EOL
+[Unit]
+Description=Nginx Log Watcher Service
+After=network.target
+
+[Service]
+EnvironmentFile=/etc/environment
+Environment="S3_LOG_BUCKET=${S3_LOG_BUCKET}"
+ExecStart=/usr/local/bin/watch_nginx_log_upload.sh
+Restart=always
+RestartSec=5
+User=ec2-user
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
+EOL
+
 # systemd 서비스 시작
 sudo systemctl daemon-reload
 sudo systemctl enable dotnet-api
+sudo systemctl enable nginx-log-watcher
 sudo systemctl start dotnet-api
+sudo systemctl start nginx-log-watcher
 
 # Nginx 설치 및 설정
 sudo amazon-linux-extras enable nginx1

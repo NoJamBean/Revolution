@@ -51,7 +51,7 @@ resource "aws_instance" "api_server_1" {
   security_groups = [aws_security_group.dotnet_sg.id]
   key_name        = var.seoul_key_name
   iam_instance_profile = aws_iam_instance_profile.ec2_s3_profile.name
-  private_ip = "10.0.1.100"
+  private_ip = "10.0.100.100"
 
   credit_specification {
     cpu_credits = "standard"
