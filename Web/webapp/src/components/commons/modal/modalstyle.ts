@@ -13,9 +13,23 @@ export const ModalOverlay = styled.div`
 `;
 
 export const ModalContent = styled.div`
-  width: 500px;
-  height: 700px;
-  border: 3px solid black;
+  /* width: 600px; */
+  width: ${({ modalType }) => (modalType === 'Login' ? '600px' : '450px')};
+  min-height: 400px;
+  background-color: white;
 `;
 
-export const Button = styled.div``;
+export const Content = styled.div`
+  border: 2px solid red;
+  display: flex;
+  height: 100%;
+`;
+
+export const ButtonWrap = styled.div`
+  border: 3px solid green;
+`;
+
+export const Button = styled.div`
+  width: 100px;
+  border: 3px solid gold;
+`;

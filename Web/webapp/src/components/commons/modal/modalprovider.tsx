@@ -5,10 +5,12 @@ const ModalContext = createContext('default');
 
 export const ModalProvider = ({ children }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalContent, setModalContent] = useState(null);
+  const [modalContent, setModalContent] = useState(() => null);
+  const [modalType, setModalType] = useState('Login');
 
   const openModal = (content) => {
-    setModalContent(content);
+    setModalContent(() => content);
+    setModalType(content.name);
     setIsModalOpen(true);
 
     document.body.style.overflow = 'hidden';
@@ -16,14 +18,27 @@ export const ModalProvider = ({ children }) => {
 
   const closeModal = () => {
     setIsModalOpen(false);
-    setModalContent(null);
+    setModalType('Login');
+    setModalContent(() => null);
 
     document.body.style.overflow = '';
   };
 
+  const changeModalContent = (content) => {
+    setModalContent(() => content);
+    setModalType(content.name);
+  };
+
   return (
     <ModalContext.Provider
-      value={{ isModalOpen, openModal, closeModal, modalContent }}
+      value={{
+        isModalOpen,
+        openModal,
+        closeModal,
+        changeModalContent,
+        modalContent,
+        modalType,
+      }}
     >
       {children}
       {isModalOpen && <Modal content={modalContent} />}

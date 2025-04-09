@@ -1,6 +1,18 @@
+import { useState } from 'react';
 import * as S from './styles';
+import Playinfo from '../../units/tabsection/playinfo';
+import Chat from '../../units/tabsection/chat';
 
 export default function Main() {
+  const [clickedTab, setClickedTab] = useState('info');
+
+  const clickToggle = (e) => {
+    if (e.target.id === clickedTab) return;
+    setClickedTab(e.target.id);
+  };
+
+  console.log(clickedTab);
+
   return (
     <>
       <S.Main>
@@ -8,8 +20,66 @@ export default function Main() {
           <S.Carousel>
             <img src='/banner.jpg' style={{ width: '100%' }} />
           </S.Carousel>
+          <S.Section_Title>LIVE SPORTS</S.Section_Title>
           <S.Body>
-            <S.Left_Side>여기는 선택한 경기에 대한 상세 Data</S.Left_Side>
+            <S.Left_Side>
+              <S.TabButton_Wrap>
+                <S.PlayInfo_Btn
+                  id='info'
+                  onClick={clickToggle}
+                  clickedTab={clickedTab}
+                >
+                  경기 정보
+                </S.PlayInfo_Btn>
+                <S.Chat_Btn
+                  id='chat'
+                  onClick={clickToggle}
+                  clickedTab={clickedTab}
+                >
+                  채팅하기
+                </S.Chat_Btn>
+              </S.TabButton_Wrap>
+              <S.LeftSide_Contents>
+                {clickedTab === 'info' ? <Playinfo /> : <Chat />}
+                <S.Betting_Cart>
+                  <S.BetCart_Top>
+                    <span>BETTING</span> <span>INFO</span>
+                  </S.BetCart_Top>
+                  <S.BetCart_Body>
+                    <S.League_Wrap>
+                      <S.Home>
+                        <S.League_Mark>이미지</S.League_Mark>
+                        <S.League_Name>FC도나르</S.League_Name>
+                      </S.Home>
+                      <S.Away>
+                        <S.League_Mark>이미지</S.League_Mark>
+                        <S.League_Name>FC픽사르</S.League_Name>
+                      </S.Away>
+                    </S.League_Wrap>
+                    <S.BetInfo_Wrap>
+                      <S.Odds>
+                        <S.Odds_Title>승무패</S.Odds_Title>
+                        <S.Odds_Select>
+                          <S.Select>
+                            <S.OddInfo>1팀승</S.OddInfo>
+                            <S.Odd>1.17</S.Odd>
+                          </S.Select>
+                          <S.Select>
+                            <S.OddInfo>무승부</S.OddInfo>
+                            <S.Odd>VS</S.Odd>
+                          </S.Select>
+                          <S.Select>
+                            <S.OddInfo>2팀승</S.OddInfo>
+                            <S.Odd>4.20</S.Odd>
+                          </S.Select>
+                        </S.Odds_Select>
+                      </S.Odds>
+                      <S.Betting_Btn>배팅하기</S.Betting_Btn>
+                    </S.BetInfo_Wrap>
+                  </S.BetCart_Body>
+                </S.Betting_Cart>
+              </S.LeftSide_Contents>
+            </S.Left_Side>
             <S.Right_Side>
               {new Array(6).fill(1).map((el) => (
                 <S.PlayInfo>여기는 예정 경기 Data</S.PlayInfo>

@@ -47,6 +47,7 @@ export const SignIn = styled.button`
   height: 100%;
   border: 1px solid black;
   background-color: white;
+  cursor: pointer;
 `;
 
 export const SignUp = styled.button`
@@ -54,4 +55,5 @@ export const SignUp = styled.button`
   height: 100%;
   border: 1px solid black;
   background-color: white;
+  cursor: pointer;
 `;

@@ -1,5 +1,7 @@
 import { useModal } from '../../modal/modalprovider';
+import Login from '../../modal/contents/login';
 import * as S from './styles';
+import SignUp from '../../modal/contents/signup';
 
 export default function Header() {
   const { openModal } = useModal();
@@ -30,10 +32,8 @@ export default function Header() {
           <S.MenuLink href={'/'}>MY PAGE</S.MenuLink>
         </S.Menu>
         <S.Sign_Container>
-          <S.SignIn onClick={() => openModal(<div>Hello World</div>)}>
-            로그인
-          </S.SignIn>
-          <S.SignUp>회원가입</S.SignUp>
+          <S.SignIn onClick={() => openModal(Login)}>로그인</S.SignIn>
+          <S.SignUp onClick={() => openModal(SignUp)}>회원가입</S.SignUp>
         </S.Sign_Container>
       </S.Bar>
     </S.Wrapper>

@@ -2,13 +2,14 @@ import * as S from './modalstyle';
 import { useModal } from './modalprovider';
 
 export default function Modal() {
-  const { closeModal, modalContent } = useModal();
+  const { modalType, isModalOpen, modalContent: Component } = useModal();
 
   return (
     <S.ModalOverlay>
-      <S.ModalContent>
-        {modalContent}
-        <S.Button onClick={closeModal}>닫기</S.Button>
+      <S.ModalContent modalType={modalType}>
+        <S.Content>
+          <Component />
+        </S.Content>
       </S.ModalContent>
     </S.ModalOverlay>
   );
