@@ -1,0 +1,38 @@
+import axios from 'axios';
+
+export const getFootballMatchList = async () => {
+  const date = new Date();
+  const formattedDate = date.toISOString().split('T')[0];
+
+  const response = await axios.get(
+    'https://v3.football.api-sports.io/fixtures',
+    {
+      params: { date: formattedDate }, // 원하는 날짜
+      headers: {
+        'x-apisports-key': process.env.NEXT_PUBLIC_SPORTS_API_KEY,
+      },
+    }
+  );
+  const playMatchList = response.data.response;
+
+  return playMatchList;
+};
+
+export const getBasketballMatchList = async () => {
+  const date = new Date();
+  const formattedDate = date.toISOString().split('T')[0];
+
+  const response = await axios.get(
+    'https://v1.basketball.api-sports.io/games',
+    {
+      params: { date: formattedDate }, // 원하는 날짜
+      headers: {
+        'x-apisports-key': process.env.NEXT_PUBLIC_SPORTS_API_KEY,
+      },
+    }
+  );
+
+  const playMatchList = response.data.response;
+
+  return playMatchList;
+};

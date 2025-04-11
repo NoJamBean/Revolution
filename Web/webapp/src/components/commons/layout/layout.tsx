@@ -1,7 +1,7 @@
 import Header from './header/header';
 import * as S from './styles';
 
-export default function Layout({ children }) {
+export default function Layout({ children }: { children: any }) {
   return (
     <S.Wrapper>
       <Header />

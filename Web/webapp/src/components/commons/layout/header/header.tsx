@@ -2,9 +2,11 @@ import { useModal } from '../../modal/modalprovider';
 import Login from '../../modal/contents/login';
 import * as S from './styles';
 import SignUp from '../../modal/contents/signup';
+import { useMatchInfo } from '../../oddwidget/widgetprovider';
 
 export default function Header() {
   const { openModal } = useModal();
+  const { selectSport } = useMatchInfo();
 
   return (
     <S.Wrapper>
@@ -23,10 +25,10 @@ export default function Header() {
           <S.MenuLink href={'/'}>MINI GAME</S.MenuLink>
         </S.Menu>
         <S.Menu>
-          <S.MenuLink href={'/'}>BET GAME</S.MenuLink>
+          <S.MenuLink href={`/bet?sport=${selectSport}`}>BET GAME</S.MenuLink>
         </S.Menu>
         <S.Menu>
-          <S.MenuLink href={'/'}>FAQ</S.MenuLink>
+          <S.MenuLink href={'/test'}>FAQ</S.MenuLink>
         </S.Menu>
         <S.Menu>
           <S.MenuLink href={'/'}>MY PAGE</S.MenuLink>

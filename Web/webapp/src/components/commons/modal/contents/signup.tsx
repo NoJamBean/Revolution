@@ -1,12 +1,23 @@
-import { useState } from 'react';
+import { MouseEvent, useState } from 'react';
 import * as S from './signupstyle';
 import { validators } from '@/src/commons/validators/validator';
 import { useModal } from '../modalprovider';
 
+type SignUpVal = {
+  emailId: string;
+  nickName: string;
+  password: string;
+  passwordCheck: string;
+  phoneNum: string;
+  gender: string;
+};
+
+type SignUpKey = keyof SignUpVal;
+
 export default function SignUp() {
   const { closeModal } = useModal();
 
-  const defaultVal = {
+  const defaultVal: SignUpVal = {
     emailId: '',
     nickName: '',
     password: '',
@@ -26,15 +37,15 @@ export default function SignUp() {
 
   const [signUpVal, setSignUpVal] = useState(defaultVal);
 
-  const changeInputValue = (e) => {
+  const changeInputValue = (e: any) => {
     const { name, value } = e.target;
     setSignUpVal((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: any) => {
     e.preventDefault();
 
-    for (const key of checkValList) {
+    for (const key of checkValList as SignUpKey[]) {
       const validatorFunc = validators[key];
       const validateResult = validatorFunc(signUpVal[key], signUpVal);
 

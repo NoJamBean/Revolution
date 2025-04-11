@@ -1,24 +1,24 @@
 import { useState } from 'react';
 import * as S from './styles';
-import Playinfo from '../../units/tabsection/playinfo';
-import Chat from '../../units/tabsection/chat';
+import Chat from '../tabsection/chat';
+import PlayListInfo from '../../commons/playinfo/playinfolist';
+import PlayWidget from '../../commons/oddwidget/widget';
 
 export default function Main() {
   const [clickedTab, setClickedTab] = useState('info');
+  //   const [clickedPlay, setClickedPlay] = useState(0);
 
-  const clickToggle = (e) => {
+  const clickToggle = (e: any) => {
     if (e.target.id === clickedTab) return;
     setClickedTab(e.target.id);
   };
-
-  console.log(clickedTab);
 
   return (
     <>
       <S.Main>
         <S.Context>
           <S.Carousel>
-            <img src='/banner.jpg' style={{ width: '100%' }} />
+            <img src='/banner.jpg' style={{ width: '100%' }} alt='carousel' />
           </S.Carousel>
           <S.Section_Title>LIVE SPORTS</S.Section_Title>
           <S.Body>
@@ -40,22 +40,28 @@ export default function Main() {
                 </S.Chat_Btn>
               </S.TabButton_Wrap>
               <S.LeftSide_Contents>
-                {clickedTab === 'info' ? <Playinfo /> : <Chat />}
+                <S.Screen clickedTab={clickedTab}>
+                  {clickedTab === 'info' ? (
+                    <PlayWidget isMain={true} />
+                  ) : (
+                    <Chat />
+                  )}
+                </S.Screen>
                 <S.Betting_Cart>
                   <S.BetCart_Top>
                     <span>BETTING</span> <span>INFO</span>
                   </S.BetCart_Top>
                   <S.BetCart_Body>
-                    <S.League_Wrap>
+                    <S.Team_Wrap>
                       <S.Home>
-                        <S.League_Mark>이미지</S.League_Mark>
-                        <S.League_Name>FC도나르</S.League_Name>
+                        <S.Team_Mark>이미지</S.Team_Mark>
+                        <S.Team_Name>FC도나르</S.Team_Name>
                       </S.Home>
                       <S.Away>
-                        <S.League_Mark>이미지</S.League_Mark>
-                        <S.League_Name>FC픽사르</S.League_Name>
+                        <S.Team_Mark>이미지</S.Team_Mark>
+                        <S.Team_Name>FC픽사르</S.Team_Name>
                       </S.Away>
-                    </S.League_Wrap>
+                    </S.Team_Wrap>
                     <S.BetInfo_Wrap>
                       <S.Odds>
                         <S.Odds_Title>승무패</S.Odds_Title>
@@ -80,11 +86,7 @@ export default function Main() {
                 </S.Betting_Cart>
               </S.LeftSide_Contents>
             </S.Left_Side>
-            <S.Right_Side>
-              {new Array(6).fill(1).map((el) => (
-                <S.PlayInfo>여기는 예정 경기 Data</S.PlayInfo>
-              ))}
-            </S.Right_Side>
+            <PlayListInfo widget={false} />
           </S.Body>
           <S.Bottom>여기는 그냥 광고나 아무 Data</S.Bottom>
         </S.Context>

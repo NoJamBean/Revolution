@@ -10,11 +10,13 @@ export const ModalOverlay = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
+  z-index: 9999;
 `;
 
 export const ModalContent = styled.div`
   /* width: 600px; */
-  width: ${({ modalType }) => (modalType === 'Login' ? '600px' : '450px')};
+  width: ${({ modalType }: { modalType: any }) =>
+    modalType === 'Login' ? '600px' : '450px'};
   min-height: 400px;
   background-color: white;
 `;

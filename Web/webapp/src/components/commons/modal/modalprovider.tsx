@@ -1,14 +1,23 @@
 import { createContext, useState, useContext } from 'react';
 import Modal from './modal';
 
-const ModalContext = createContext('default');
+interface ModalContextType {
+  isModalOpen: boolean;
+  openModal: (content: any) => void;
+  closeModal: () => void;
+  changeModalContent: (content: any) => void;
+  modalContent: React.ComponentType<any> | null;
+  modalType: string;
+}
 
-export const ModalProvider = ({ children }) => {
+const ModalContext = createContext<ModalContextType | undefined>(undefined);
+
+export const ModalProvider = ({ children }: { children: any }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalContent, setModalContent] = useState(() => null);
   const [modalType, setModalType] = useState('Login');
 
-  const openModal = (content) => {
+  const openModal = (content: any) => {
     setModalContent(() => content);
     setModalType(content.name);
     setIsModalOpen(true);
@@ -24,7 +33,7 @@ export const ModalProvider = ({ children }) => {
     document.body.style.overflow = '';
   };
 
-  const changeModalContent = (content) => {
+  const changeModalContent = (content: any) => {
     setModalContent(() => content);
     setModalType(content.name);
   };
@@ -47,6 +56,10 @@ export const ModalProvider = ({ children }) => {
 };
 
 // 모달 hook export
-export const useModal = () => {
-  return useContext(ModalContext);
+export const useModal = (): ModalContextType => {
+  const context = useContext(ModalContext);
+  if (!context) {
+    throw new Error('useModal은 ModalProvider 안에서만 써야 함');
+  }
+  return context;
 };
