@@ -16,6 +16,100 @@ resource "aws_iam_role" "ec2_s3_role" {
   })
 }
 
+# IAM 역할 생성 - CodeBuild의 권한
+resource "aws_iam_role" "codebuild_role" {
+  name = "CodeBuildServiceRole"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [{
+      Effect = "Allow",
+      Principal = {
+        Service = "codebuild.amazonaws.com"
+      },
+      Action = "sts:AssumeRole"
+    }]
+  })
+}
+
+
+
+
+
+# IAM 역할 생성 - CodeDeploy의 권한
+resource "aws_iam_role" "codedeploy_role" {
+  name = "CodeDeployServiceRole"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [{
+      Effect = "Allow",
+      Principal = {
+        Service = "codedeploy.amazonaws.com"
+      },
+      Action = "sts:AssumeRole"
+    }]
+  })
+}
+
+
+
+
+
+
+
+# IAM 역할 생성 - Web용 EC2의 권한
+resource "aws_iam_role" "ec2_role" {
+  name = "EC2InstanceRole"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [{
+      Effect = "Allow",
+      Principal = {
+        Service = "ec2.amazonaws.com"
+      },
+      Action = "sts:AssumeRole"
+    }]
+  })
+}
+
+
+
+
+
+
+# CodeBuild 정책 생성
+resource "aws_iam_role_policy_attachment" "codebuild_policy_attach" {
+  role       = aws_iam_role.codebuild_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AWSCodeBuildDeveloperAccess"
+}
+
+
+# CodeDeploy 정책 생성
+resource "aws_iam_role_policy_attachment" "codedeploy_policy_attach" {
+  role       = aws_iam_role.codedeploy_role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSCodeDeployRole"
+}
+
+
+# Web-EC2용 정책 생성
+resource "aws_iam_role_policy_attachment" "ec2_policy_attach" {
+  role       = aws_iam_role.ec2_role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforAWSCodeDeploy"
+}
+
+
+
+# Web용 EC2 프로파일 생성 (추후 EC2에 부착하기 위함)
+resource "aws_iam_instance_profile" "ec2_instance_profile" {
+  name = "EC2InstanceProfile"
+  role = aws_iam_role.ec2_role.name
+}
+
+
+
+
 # 2. S3 Full Access 정책 생성
 resource "aws_iam_policy" "s3_full_access_policy" {
   name        = "S3FullAccessPolicy"
@@ -25,8 +119,8 @@ resource "aws_iam_policy" "s3_full_access_policy" {
     Version = "2012-10-17"
     Statement = [
       {
-        Effect   = "Allow"
-        Action   = [
+        Effect = "Allow"
+        Action = [
           "s3:GetObject",
           "s3:PutObject",
           "s3:ListBucket",
@@ -34,8 +128,8 @@ resource "aws_iam_policy" "s3_full_access_policy" {
           "s3:ListAllMyBuckets"
         ]
         Resource = [
-          "arn:aws:s3:::*/*",    # 모든 S3 객체에 대한 접근
-          "arn:aws:s3:::*"       # 모든 S3 버킷에 대한 접근
+          "arn:aws:s3:::*/*", # 모든 S3 객체에 대한 접근
+          "arn:aws:s3:::*"    # 모든 S3 버킷에 대한 접근
         ]
       }
     ]

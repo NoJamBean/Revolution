@@ -7,10 +7,11 @@ variable "db_password" { default = "securepassword123" }
 variable "db_allocated_storage" { default = 20 }
 variable "seoul_key_name" { default = "temp" }
 variable "instance_type" { default = "t2.micro" }
-variable "agwlog_role_arn" { default = "arn:aws:iam::248189921892:role/agwlog"}
+variable "agwlog_role_arn" { default = "arn:aws:iam::248189921892:role/agwlog" }
 variable "private_domain_name" { default = "backend.internal" } # 원하는 도메인명으로 변경
-variable "public_domain_name" { default = "frontend.com" } # 원하는 도메인명으로 변경
-variable "api_dns" {default = "api.backend.internal"}
+variable "public_domain_name" { default = "frontend.com" }      # 원하는 도메인명으로 변경
+variable "api_dns" { default = "api.backend.internal" }
+variable "seop_gitrepo_token" { default = "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" }
 
 variable "zone" {
   type = map(string)
@@ -23,6 +24,6 @@ variable "zone" {
 variable "egress_rules" {
   type = map(object({ port = number, protocol = string, cidr = list(string) }))
   default = {
-    all    = { port = 0,   protocol = "-1", cidr = ["0.0.0.0/0"] }
+    all = { port = 0, protocol = "-1", cidr = ["0.0.0.0/0"] }
   }
 }

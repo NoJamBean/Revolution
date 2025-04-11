@@ -5,12 +5,39 @@ locals {
 }
 
 
+
+# Web 서버 접속 테스트용 인스턴스
+# resource "aws_instance" "api_test_server" {
+#   ami                  = data.aws_ami.amazon_linux.id
+#   instance_type        = "t3.micro"
+#   subnet_id            = aws_subnet.subnet["app1"].id
+#   security_groups      = [aws_security_group.default_sg.id]
+#   key_name             = var.seoul_key_name
+#   source_dest_check    = false
+#   iam_instance_profile = aws_iam_instance_profile.ec2_ssm_profile.name
+
+#   credit_specification {
+#     cpu_credits = "standard"
+#   }
+
+#   user_data = file("userdatas/web_server.sh")
+
+
+
+
+#   tags = {
+#     Name = "NAT-INSTANCE-1"
+#   }
+# }
+
+
+
 resource "aws_instance" "nat_instance1" {
-  ami             = data.aws_ami.amazon_linux.id
-  instance_type   = "t3.micro"
-  subnet_id       = aws_subnet.subnet["nat1"].id
-  security_groups = [aws_security_group.default_sg.id]
-  key_name        = var.seoul_key_name
+  ami               = data.aws_ami.amazon_linux.id
+  instance_type     = "t3.micro"
+  subnet_id         = aws_subnet.subnet["nat1"].id
+  security_groups   = [aws_security_group.default_sg.id]
+  key_name          = var.seoul_key_name
   source_dest_check = false
 
   credit_specification {
@@ -44,14 +71,14 @@ resource "aws_instance" "nat_instance1" {
 # }
 
 resource "aws_instance" "api_server_1" {
-  depends_on = [ aws_instance.nat_instance1 ]
-  ami             = data.aws_ami.amazon_linux.id
-  instance_type   = "t3.medium"//var.instance_type
-  subnet_id       = aws_subnet.subnet["api1"].id
-  security_groups = [aws_security_group.dotnet_sg.id]
-  key_name        = var.seoul_key_name
+  depends_on           = [aws_instance.nat_instance1]
+  ami                  = data.aws_ami.amazon_linux.id
+  instance_type        = "t3.medium" //var.instance_type
+  subnet_id            = aws_subnet.subnet["api1"].id
+  security_groups      = [aws_security_group.dotnet_sg.id]
+  key_name             = var.seoul_key_name
   iam_instance_profile = aws_iam_instance_profile.ec2_s3_profile.name
-  private_ip = "10.0.100.100"
+  private_ip           = "10.0.100.100"
 
   credit_specification {
     cpu_credits = "standard"
@@ -97,7 +124,7 @@ EOT
 #DB접근용 인스턴스
 #정원빈
 resource "aws_instance" "rds_access_instance" {
-  depends_on = [ aws_instance.nat_instance1 ]
+  depends_on                  = [aws_instance.nat_instance1]
   provider                    = aws
   ami                         = data.aws_ami.amazon_linux.id
   instance_type               = var.instance_type
