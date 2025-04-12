@@ -133,6 +133,7 @@ namespace MyApi.Controllers
                 {
                     Id = user.Id,
                     Uuid = uuid,
+                    Nickname = user.Nickname,
                     Password = user.Password,
                     Email = user.Email,
                     PhoneNumber = user.PhoneNumber,

@@ -32,6 +32,11 @@ namespace MyApi.Data
         [Required]
         [StringLength(255)]
         public string? Uuid { get; set; }
+        
+        [Column("nickname")]
+        [Required]
+        [StringLength(30)]
+        public string? Nickname { get; set; }
 
         [Required]
         [Column("password")]
