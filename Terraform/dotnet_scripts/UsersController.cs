@@ -90,7 +90,6 @@ namespace MyApi.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<User>> GetUser(string id)
         {
-            // 명시적으로 타입 변경 (User -> User)
             User user = await _userContext.Users
                                           .Where(u => u.Id == id)
                                           .FirstOrDefaultAsync();
@@ -107,7 +106,6 @@ namespace MyApi.Controllers
         [HttpGet("test")]
         public ActionResult<IEnumerable<string>> Test()
         {
-            // 명시적으로 타입 변경 (string[] -> IEnumerable<string>)
             IEnumerable<string> testValues = new string[] { "송현섭", "바보아니다", "일한다" };
             return Ok(testValues);
         }
