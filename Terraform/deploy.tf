@@ -120,7 +120,7 @@ resource "aws_codepipeline" "web_pipeline" {
 
       configuration = {
         ConnectionArn    = aws_codestarconnections_connection.github.arn
-        FullRepositoryId = "Songhyunseop/Revolution"
+        FullRepositoryId = "NoJamBean/Revolution"
         BranchName       = var.github_branch
         DetectChanges    = "true"
       }

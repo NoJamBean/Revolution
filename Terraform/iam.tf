@@ -90,6 +90,7 @@ resource "aws_iam_role" "codepipeline_role" {
     ]
   })
 
+
   tags = {
     Name        = "CodePipelineExecutionRole"
     Environment = "dev"
@@ -135,12 +136,25 @@ resource "aws_iam_role_policy_attachment" "codepipeline_fullaccess" {
   policy_arn = "arn:aws:iam::aws:policy/AWSCodePipeline_FullAccess"
 }
 
-
-
-
 resource "aws_iam_role_policy_attachment" "codepipeline_codestar_connection" {
   role       = aws_iam_role.codepipeline_role.name
   policy_arn = "arn:aws:iam::aws:policy/AWSCodeStarFullAccess"
+}
+
+resource "aws_iam_role_policy" "codepipeline_use_connection" {
+  name = "codepipeline-use-connection"
+  role = aws_iam_role.codepipeline_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect   = "Allow",
+        Action   = "codestar-connections:UseConnection",
+        Resource = "arn:aws:codestar-connections:ap-northeast-2:248189921892:connection/234dbf06-c33f-4b10-bc64-1a96d02f14e2"
+      }
+    ]
+  })
 }
 
 
