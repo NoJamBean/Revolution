@@ -30,17 +30,17 @@ data "template_file" "app_server" {
 data "aws_s3_bucket_object" "api_server_file" {
   depends_on = [aws_s3_object.api_server_script]
 
-  bucket = aws_s3_bucket.long_user_data_bucket.bucket   # S3 버킷 이름
-  key    = "api_server.sh"  # S3 객체 키
+  bucket = aws_s3_bucket.long_user_data_bucket.bucket # S3 버킷 이름
+  key    = "api_server.sh"                            # S3 객체 키
 }
 
 data "template_file" "rds_user_data" {
   template = file("userdatas/rds_userdata.sh")
 
   vars = {
-    db_endpoint    = split(":", aws_db_instance.mysql_multi_az.endpoint)[0]
-    db_username    = var.db_username
-    db_password    = var.db_password
+    db_endpoint     = split(":", aws_db_instance.mysql_multi_az.endpoint)[0]
+    db_username     = var.db_username
+    db_password     = var.db_password
     cognito_user_id = aws_cognito_user.dummy_user.id
   }
 }
@@ -57,3 +57,6 @@ data "aws_route53_zone" "private" {
 }
 
 data "aws_caller_identity" "current" {}
+
+
+

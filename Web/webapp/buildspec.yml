@@ -1,0 +1,36 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 18
+    commands:
+      - echo "[INSTALL] 의존성 설치 시작"
+      - cd Web/webapp
+      - yarn install
+
+  pre_build:
+    commands:
+      - echo "NEXT_PUBLIC_SPORTS_API_KEY=https://api.revolution.com" >> .env
+
+  build:
+    commands:
+      - echo "[BUILD] Next.js 빌드 시작"
+      - yarn build
+
+  post_build:
+    commands:
+      - echo "[POST-BUILD] 결과물 압축 준비"
+      - mkdir -p deploy-output
+      - cp -r .next deploy-output/
+      - cp -r public deploy-output/
+      - cp package.json deploy-output/
+      - cp yarn.lock deploy-output/
+      - cp next.config.js deploy-output/
+      - cp appspec.yml deploy-output/
+      - cp -r scripts deploy-output/
+
+artifacts:
+  files:
+    - '**/*'
+  base-directory: deploy-output

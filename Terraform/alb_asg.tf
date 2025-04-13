@@ -9,6 +9,7 @@ resource "aws_lb" "alb" {
     aws_subnet.subnet["app2"].id
   ]
   enable_deletion_protection = false
+  idle_timeout               = 60
   # access_logs {
   #   bucket  = aws_s3_bucket.athena_log_bucket.bucket # 위에서 생성한 S3 버킷
   #   prefix  = "elb_log" # (선택 사항) 로그 파일 접두사
@@ -19,9 +20,27 @@ resource "aws_lb" "alb" {
   }
 }
 
+
+resource "aws_lb_listener" "alb_listener" {
+  load_balancer_arn = aws_lb.alb.arn
+  port              = 80
+  protocol          = "HTTP"
+
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.alb_tg.arn
+  }
+}
+
+
 resource "aws_lb_target_group" "alb_tg" {
+
+  lifecycle {
+    create_before_destroy = true
+  }
+
   name_prefix = "lb-tg-"
-  port        = 80
+  port        = 3000
   protocol    = "HTTP"
   vpc_id      = aws_vpc.vpc.id
   health_check {
@@ -40,16 +59,7 @@ resource "aws_lb_target_group" "alb_tg" {
   }
 }
 
-resource "aws_lb_listener" "alb_listener" {
-  load_balancer_arn = aws_lb.alb.arn
-  port              = 80
-  protocol          = "HTTP"
 
-  default_action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.alb_tg.arn
-  }
-}
 
 # Launch Template 생성
 resource "aws_launch_template" "template" {
@@ -109,7 +119,7 @@ resource "aws_autoscaling_policy" "scale_in" {
 }
 
 
-# CPU 사용률 70% 이상일 경우 Metric
+# CPU 사용률 70% 이상일 경우 Metric Alarm
 resource "aws_cloudwatch_metric_alarm" "cpu_high" {
   alarm_name          = "high-cpu"
   comparison_operator = "GreaterThanThreshold"
@@ -118,12 +128,28 @@ resource "aws_cloudwatch_metric_alarm" "cpu_high" {
   namespace           = "AWS/EC2"
   period              = 60
   statistic           = "Average"
-
-  threshold = 70
+  threshold           = 70
 
   alarm_actions = [aws_autoscaling_policy.scale_out.arn]
   dimensions = {
-    AutoScalingGroupName = aws_autoscaling_group.web_asg.name
+    AutoScalingGroupName = aws_autoscaling_group.asg.name
+  }
+}
+
+# CPU 사용률 20% 이하일 경우 Metric Alarm
+resource "aws_cloudwatch_metric_alarm" "cpu_low" {
+  alarm_name          = "low-cpu"
+  comparison_operator = "LessThanThreshold"
+  evaluation_periods  = 2
+  metric_name         = "CPUUtilization"
+  namespace           = "AWS/EC2"
+  period              = 60
+  statistic           = "Average"
+  threshold           = 20
+
+  alarm_actions = [aws_autoscaling_policy.scale_in.arn]
+  dimensions = {
+    AutoScalingGroupName = aws_autoscaling_group.asg.name
   }
 }
 

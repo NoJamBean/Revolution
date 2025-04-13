@@ -35,7 +35,6 @@ resource "aws_iam_role" "codebuild_role" {
 
 
 
-
 # IAM 역할 생성 - CodeDeploy의 권한
 resource "aws_iam_role" "codedeploy_role" {
   name = "CodeDeployServiceRole"
@@ -51,9 +50,6 @@ resource "aws_iam_role" "codedeploy_role" {
     }]
   })
 }
-
-
-
 
 
 
@@ -77,12 +73,37 @@ resource "aws_iam_role" "ec2_role" {
 
 
 
+# IAM 역할 생성 - CodePipeline의 권한
+resource "aws_iam_role" "codepipeline_role" {
+  name = "codepipeline-execution-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow",
+        Principal = {
+          Service = "codepipeline.amazonaws.com"
+        },
+        Action = "sts:AssumeRole"
+      }
+    ]
+  })
+
+  tags = {
+    Name        = "CodePipelineExecutionRole"
+    Environment = "dev"
+  }
+}
+
+
+
 
 
 # CodeBuild 정책 생성
 resource "aws_iam_role_policy_attachment" "codebuild_policy_attach" {
   role       = aws_iam_role.codebuild_role.name
-  policy_arn = "arn:aws:iam::aws:policy/AWSCodeBuildDeveloperAccess"
+  policy_arn = "arn:aws:iam::aws:policy/AWSCodeBuildAdminAccess"
 }
 
 
@@ -99,12 +120,19 @@ resource "aws_iam_role_policy_attachment" "ec2_policy_attach" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforAWSCodeDeploy"
 }
 
-
-
 # Web용 EC2 프로파일 생성 (추후 EC2에 부착하기 위함)
 resource "aws_iam_instance_profile" "ec2_instance_profile" {
   name = "EC2InstanceProfile"
   role = aws_iam_role.ec2_role.name
+}
+
+
+
+
+# CodePipeline용 정책 생성
+resource "aws_iam_role_policy_attachment" "codepipeline_fullaccess" {
+  role       = aws_iam_role.codepipeline_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AWSCodePipeline_FullAccess"
 }
 
 

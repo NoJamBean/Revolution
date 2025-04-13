@@ -11,7 +11,7 @@ variable "agwlog_role_arn" { default = "arn:aws:iam::248189921892:role/agwlog" }
 variable "private_domain_name" { default = "backend.internal" } # 원하는 도메인명으로 변경
 variable "public_domain_name" { default = "frontend.com" }      # 원하는 도메인명으로 변경
 variable "api_dns" { default = "api.backend.internal" }
-variable "seop_gitrepo_token" { default = "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" }
+variable "github_branch" { default = "web" }
 
 variable "zone" {
   type = map(string)
@@ -27,3 +27,13 @@ variable "egress_rules" {
     all = { port = 0, protocol = "-1", cidr = ["0.0.0.0/0"] }
   }
 }
+
+
+# 배포 시 git repo 접근 권한용 토큰값
+variable "seop_github_token" {
+  description = "GitHub PAT"
+  type        = string
+  sensitive   = true
+}
+
+
