@@ -138,6 +138,13 @@ resource "aws_iam_role_policy_attachment" "codepipeline_fullaccess" {
 
 
 
+resource "aws_iam_role_policy_attachment" "codepipeline_codestar_connection" {
+  role       = aws_iam_role.codepipeline_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AWSCodeStarFullAccess"
+}
+
+
+
 # 2. S3 Full Access 정책 생성
 resource "aws_iam_policy" "s3_full_access_policy" {
   name        = "S3FullAccessPolicy"
