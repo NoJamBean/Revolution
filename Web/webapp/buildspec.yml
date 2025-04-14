@@ -29,9 +29,8 @@ phases:
       - cp next.config.mjs deploy-output/
       - cp appspec.yml deploy-output/
       - cp -r scripts deploy-output/
-      - ls -R deploy-output # deploy-output 내용 확인
 
 artifacts:
   files:
     - '**/*'
-  base-directory: deploy-output
+  base-directory: ./deploy-output
