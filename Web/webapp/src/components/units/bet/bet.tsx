@@ -14,7 +14,7 @@ export default function Betting() {
   const [bet, setBet] = useState(0);
   const [expected, setExpected] = useState(0);
 
-  const changeCategorySport = (e) => {
+  const changeCategorySport = (e: React.MouseEvent<HTMLElement>) => {
     const spans = e.currentTarget.querySelectorAll('span');
     const target = spans[0].innerText;
 
