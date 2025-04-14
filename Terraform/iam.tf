@@ -119,7 +119,8 @@ resource "aws_iam_policy" "codebuild_s3_read_policy" {
       {
         Effect = "Allow",
         Action = [
-          "s3:GetObject"
+          "s3:GetObject",
+          "s3:PutObject"
         ],
         Resource = [
           "arn:aws:s3:::webdeploy-artifact-bucket",
