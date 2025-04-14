@@ -3,14 +3,23 @@ import PlayListInfo from '../../commons/playinfo/playinfolist';
 import * as S from './betstyle';
 import PlayWidget from '../../commons/oddwidget/widget';
 import { useRouter } from 'next/router';
+import { useMatchInfo } from '../../commons/oddwidget/widgetprovider';
 
 export default function Betting() {
   const BetAmount = [5000, 10000, 50000, 100000, 300000, 500000];
-  const router = useRouter();
-  console.log(router.query.sport);
+  // const router = useRouter();
+
+  const { setSelectSport } = useMatchInfo();
 
   const [bet, setBet] = useState(0);
   const [expected, setExpected] = useState(0);
+
+  const changeCategorySport = (e) => {
+    const spans = e.currentTarget.querySelectorAll('span');
+    const target = spans[0].innerText;
+
+    setSelectSport(target);
+  };
 
   const payBet = (amount: number) => {
     if (bet + amount > 1000001) {
@@ -53,20 +62,20 @@ export default function Betting() {
           </S.MatchBox_Top>
           <S.Category_Nav>
             <S.Category_Ul>
-              <S.Category_Li>
-                <span>축구</span>
+              <S.Category_Li onClick={changeCategorySport}>
+                <span>FOOTBALL</span>
                 <span>경기 수 51</span>
               </S.Category_Li>
-              <S.Category_Li>
-                <span>야구</span>
+              <S.Category_Li onClick={changeCategorySport}>
+                <span>BASEBALL</span>
                 <span>경기 수 15</span>
               </S.Category_Li>
-              <S.Category_Li>
-                <span>농구</span>
+              <S.Category_Li onClick={changeCategorySport}>
+                <span>BASKETBALL</span>
                 <span>경기 수 35</span>
               </S.Category_Li>
-              <S.Category_Li>
-                <span>테니스</span>
+              <S.Category_Li onClick={changeCategorySport}>
+                <span>ICE HOCKEY</span>
                 <span>경기 수 25</span>
               </S.Category_Li>
               <S.Category_Li>

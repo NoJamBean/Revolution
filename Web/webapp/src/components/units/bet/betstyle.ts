@@ -49,6 +49,7 @@ export const Category_Li = styled.div`
   justify-content: space-between;
   align-items: center;
   padding: 0 10px;
+  cursor: pointer;
 `;
 
 export const Section2 = styled.div`

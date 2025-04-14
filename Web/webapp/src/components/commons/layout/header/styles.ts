@@ -7,6 +7,7 @@ export const Wrapper = styled.div`
   justify-content: space-between;
   align-items: flex-end;
   padding: 0 50px;
+  background-color: white;
 `;
 
 export const LogoImg = styled.div`

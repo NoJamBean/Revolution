@@ -3,14 +3,32 @@ import * as S from './styles';
 import Chat from '../tabsection/chat';
 import PlayListInfo from '../../commons/playinfo/playinfolist';
 import PlayWidget from '../../commons/oddwidget/widget';
+import { useMatchInfo } from '../../commons/oddwidget/widgetprovider';
+import { useRouter } from 'next/router';
 
 export default function Main() {
   const [clickedTab, setClickedTab] = useState('info');
+  const { homeAwayInfo, selectSport } = useMatchInfo();
+
+  const router = useRouter();
   //   const [clickedPlay, setClickedPlay] = useState(0);
 
   const clickToggle = (e: any) => {
     if (e.target.id === clickedTab) return;
     setClickedTab(e.target.id);
+  };
+
+  const goToBet = () => {
+    console.log(homeAwayInfo);
+    console.log(router.query);
+
+    router.push({
+      pathname: '/bet',
+      query: {
+        id: router.query.id,
+        sport: selectSport,
+      },
+    });
   };
 
   return (
@@ -54,12 +72,20 @@ export default function Main() {
                   <S.BetCart_Body>
                     <S.Team_Wrap>
                       <S.Home>
-                        <S.Team_Mark>이미지</S.Team_Mark>
-                        <S.Team_Name>FC도나르</S.Team_Name>
+                        <S.Team_Mark>
+                          <S.Team_Img src={homeAwayInfo?.home?.team?.logo} />
+                        </S.Team_Mark>
+                        <S.Team_Name>
+                          {homeAwayInfo?.home?.team?.name}
+                        </S.Team_Name>
                       </S.Home>
                       <S.Away>
-                        <S.Team_Mark>이미지</S.Team_Mark>
-                        <S.Team_Name>FC픽사르</S.Team_Name>
+                        <S.Team_Mark>
+                          <S.Team_Img src={homeAwayInfo?.away?.team?.logo} />
+                        </S.Team_Mark>
+                        <S.Team_Name>
+                          {homeAwayInfo?.away?.team?.name}
+                        </S.Team_Name>
                       </S.Away>
                     </S.Team_Wrap>
                     <S.BetInfo_Wrap>
@@ -80,7 +106,7 @@ export default function Main() {
                           </S.Select>
                         </S.Odds_Select>
                       </S.Odds>
-                      <S.Betting_Btn>배팅하기</S.Betting_Btn>
+                      <S.Betting_Btn onClick={goToBet}>배팅하기</S.Betting_Btn>
                     </S.BetInfo_Wrap>
                   </S.BetCart_Body>
                 </S.Betting_Cart>

@@ -2,12 +2,14 @@ import { useMatchInfo } from './widgetprovider';
 import * as S from './widgetstyle';
 
 export default function PlayWidget({ isMain }: { isMain: boolean }) {
-  const { homeAwayInfo } = useMatchInfo();
+  const { homeAwayInfo, isLimit } = useMatchInfo();
 
   console.log('데이터 체크용', homeAwayInfo);
 
   // 로고 쪽 hover 하면 화면 어두워지면서 해당 팀 승률 표시 (얻어온 data 기반 승률계산)
-  return (
+  return isLimit ? (
+    <div>API LIMITED</div>
+  ) : (
     <S.Wrapper>
       <S.Info_Top>
         <S.Info_Top_Home>
@@ -140,7 +142,7 @@ export default function PlayWidget({ isMain }: { isMain: boolean }) {
               <S.Section_Right_Img
                 src={homeAwayInfo?.away?.league.logo ?? '/banner.jpg'}
               />
-              <span>{homeAwayInfo?.away?.league?.name}</span>
+              <span>{homeAwayInfo?.away?.league.name ?? 'NO DATA'}</span>
             </S.Section_Right>
           </S.Info_Section>
           <S.Info_Section>

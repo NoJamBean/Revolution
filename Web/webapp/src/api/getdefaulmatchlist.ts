@@ -14,6 +14,25 @@ export const getFootballMatchList = async () => {
     }
   );
   const playMatchList = response.data.response;
+  if (response.data.errors) throw Error(response.data.errors.requests);
+
+  return playMatchList;
+};
+
+export const getBaseballlMatchList = async () => {
+  const date = new Date();
+  const formattedDate = date.toISOString().split('T')[0];
+
+  const response = await axios.get('https://v1.baseball.api-sports.io/games', {
+    params: {
+      date: formattedDate,
+    }, // 원하는 날짜
+    headers: {
+      'x-apisports-key': process.env.NEXT_PUBLIC_SPORTS_API_KEY,
+    },
+  });
+  const playMatchList = response.data.response;
+  if (response.data.errors) throw Error(response.data.errors.requests);
 
   return playMatchList;
 };
@@ -25,7 +44,9 @@ export const getBasketballMatchList = async () => {
   const response = await axios.get(
     'https://v1.basketball.api-sports.io/games',
     {
-      params: { date: formattedDate }, // 원하는 날짜
+      params: {
+        date: formattedDate,
+      }, // 원하는 날짜
       headers: {
         'x-apisports-key': process.env.NEXT_PUBLIC_SPORTS_API_KEY,
       },
@@ -33,6 +54,7 @@ export const getBasketballMatchList = async () => {
   );
 
   const playMatchList = response.data.response;
+  if (response.data.errors) throw Error(response.data.errors.requests);
 
   return playMatchList;
 };
