@@ -21,16 +21,16 @@ phases:
   post_build:
     commands:
       - echo "[POST-BUILD] 결과물 압축 준비"
-      - mkdir -p deploy-output
-      - cp -r .next deploy-output/
-      - cp -r public deploy-output/
-      - cp package.json deploy-output/
-      - cp yarn.lock deploy-output/
-      - cp next.config.mjs deploy-output/
-      - cp appspec.yml deploy-output/
-      - cp -r scripts deploy-output/
+      - mkdir -p $CODEBUILD_SRC_DIR/deploy-output
+      - cp -r .next $CODEBUILD_SRC_DIR/deploy-output/
+      - cp -r public $CODEBUILD_SRC_DIR/deploy-output/
+      - cp package.json $CODEBUILD_SRC_DIR/deploy-output/
+      - cp yarn.lock $CODEBUILD_SRC_DIR/deploy-output/
+      - cp next.config.mjs $CODEBUILD_SRC_DIR/deploy-output/
+      - cp appspec.yml $CODEBUILD_SRC_DIR/deploy-output/
+      - cp -r scripts $CODEBUILD_SRC_DIR/deploy-output/
 
 artifacts:
   files:
     - '**/*'
-  base-directory: ./deploy-output
+  base-directory: $CODEBUILD_SRC_DIR/deploy-output
