@@ -26,7 +26,7 @@ phases:
       - cp -r public deploy-output/
       - cp package.json deploy-output/
       - cp yarn.lock deploy-output/
-      - cp next.config.js deploy-output/
+      - cp next.config.mjs deploy-output/
       - cp appspec.yml deploy-output/
       - cp -r scripts deploy-output/
 
