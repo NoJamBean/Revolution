@@ -13,7 +13,7 @@ export default function Login() {
   const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
   const hangelRegex = /[ㄱ-ㅎ가-힣]/;
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (userMail === '' || password === '') {

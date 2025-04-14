@@ -19,7 +19,7 @@ resource "aws_codebuild_project" "app_build" {
 
   source {
     type      = "CODEPIPELINE"
-    buildspec = "buildspec.yml"
+    buildspec = "Web/webapp/buildspec.yml"
   }
 
   #   logs_config {
@@ -119,7 +119,7 @@ resource "aws_codepipeline" "web_pipeline" {
       output_artifacts = ["SourceOutput"]
 
       configuration = {
-        ConnectionArn    = aws_codestarconnections_connection.github.arn
+        ConnectionArn    = "arn:aws:codeconnections:us-east-1:248189921892:connection/f58fa5ca-9f80-4c75-b270-e1db80975efd" //원빈 쪽 repo 요청 승인 후 연결생성 & 해당 연결 arn 정보 입력할 예정!
         FullRepositoryId = "NoJamBean/Revolution"
         BranchName       = var.github_branch
         DetectChanges    = "true"
@@ -183,10 +183,10 @@ resource "aws_codepipeline" "web_pipeline" {
 
 
 # git v2 용 connection [git Token인증 대체방안] - (apply 후 aws 콘솔 들어가서 직접 승인확인 해야함!)
-resource "aws_codestarconnections_connection" "github" {
-  name          = "github-connection"
-  provider_type = "GitHub"
-}
+# resource "aws_codestarconnections_connection" "github" {
+#   name          = "github-connection"
+#   provider_type = "GitHub"
+# }
 
 
 # CodePipeline 자동 트리거용 webhook 생성 (Git v1용 - [v2에서 사용안함])
