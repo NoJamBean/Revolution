@@ -13,9 +13,12 @@ export const getFootballMatchList = async () => {
       },
     }
   );
-  const playMatchList = response.data.response;
-  if (response.data.errors) throw Error(response.data.errors.requests);
 
+  if (response.data.errors.length > 0)
+    throw Error(response.data.errors.requests);
+  const playMatchList = response.data.response;
+
+  console.log(response.data, 'fdsfsdf');
   return playMatchList;
 };
 
@@ -31,8 +34,11 @@ export const getBaseballlMatchList = async () => {
       'x-apisports-key': process.env.NEXT_PUBLIC_SPORTS_API_KEY,
     },
   });
+
+  if (response.data.errors.length > 0)
+    throw Error(response.data.errors.requests);
+
   const playMatchList = response.data.response;
-  if (response.data.errors) throw Error(response.data.errors.requests);
 
   return playMatchList;
 };
@@ -53,8 +59,10 @@ export const getBasketballMatchList = async () => {
     }
   );
 
+  if (response.data.errors.length > 0)
+    throw Error(response.data.errors.requests);
+
   const playMatchList = response.data.response;
-  if (response.data.errors) throw Error(response.data.errors.requests);
 
   return playMatchList;
 };
