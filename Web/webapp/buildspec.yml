@@ -28,6 +28,7 @@ phases:
       - cp yarn.lock $CODEBUILD_SRC_DIR/deploy-output/
       - cp next.config.mjs $CODEBUILD_SRC_DIR/deploy-output/
       - cp appspec.yml $CODEBUILD_SRC_DIR/deploy-output/
+      - chmod +x scripts/*.sh
       - cp -r scripts $CODEBUILD_SRC_DIR/deploy-output/
 
 artifacts:
