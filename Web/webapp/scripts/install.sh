@@ -32,6 +32,9 @@ sudo env "PATH=$PATH" npm install -g yarn
 # 📌 이제 프로젝트 폴더로 이동
 cd /home/ec2-user/app
 
+#ec2-user에게 권한 부여
+sudo chown -R ec2-user:ec2-user /home/ec2-user/app
+
 # 의존성 설치
 yarn install --frozen-lockfile
 

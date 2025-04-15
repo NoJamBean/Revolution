@@ -14,6 +14,8 @@ APP_NAME="revolution-app"
 pm2 delete "$APP_NAME" || echo "[ApplicationStart] 기존 pm2 앱 없음"
 
 
+
+
 # 앱 실행 (yarn start → next start)
 PORT=80 pm2 start yarn --name "$APP_NAME" -- start
 
