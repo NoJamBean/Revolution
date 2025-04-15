@@ -1,17 +1,17 @@
+import { useRouter } from 'next/router';
+import axios from 'axios';
+import { useEffect, useState } from 'react';
+
 // user: {
 //     id:'adfs224k123jkb2jhj',
 //     name:'사용자이름',
 //     data: {
 //         bet: [
-//             {matchid:'1231dg34gvdw', play:'san vs fra', odd:1.5, amount:30000}
+//             {matchid:'1231dg34gvdw'}
 //         ]
 //      point: 125000
 //     }
 // }
-
-import { useRouter } from 'next/router';
-import axios from 'axios';
-import { useEffect, useState } from 'react';
 
 //     game: {
 //         data: {
@@ -38,20 +38,6 @@ export default function FaqPage() {
   const router = useRouter();
 
   const [data, setData] = useState({});
-
-  // axios 기준 예시
-
-  // const options = {
-  //   method: 'GET',
-  //   url: 'https://v3.football.api-sports.io/fixtures',
-  //   params: {
-  //     date: '2025-04-10', // 형이 원하는 날짜
-  //   },
-  //   headers: {
-  //     'x-apisports-key': process.env.NEXT_PUBLIC_SPORTS_API_KEY || '',
-  //     'x-rapidapi-host': 'v3.football.api-sports.io', // 필요시
-  //   },
-  // };
 
   return <div></div>;
 }
