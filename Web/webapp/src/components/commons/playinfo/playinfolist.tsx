@@ -52,36 +52,32 @@ export default function PlayListInfo(props: any) {
       setIsLoading(true);
 
       try {
-        if (selectSport === 'FOOTBALL') {
-          // 축구 API (경기 List)
-
-          const playMatchList = await getFootballMatchList();
-
-          const modifiedResult = setDefaultApiData(playMatchList, 'FOOTBALL');
-          allMatchRef.current = modifiedResult[0]?.id;
-          console.log(modifiedResult.length);
-          getTargetMatch(modifiedResult[0]?.id, selectSport);
-          return;
-        }
-        if (selectSport === 'BASEBALL') {
-          const playMatchList = await getBaseballlMatchList();
-          const modifiedResult = setDefaultApiData(playMatchList, 'BASEBALL');
-
-          console.log('test', modifiedResult);
-
-          allMatchRef.current = modifiedResult[0]?.id;
-          console.log(modifiedResult.length);
-          getTargetMatch(modifiedResult[0]?.id, selectSport);
-        }
-        if (selectSport === 'BASKETBALL') {
-          console.log('여기가 트리거됩니다!');
-          const playMatchList = await getBasketballMatchList();
-          const modifiedResult = setDefaultApiData(playMatchList, 'BASKETBALL');
-          allMatchRef.current = modifiedResult[0]?.id;
-          console.log(modifiedResult.length);
-          getTargetMatch(modifiedResult[0]?.id, selectSport);
-          return;
-        }
+        // if (selectSport === 'FOOTBALL') {
+        //   // 축구 API (경기 List)
+        //   const playMatchList = await getFootballMatchList();
+        //   const modifiedResult = setDefaultApiData(playMatchList, 'FOOTBALL');
+        //   allMatchRef.current = modifiedResult[0]?.id;
+        //   console.log(modifiedResult.length);
+        //   getTargetMatch(modifiedResult[0]?.id, selectSport);
+        //   return;
+        // }
+        // if (selectSport === 'BASEBALL') {
+        //   const playMatchList = await getBaseballlMatchList();
+        //   const modifiedResult = setDefaultApiData(playMatchList, 'BASEBALL');
+        //   console.log('test', modifiedResult);
+        //   allMatchRef.current = modifiedResult[0]?.id;
+        //   console.log(modifiedResult.length);
+        //   getTargetMatch(modifiedResult[0]?.id, selectSport);
+        // }
+        // if (selectSport === 'BASKETBALL') {
+        //   console.log('여기가 트리거됩니다!');
+        //   const playMatchList = await getBasketballMatchList();
+        //   const modifiedResult = setDefaultApiData(playMatchList, 'BASKETBALL');
+        //   allMatchRef.current = modifiedResult[0]?.id;
+        //   console.log(modifiedResult.length);
+        //   getTargetMatch(modifiedResult[0]?.id, selectSport);
+        //   return;
+        // }
         // getTargetMatch(modifiedResult[0]?.id); // 초기 렌더링 시 첫번째 값에 대한 상세정보 표시되도록 미리 트리거
       } catch (error) {
         console.log((error as Error).message, 123);
@@ -135,84 +131,84 @@ export default function PlayListInfo(props: any) {
           <S.Category_Li onClick={clickSport}>ICE HOCKEY</S.Category_Li>
         </S.Category>
       </S.Play_Category_Bar>
-      {/* {isLimit ? (
+      {isLimit ? (
         <div>API LIMITED</div>
-      ) : ( */}
-      {apiData?.map((el) => (
-        <S.PlayInfo
-          key={el.id}
-          onClick={() => {
-            getTargetMatch(el.id, selectSport ?? 'FOOTBALL');
-            handleparms(el.id);
-          }}
-          widget={props.widget}
-        >
-          <S.Blind
-            isClicked={clickedPlay === el.id}
+      ) : (
+        apiData?.map((el) => (
+          <S.PlayInfo
+            key={el.id}
+            onClick={() => {
+              getTargetMatch(el.id, selectSport ?? 'FOOTBALL');
+              handleparms(el.id);
+            }}
             widget={props.widget}
-          ></S.Blind>
-          <S.Info_Top widget={props.widget}>
-            <S.League_Info>
-              <S.League_Logo>
-                <S.Logo_Img
-                  src={el.league.logo}
-                  onError={(e) => (e.currentTarget.src = '/noimage.png')}
-                />
-              </S.League_Logo>
-              <S.LeagueName>{`${el.league.name} ${el.league.season}`}</S.LeagueName>
-            </S.League_Info>
-            <S.Game_Time_Wrap widget={props.widget}>
-              <S.Game_Start_Date>{getDate(el.date)}</S.Game_Start_Date>
-              <S.Game_Start_Time>{getTime(el.date)}</S.Game_Start_Time>
-            </S.Game_Time_Wrap>
-          </S.Info_Top>
-          <S.Info_Bottom widget={props.widget}>
-            <S.Play_Home widget={props.widget}>
-              {props.widget ? (
-                <>
-                  <S.Info_TeamMark widget={props.widget}>
-                    <S.Info_Team_Img
-                      src={el.home.logo}
-                      onError={(e) => (e.currentTarget.src = '/noimage.png')}
-                    />
-                  </S.Info_TeamMark>
-                  <S.Info_TeamName widget={props.widget}>
-                    {el.home.name}
-                  </S.Info_TeamName>
-                </>
-              ) : (
-                <>
-                  <S.Info_TeamName widget={props.widget}>
-                    {el.home.name}
-                  </S.Info_TeamName>
-                  <S.Info_TeamMark widget={props.widget}>
-                    <S.Info_Team_Img
-                      src={el.home.logo}
-                      onError={(e) => (e.currentTarget.src = '/noimage.png')}
-                    />
-                  </S.Info_TeamMark>
-                </>
-              )}
-            </S.Play_Home>
-            <S.Verses widget={props.widget}>
-              <span>{el.scores.home ?? 0}</span> <span>:</span>
-              <span>{el.scores.away ?? 0}</span>
-            </S.Verses>
-            <S.Play_Away widget={props.widget}>
-              <S.Info_TeamMark widget={props.widget}>
-                <S.Info_Team_Img
-                  src={el.away.logo}
-                  onError={(e) => (e.currentTarget.src = '/noimage.png')}
-                />
-              </S.Info_TeamMark>
-              <S.Info_TeamName widget={props.widget}>
-                {el.away.name}
-              </S.Info_TeamName>
-            </S.Play_Away>
-          </S.Info_Bottom>
-        </S.PlayInfo>
-      ))}
-      {/* )} */}
+          >
+            <S.Blind
+              isClicked={clickedPlay === el.id}
+              widget={props.widget}
+            ></S.Blind>
+            <S.Info_Top widget={props.widget}>
+              <S.League_Info>
+                <S.League_Logo>
+                  <S.Logo_Img
+                    src={el.league.logo}
+                    onError={(e) => (e.currentTarget.src = '/noimage.png')}
+                  />
+                </S.League_Logo>
+                <S.LeagueName>{`${el.league.name} ${el.league.season}`}</S.LeagueName>
+              </S.League_Info>
+              <S.Game_Time_Wrap widget={props.widget}>
+                <S.Game_Start_Date>{getDate(el.date)}</S.Game_Start_Date>
+                <S.Game_Start_Time>{getTime(el.date)}</S.Game_Start_Time>
+              </S.Game_Time_Wrap>
+            </S.Info_Top>
+            <S.Info_Bottom widget={props.widget}>
+              <S.Play_Home widget={props.widget}>
+                {props.widget ? (
+                  <>
+                    <S.Info_TeamMark widget={props.widget}>
+                      <S.Info_Team_Img
+                        src={el.home.logo}
+                        onError={(e) => (e.currentTarget.src = '/noimage.png')}
+                      />
+                    </S.Info_TeamMark>
+                    <S.Info_TeamName widget={props.widget}>
+                      {el.home.name}
+                    </S.Info_TeamName>
+                  </>
+                ) : (
+                  <>
+                    <S.Info_TeamName widget={props.widget}>
+                      {el.home.name}
+                    </S.Info_TeamName>
+                    <S.Info_TeamMark widget={props.widget}>
+                      <S.Info_Team_Img
+                        src={el.home.logo}
+                        onError={(e) => (e.currentTarget.src = '/noimage.png')}
+                      />
+                    </S.Info_TeamMark>
+                  </>
+                )}
+              </S.Play_Home>
+              <S.Verses widget={props.widget}>
+                <span>{el.scores.home ?? 0}</span> <span>:</span>
+                <span>{el.scores.away ?? 0}</span>
+              </S.Verses>
+              <S.Play_Away widget={props.widget}>
+                <S.Info_TeamMark widget={props.widget}>
+                  <S.Info_Team_Img
+                    src={el.away.logo}
+                    onError={(e) => (e.currentTarget.src = '/noimage.png')}
+                  />
+                </S.Info_TeamMark>
+                <S.Info_TeamName widget={props.widget}>
+                  {el.away.name}
+                </S.Info_TeamName>
+              </S.Play_Away>
+            </S.Info_Bottom>
+          </S.PlayInfo>
+        ))
+      )}
     </S.Right_Side>
   );
 }
