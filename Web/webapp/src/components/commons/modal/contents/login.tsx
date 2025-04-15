@@ -27,7 +27,7 @@ export default function Login() {
     }
 
     if (hangelRegex.test(userMail)) {
-      alert('아 마 한글말고 영어로 입ㄹㄱ력해라 마');
+      alert('아 마 한글말고 영어로 입력해라 마');
       return;
     }
 
