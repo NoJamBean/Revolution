@@ -4,7 +4,7 @@ echo "[ValidateService] 앱 상태 확인 시작"
 
 RETRY=5
 SLEEP=3
-PORT=3000
+PORT=80
 
 for i in $(seq 1 $RETRY); do
   STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:$PORT)
