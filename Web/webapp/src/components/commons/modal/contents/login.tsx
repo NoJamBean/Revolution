@@ -17,12 +17,12 @@ export default function Login() {
     e.preventDefault();
 
     if (userMail === '' || password === '') {
-      alert('이름이나 비번 입력똑바로 하고 로그인해라');
+      alert('이름이나 비번 입력똑바로 하고 로그인해');
       return;
     }
 
     if (!emailRegex.test(userMail)) {
-      alert('이메일 형식에 맞게 입력해라 마');
+      alert('이메일 형식에 맞게 입력해라');
       return;
     }
 
