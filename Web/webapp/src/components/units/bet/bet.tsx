@@ -2,7 +2,7 @@ import { useState } from 'react';
 import PlayListInfo from '../../commons/playinfo/playinfolist';
 import * as S from './betstyle';
 import PlayWidget from '../../commons/oddwidget/widget';
-import { useRouter } from 'next/router';
+// import { useRouter } from 'next/router';
 import { useMatchInfo } from '../../commons/oddwidget/widgetprovider';
 
 export default function Betting() {
