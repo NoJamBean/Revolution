@@ -17,7 +17,7 @@ export default function Login() {
     e.preventDefault();
 
     if (userMail === '' || password === '') {
-      alert('이름이나 비번 입력똑바로 하고 로그인해라잉');
+      alert('이름이나 비번 입력똑바로 하고 로그인해라');
       return;
     }
 
