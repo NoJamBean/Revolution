@@ -1,31 +1,24 @@
 variable "vpc_id" {
-  default = "vpc-026b5dfaf17f6bbb4"
   type = string
   description = "totoro"
 }
 
-variable "h" {
-  default = "log-"
+variable "cidr_blocks" {
   type = string
+  description = "10.0.0.0/16"
 }
 
-variable "elastic_url" {
-  default = "248189921892.dkr.ecr.ap-northeast-2.amazonaws.com/elasticsearch/integration_log:ela"
-  type = string
+variable "subnets" {
+  type = list(string)
+  description = "log[1-4]"
 }
 
-variable "logstash_url" {
-  default = "248189921892.dkr.ecr.ap-northeast-2.amazonaws.com/elasticsearch/integration_log:log"
+variable "region" {
   type = string
+  description = "seoul"
 }
 
-variable "kibana_url" {
-  default = "248189921892.dkr.ecr.ap-northeast-2.amazonaws.com/elasticsearch/integration_log:kib"
-  type = string
-}
-
-variable "use_existing_igw" {
-  description = "기존 인터넷 게이트웨이를 사용할 경우 true"
-  type        = bool
-  default     = true 
+variable "private_route_table_ids" {
+  type = list(string)
+  description = "private_route_table"
 }
