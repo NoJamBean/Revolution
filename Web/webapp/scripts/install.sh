@@ -16,6 +16,11 @@ if ! command -v node &> /dev/null; then
   source /etc/profile.d/node.sh
 fi
 
+export NODEJS_HOME=/usr/local/lib/node/nodejs
+export PATH=$NODEJS_HOME/bin:$PATH
+
+
+
 # pm2, yarn 설치
 npm install -g pm2
 npm install -g yarn
