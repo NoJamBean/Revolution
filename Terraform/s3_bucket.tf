@@ -1,3 +1,18 @@
+#tfstatefile저장용 버킷
+resource "aws_s3_bucket" "tf_state" {
+  bucket = "tfstate-bucket"
+}
+
+resource "aws_s3_bucket_server_side_encryption_configuration" "tf_state_sse" {
+  bucket = aws_s3_bucket.tf_state.id
+
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm = "AES256"
+    }
+  }
+}
+
 resource "aws_s3_bucket" "long_user_data_bucket" {
   bucket = "long-user-data-bucket"
 
