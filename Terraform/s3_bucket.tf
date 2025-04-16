@@ -1,6 +1,6 @@
 #tfstatefile저장용 버킷
 resource "aws_s3_bucket" "tf_state" {
-  bucket = "tfstate-bucket-${random_id.bucket_suffix.hex}"
+  bucket = "tfstate-bucket-revolution112233"
 }
 
 resource "aws_s3_bucket_server_side_encryption_configuration" "tf_state_sse" {
