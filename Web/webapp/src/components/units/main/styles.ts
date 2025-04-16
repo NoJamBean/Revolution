@@ -10,7 +10,7 @@ export const Main = styled.main`
 `;
 
 export const Left_Side = styled.aside`
-  border: 10px solid red;
+  border: 5px solid red;
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -22,6 +22,7 @@ export const TabButton_Wrap = styled.div`
   /* border: 2px solid green; */
   display: flex;
   justify-content: space-between;
+  background-color: white;
 `;
 
 export const PlayInfo_Btn = styled.div`
@@ -97,7 +98,7 @@ export const Home = styled.div`
   height: 51%;
   border-radius: 0 0 10px 10px;
   display: flex;
-  background-color: lightskyblue;
+  background-color: lightgray;
 `;
 
 export const Away = styled.div`
@@ -105,22 +106,29 @@ export const Away = styled.div`
   height: 51%;
   border-radius: 0 0 10px 10px;
   display: flex;
-  background-color: lightskyblue;
+  background-color: lightgray;
 `;
 
 export const Team_Mark = styled.div`
-  width: 40%;
+  width: 50%;
   height: 90%;
-  border: 2px solid black;
+  border: 5px solid green;
 `;
 
 export const Team_Name = styled.div`
   width: 60%;
   height: 90%;
   display: flex;
+  justify-content: center;
   align-items: center;
-  padding-left: 20px;
-  border: 2px solid black;
+  padding: 0 10px;
+  text-align: center;
+  border: 5px solid blue;
+`;
+
+export const Team_Img = styled.img`
+  width: 100%;
+  height: 100%;
 `;
 
 export const BetInfo_Wrap = styled.div`
@@ -183,6 +191,7 @@ export const Betting_Btn = styled.div`
   color: whitesmoke;
   background-color: orange;
   font-weight: 600;
+  cursor: pointer;
 `;
 
 export const Context = styled.aside`
@@ -197,7 +206,7 @@ export const Carousel = styled.div`
   background-color: blue;
   flex: 2;
   width: 100%;
-  max-height: 420px;
+  height: 420px;
   display: flex;
   object-fit: cover;
   border: 5px solid blue;
@@ -208,6 +217,7 @@ export const Section_Title = styled.div`
   padding: 15px 0;
   font-size: 18px;
   font-weight: 800;
+  background-color: white;
 `;
 
 export const Body = styled.div`
@@ -219,7 +229,8 @@ export const Body = styled.div`
 `;
 
 export const Bottom = styled.div`
-  border: 13px solid green;
+  background-color: green;
+  border: 5px solid red;
   height: 330px;
   margin-top: 180px;
 `;

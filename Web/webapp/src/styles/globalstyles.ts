@@ -7,6 +7,13 @@ const globalStyle = css`
     box-sizing: border-box;
   }
 
+  body {
+    /* background-color: red; */
+    background-image: url('/noimage.png');
+    background-size: cover;
+    background-attachment: fixed;
+  }
+
   // 폰트
   /* @font-face {
     font-family: 'NanumSquareNeo';

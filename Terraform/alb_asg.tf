@@ -9,6 +9,7 @@ resource "aws_lb" "alb" {
     aws_subnet.subnet["app2"].id
   ]
   enable_deletion_protection = false
+  idle_timeout               = 60
   # access_logs {
   #   bucket  = aws_s3_bucket.athena_log_bucket.bucket # 위에서 생성한 S3 버킷
   #   prefix  = "elb_log" # (선택 사항) 로그 파일 접두사
@@ -19,26 +20,6 @@ resource "aws_lb" "alb" {
   }
 }
 
-resource "aws_lb_target_group" "alb_tg" {
-  name_prefix = "lb-tg-"
-  port        = 80
-  protocol    = "HTTP"
-  vpc_id      = aws_vpc.vpc.id
-  health_check {
-    enabled             = true
-    interval            = 30
-    path                = "/"
-    protocol            = "HTTP"
-    timeout             = 5
-    healthy_threshold   = 2
-    unhealthy_threshold = 2
-    matcher             = "200"
-  }
-  target_type = "instance"
-  tags = {
-    Name = "alb-tg"
-  }
-}
 
 resource "aws_lb_listener" "alb_listener" {
   load_balancer_arn = aws_lb.alb.arn
@@ -51,14 +32,45 @@ resource "aws_lb_listener" "alb_listener" {
   }
 }
 
+
+resource "aws_lb_target_group" "alb_tg" {
+
+  lifecycle {
+    create_before_destroy = true
+  }
+
+  name_prefix = "lb-tg-"
+  port        = 80
+  protocol    = "HTTP"
+  vpc_id      = aws_vpc.vpc.id
+
+  health_check {
+    enabled             = true
+    interval            = 60
+    port                = 80
+    path                = "/"
+    protocol            = "HTTP"
+    timeout             = 5
+    healthy_threshold   = 2
+    unhealthy_threshold = 10
+    matcher             = "200"
+  }
+  target_type = "instance"
+  tags = {
+    Name = "alb-tg"
+  }
+}
+
+
 # Launch Template 생성
 resource "aws_launch_template" "template" {
   name_prefix   = "web-server"
   image_id      = data.aws_ami.amazon_linux.id
-  instance_type = "t2.micro" #"t3a.medium"
+  instance_type = "t3a.medium"
   iam_instance_profile {
     name = aws_iam_instance_profile.ec2_instance_profile.name
   }
+
   key_name               = var.seoul_key_name
   vpc_security_group_ids = [aws_security_group.default_sg.id]
   user_data              = base64encode(data.template_file.app_server.rendered)
@@ -86,6 +98,12 @@ resource "aws_autoscaling_group" "asg" {
 
   health_check_type         = "EC2"
   health_check_grace_period = 300
+
+
+  # blue / green 배포 시 무중단으로 템플릿 ddd변경
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 # CPU 사용량 60% 이상이면 Scale Out 정책(증가)
@@ -109,7 +127,7 @@ resource "aws_autoscaling_policy" "scale_in" {
 }
 
 
-# CPU 사용률 70% 이상일 경우 Metric
+# CPU 사용률 70% 이상일 경우 Metric Alarm
 resource "aws_cloudwatch_metric_alarm" "cpu_high" {
   alarm_name          = "high-cpu"
   comparison_operator = "GreaterThanThreshold"
@@ -122,7 +140,24 @@ resource "aws_cloudwatch_metric_alarm" "cpu_high" {
 
   alarm_actions = [aws_autoscaling_policy.scale_out.arn]
   dimensions = {
-    AutoScalingGroupName = aws_autoscaling_group.web_asg.name
+    AutoScalingGroupName = aws_autoscaling_group.asg.name
+  }
+}
+
+# CPU 사용률 20% 이하일 경우 Metric Alarm
+resource "aws_cloudwatch_metric_alarm" "cpu_low" {
+  alarm_name          = "low-cpu"
+  comparison_operator = "LessThanThreshold"
+  evaluation_periods  = 2
+  metric_name         = "CPUUtilization"
+  namespace           = "AWS/EC2"
+  period              = 60
+  statistic           = "Average"
+  threshold           = 20
+
+  alarm_actions = [aws_autoscaling_policy.scale_in.arn]
+  dimensions = {
+    AutoScalingGroupName = aws_autoscaling_group.asg.name
   }
 }
 

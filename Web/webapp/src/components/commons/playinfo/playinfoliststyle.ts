@@ -6,6 +6,7 @@ export const Right_Side = styled.aside`
   height: 100%;
   position: relative;
   overflow-y: auto;
+  background-color: white;
 `;
 
 export const Play_Category_Bar = styled.nav`

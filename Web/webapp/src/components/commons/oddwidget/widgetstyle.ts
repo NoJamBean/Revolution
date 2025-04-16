@@ -4,6 +4,7 @@ export const Wrapper = styled.div`
   border: 2px solid green;
   height: 100%;
   overflow: auto;
+  background-color: white;
 `;
 
 export const Info_Top = styled.div`

@@ -11,7 +11,7 @@ export default function Modal({ content: Content }: ModalProps) {
   return (
     <S.ModalOverlay>
       <S.ModalContent modalType={modalType}>
-        <S.Content>{Component ? <Component /> : null}</S.Content>
+        <S.Content>{Component && <Component />}</S.Content>
       </S.ModalContent>
     </S.ModalOverlay>
   );

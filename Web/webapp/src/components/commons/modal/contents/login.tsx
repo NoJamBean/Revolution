@@ -13,21 +13,21 @@ export default function Login() {
   const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
   const hangelRegex = /[ㄱ-ㅎ가-힣]/;
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (userMail === '' || password === '') {
-      alert('이름이나 비번 입력똑바로 하고 로그인해라 마');
+      alert('이름이나 비번 입력똑바로 하고 로그인해라');
       return;
     }
 
     if (!emailRegex.test(userMail)) {
-      alert('이메일 형식에 맞게 입력해라 마');
+      alert('이메일 형식에 맞게 입력해라');
       return;
     }
 
     if (hangelRegex.test(userMail)) {
-      alert('아 마 한글말고 영어로 입ㄹㄱ력해라 마');
+      alert('아 마 한글말고 영어로 입력해라 마');
       return;
     }
 
