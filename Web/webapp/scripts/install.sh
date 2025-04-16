@@ -23,6 +23,10 @@ EOF
 sudo chmod +x /etc/profile.d/node.sh
 
 
+# 임시코드
+rm -rf /home/ec2-user/.cache/yarn
+yarn cache clean
+
 
 # pm2, yarn 설치
 sudo env "PATH=$PATH" npm install -g pm2

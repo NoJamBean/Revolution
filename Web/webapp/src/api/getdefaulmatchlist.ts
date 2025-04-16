@@ -88,7 +88,7 @@ export const getIceHockeyMatchList = async () => {
   return playMatchList;
 };
 
-export const getNBAMatchList = async () => {
+export const getHandBallMatchList = async () => {
   const date = new Date();
   const formattedDate = date.toISOString().split('T')[0];
 

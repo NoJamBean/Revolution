@@ -6,6 +6,7 @@ import {
   getBaseballlMatchList,
   getBasketballMatchList,
   getFootballMatchList,
+  getHandBallMatchList,
   getIceHockeyMatchList,
 } from '@/src/api/getdefaulmatchlist';
 import { useRouter } from 'next/router';
@@ -52,7 +53,7 @@ export default function PlayListInfo(props: any) {
   };
 
   //
-
+  //
   const getTodayFixtures = async () => {
     setIsLoading(true);
 
@@ -134,9 +135,9 @@ export default function PlayListInfo(props: any) {
         return;
       }
 
-      if (selectSport === 'NBA') {
-        const playMatchList = await getIceHockeyMatchList();
-        const modifiedResult = setDefaultApiData(playMatchList, 'NBA');
+      if (selectSport === 'HANDBALL') {
+        const playMatchList = await getHandBallMatchList();
+        const modifiedResult = setDefaultApiData(playMatchList, 'HANDBALL');
 
         if (modifiedResult.length === 0) throw Error('API 한도초과');
 
@@ -237,7 +238,7 @@ export default function PlayListInfo(props: any) {
           <S.Category_Li onClick={clickSport}>BASEBALL</S.Category_Li>
           <S.Category_Li onClick={clickSport}>BASKETBALL</S.Category_Li>
           <S.Category_Li onClick={clickSport}>ICE HOCKEY</S.Category_Li>
-          <S.Category_Li onClick={clickSport}>NBA</S.Category_Li>
+          <S.Category_Li onClick={clickSport}>HANDBALL</S.Category_Li>
         </S.Category>
       </S.Play_Category_Bar>
       {isLimit ? (
