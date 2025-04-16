@@ -40,7 +40,7 @@ resource "aws_route53_record" "api" {
 resource "aws_route53_record" "db" {
   zone_id = data.aws_route53_zone.private.id
   name    = "db"
-  type    = "A"
+  type    = "CNAME"
   ttl     = "300"
-  records = [aws_instance.rds_access_instance.private_ip] # DB 서버의 프라이빗 IP 주소 입력
+  records = [aws_db_instance.mysql_multi_az.endpoint]
 }
