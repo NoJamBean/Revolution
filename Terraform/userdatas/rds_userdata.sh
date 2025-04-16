@@ -10,7 +10,7 @@ CREATE DATABASE IF NOT EXISTS gameDB;
 
 #Table생성
 USE userDB;
-DROP TABLE IF EXISTS gameinfoTBL;
+DROP TABLE IF EXISTS userTBL;
 CREATE TABLE userTBL ( 
     id VARCHAR(10) NOT NULL PRIMARY KEY, 
     uuid VARCHAR(255) NOT NULL,
@@ -33,8 +33,7 @@ CREATE TABLE gameinfoTBL (
     wdl ENUM('win', 'draw', 'lose')  NOT NULL,
     odds DECIMAL(5,2) NOT NULL,
     price BIGINT DEFAULT 0, 
-    status BOOLEAN DEFAULT TRUE,
-    PRIMARY KEY (id, gameDate)
+    status BOOLEAN DEFAULT TRUE
 );
 
 DROP TABLE IF EXISTS gameresultTBL;

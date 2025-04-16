@@ -23,6 +23,11 @@
 #   }
 # }
 
+resource "aws_route53_zone_association" "private_zone_association" {
+  zone_id = data.aws_route53_zone.private.id
+  vpc_id  = aws_vpc.vpc.id
+}
+
 #Private Records
 resource "aws_route53_record" "api" {
   zone_id = data.aws_route53_zone.private.id

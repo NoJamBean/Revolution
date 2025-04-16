@@ -2,6 +2,17 @@
 # aws_subnet.subnet[sn1-4] 10.0.[1-4].0/24
 # aws_internet_gateway.igw aws_vpc.vpc
 
+#DHCP
+resource "aws_vpc_dhcp_options" "custom" {
+  domain_name         = "ap-northeast-2.compute.internal"
+  domain_name_servers = ["AmazonProvidedDNS"]
+}
+
+resource "aws_vpc_dhcp_options_association" "custom" {
+  vpc_id          = aws_vpc.vpc.id
+  dhcp_options_id = aws_vpc_dhcp_options.custom.id
+}
+
 # VPC
 resource "aws_vpc" "vpc" {
   cidr_block = "10.0.0.0/16"
