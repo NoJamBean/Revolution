@@ -2,7 +2,9 @@ using Amazon;
 using Amazon.CognitoIdentityProvider;
 using Amazon.CognitoIdentityProvider.Model;
 using Microsoft.Extensions.Configuration;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace MyApi.Services
@@ -11,43 +13,102 @@ namespace MyApi.Services
     {
         private readonly AmazonCognitoIdentityProviderClient _cognitoClient;
         private readonly string _userPoolId;
+        private readonly string _userPoolClientId;
+
+        private const int ConfirmationCheckLimit = 36;
+        private const int DelayMilliseconds = 5000;
 
         public CognitoService(IConfiguration configuration)
         {
             _cognitoClient = new AmazonCognitoIdentityProviderClient(RegionEndpoint.APNortheast2);
             _userPoolId = Environment.GetEnvironmentVariable("COGNITO_USER_POOL") ?? configuration["Cognito:UserPoolId"];
+            _userPoolClientId = Environment.GetEnvironmentVariable("COGNITO_APP_CLIENT") ?? configuration["Cognito:AppClientId"];
         }
 
-        public async Task<string> CreateUserAsync(string id, string password, string email)
+        // 1. 회원가입(SignUp)
+        public async Task<string> SignUpAsync(string id, string password, string email)
         {
-            // 1. 사용자 생성 요청 (이메일 인증 메일 전송)
-            AdminCreateUserRequest createUserRequest = new AdminCreateUserRequest
+            try
             {
-                UserPoolId = _userPoolId,
-                Username = id,
-                TemporaryPassword = "YourTempPassword123!",
-                UserAttributes = new List<AttributeType>
+                Console.WriteLine($"[Cognito] 회원가입 요청: {id}");
+
+                var request = new SignUpRequest
                 {
-                    new AttributeType { Name = "email", Value = email }
-                },
-                MessageAction = "RESEND", // 인증 이메일 자동 전송
-            };
+                    ClientId = _userPoolClientId,
+                    Username = id,
+                    Password = password,
+                    UserAttributes = new List<AttributeType>
+                    {
+                        new AttributeType { Name = "email", Value = email }
+                    }
+                };
 
-            var createUserResponse = await _cognitoClient.AdminCreateUserAsync(createUserRequest);
+                var response = await _cognitoClient.SignUpAsync(request);
+                Console.WriteLine($"[Cognito] 회원가입 완료. 인증 여부: {response.UserConfirmed}");
 
-            // 2. 비밀번호 영구 설정 (임시 비밀번호 없이 바로 사용 가능하게)
-            AdminSetUserPasswordRequest setPasswordRequest = new AdminSetUserPasswordRequest
+                return response.UserSub;
+            }
+            catch (Exception ex)
             {
-                UserPoolId = _userPoolId,
-                Username = id,
-                Password = password,
-                Permanent = true // 영구 비밀번호 설정
-            };
+                Console.WriteLine($"[Cognito 오류] 회원가입 실패: {ex.Message}");
+                throw;
+            }
+        }
 
-            await _cognitoClient.AdminSetUserPasswordAsync(setPasswordRequest);
+        // 2. 인증 메일 재발송
+        public async Task ResendConfirmationEmailAsync(string id)
+        {
+            try
+            {
+                var request = new ResendConfirmationCodeRequest
+                {
+                    ClientId = _userPoolClientId,
+                    Username = id
+                };
 
-            // 3. 이메일 인증은 사용자가 메일을 통해 직접 해야 함
-            return createUserResponse.User.Username;
+                var response = await _cognitoClient.ResendConfirmationCodeAsync(request);
+                Console.WriteLine($"[Cognito] 인증 메일 재발송 완료. 수신 위치: {response.CodeDeliveryDetails.Destination}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[Cognito 오류] 인증 메일 재발송 실패: {ex.Message}");
+                throw;
+            }
+        }
+
+        // 3. 인증 완료 확인 (관리자 권한 필요)
+        public async Task WaitForUserConfirmationAsync(string id)
+        {
+            for (int i = 0; i < ConfirmationCheckLimit; i++)
+            {
+                try
+                {
+                    var response = await _cognitoClient.AdminGetUserAsync(new AdminGetUserRequest
+                    {
+                        UserPoolId = _userPoolId,
+                        Username = id
+                    });
+
+                    var isEmailVerified = response.UserAttributes.Any(attr =>
+                        attr.Name == "email_verified" && attr.Value == "true");
+
+                    Console.WriteLine($"[Cognito] 상태: {response.UserStatus}, 이메일 인증: {isEmailVerified}");
+
+                    if (response.UserStatus == UserStatusType.CONFIRMED && isEmailVerified)
+                    {
+                        Console.WriteLine("[Cognito] 사용자 인증 완료");
+                        return;
+                    }
+                }
+                catch (UserNotFoundException)
+                {
+                    Console.WriteLine("[Cognito] 사용자 아직 없음, 재시도...");
+                }
+
+                await Task.Delay(DelayMilliseconds);
+            }
+
+            Console.WriteLine("[Cognito] 사용자 인증 대기 시간 초과");
         }
     }
 }

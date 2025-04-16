@@ -22,6 +22,7 @@ using System.Collections.Concurrent;
 using System.IO;
 using System.Net;
 using System.Security.Claims;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 
@@ -81,6 +82,12 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
+builder.Services.AddControllers().AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+    options.JsonSerializerOptions.WriteIndented = true;
+});
+
 //CORS 정책 설정
 builder.Services.AddCors(options =>
 {
@@ -113,6 +120,7 @@ options.UseMySql(
 // Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddScoped<CognitoService>();
+builder.Services.AddScoped<IPasswordHasher, BcryptPasswordHasher>();
 
 WebApplication app = builder.Build();
 

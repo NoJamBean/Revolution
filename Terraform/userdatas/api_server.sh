@@ -33,11 +33,13 @@ sudo dotnet new webapi
 # Entity Framework Core 패키지 추가
 sudo dotnet add package AWSSDK.CognitoIdentityProvider
 sudo dotnet add package AWSSDK.S3 --version 3.7.0
+sudo dotnet add package BCrypt.Net-Next --version 4.0.2
 sudo dotnet add package Microsoft.AspNetCore.Authentication.JwtBearer --version 6.0.26
 sudo dotnet add package Microsoft.AspNetCore.Authorization --version 6.0.0
 sudo dotnet add package Microsoft.Bcl.AsyncInterfaces --version 6.0.0
 sudo dotnet add package Microsoft.EntityFrameworkCore.Design --version 6.0.0
 sudo dotnet add package Microsoft.EntityFrameworkCore.SqlServer --version 6.0.0
+sudo dotnet add package Microsoft.Extensions.DependencyInjection --version 6.0.0
 sudo dotnet add package Pomelo.EntityFrameworkCore.MySql --version 6.0.0
 sudo dotnet add package Serilog --version 4.1.0
 sudo dotnet add package Serilog.AspNetCore --version 4.1.0
@@ -73,8 +75,10 @@ sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/GameDbContext.cs $LOCAL_PATH/Data/
 sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/UsersController.cs $LOCAL_PATH/Controllers/UsersController.cs
 sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/GamesController.cs $LOCAL_PATH/Controllers/GamesController.cs
 sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/CognitoService.cs $LOCAL_PATH/Service/CognitoService.cs
+sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/BcryptPasswordHasher.cs $LOCAL_PATH/Service/BcryptPasswordHasher.cs
+sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/IPasswordHasher.cs $LOCAL_PATH/Service/IPasswordHasher.cs
 
-sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/dotnet_run.sh ~/run
+sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/dotnet_run.sh ~/run.sh
 
 # 종속성 복원 및 빌드
 cd $LOCAL_PATH
@@ -194,4 +198,4 @@ EOL
 
 sudo systemctl restart nginx
 
-sudo chmod +x ~/run
+sudo chmod +x ~/run.sh

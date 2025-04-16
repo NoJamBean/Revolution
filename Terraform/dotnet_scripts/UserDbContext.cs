@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace MyApi.Data
 {
@@ -29,7 +30,6 @@ namespace MyApi.Data
         public string? Id { get; set; }
 
         [Column("uuid")]
-        [Required]
         [StringLength(255)]
         public string? Uuid { get; set; }
         
@@ -58,7 +58,7 @@ namespace MyApi.Data
         public long Balance { get; set; } = 0;
 
         [Column("modified_date")]
-        public DateTime ModifiedDate { get; set; } = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("Korea Standard Time"));
+        public DateTime ModifiedDate { get; set; } = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("Asia/Seoul"));
 
         public User() {}
     }

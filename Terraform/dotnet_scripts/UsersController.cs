@@ -6,6 +6,7 @@ using MyApi.Services;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace MyApi.Controllers
@@ -14,17 +15,18 @@ namespace MyApi.Controllers
     [ApiController]
     public class UsersController : ControllerBase
     {
-        private readonly IConfiguration _configuration;
-        private readonly UserDbContext _userContext;
         private readonly CognitoService _cognitoService;
+        private readonly IConfiguration _configuration;
+        private readonly IPasswordHasher _passwordHasher;
+        private readonly UserDbContext _userContext;
 
-        public UsersController(UserDbContext userContext, IConfiguration configuration, CognitoService cognitoService)
+        public UsersController(UserDbContext userContext, IConfiguration configuration, IPasswordHasher passwordHasher, CognitoService cognitoService)
         {
             _userContext = userContext;
             _configuration = configuration;
+            _passwordHasher = passwordHasher;
             _cognitoService = cognitoService;
         }
-
 
         //GET
         // 특정 사용자의 잔액 조회
@@ -115,24 +117,29 @@ namespace MyApi.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> RegisterUser([FromBody] User user)
         {
-            if (user == null || string.IsNullOrEmpty(user.Id) || string.IsNullOrEmpty(user.Password) || string.IsNullOrEmpty(user.Password))
+            if (user == null || string.IsNullOrEmpty(user.Id) || string.IsNullOrEmpty(user.Password) || string.IsNullOrEmpty(user.Email))
             {
                 return BadRequest("아이디와 비밀번호와 이메일은 필수입니다.");
             }
 
             try
-            {
-                var uuid = await _cognitoService.CreateUserAsync(user.Id, user.Password, user.Email);
+            {   
+                Console.WriteLine("RegisterUser 호출됨");
+                var uuid = await _cognitoService.SignUpAsync(user.Id, user.Password, user.Email);
+                Console.WriteLine("Cognito 사용자 생성 완료: " + uuid);
+                await _cognitoService.WaitForUserConfirmationAsync(user.Id);
 
-                DateTime koreaTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("Korea Standard Time"));
-
+                var hashedPassword = _passwordHasher.HashPassword(user.Password);
+                
+                DateTime koreaTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("Asia/Seoul"));
+                
                 // 2. DB에 저장
                 var newUser = new User
                 {
                     Id = user.Id,
                     Uuid = uuid,
                     Nickname = user.Nickname,
-                    Password = user.Password,
+                    Password = hashedPassword,
                     Email = user.Email,
                     PhoneNumber = user.PhoneNumber,
                     Balance = user.Balance,
@@ -141,12 +148,48 @@ namespace MyApi.Controllers
 
                 _userContext.Users.Add(newUser);
                 await _userContext.SaveChangesAsync();
+                Console.WriteLine("DB 저장 완료");
 
-                return Ok(new { message = "사용자 등록 성공", user = newUser });
+                return Ok(new
+                {
+                    message = "사용자 등록 성공",
+                    user = new
+                    {
+                        id = newUser.Id,
+                        uuid = newUser.Uuid,
+                        nickname = newUser.Nickname,
+                        email = newUser.Email,
+                        phoneNumber = newUser.PhoneNumber,
+                        balance = newUser.Balance,
+                        modifiedDate = newUser.ModifiedDate
+                    }
+                });
             }
             catch (Exception ex)
             {
+                Console.WriteLine("[에러] 사용자 등록 실패: " + ex.Message);
                 return StatusCode(500, new { message = "사용자 등록 실패", error = ex.Message });
+            }
+        }
+
+        //인증이메일 재전송
+        [HttpPost("register/resend")]
+        public async Task<IActionResult> ResendConfirmation([FromBody] ResendRequest request)
+        {
+            if (string.IsNullOrEmpty(request.Id))
+            {
+                return BadRequest(new { message = "ID는 필수입니다." });
+            }
+
+            try
+            {
+                await _cognitoService.ResendConfirmationEmailAsync(request.Id);
+                return Ok(new { message = "인증 메일이 재발송되었습니다." });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("[에러] 인증 메일 재발송 실패: " + ex.Message);
+                return StatusCode(500, new { message = "인증 메일 재발송 실패", error = ex.Message });
             }
         }
     }

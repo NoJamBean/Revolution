@@ -165,6 +165,22 @@ resource "aws_s3_object" "appsettings_json" {
   source_hash = filemd5("${path.module}/dotnet_scripts/appsettings.json")
 }
 
+resource "aws_s3_object" "BcryptPasswordHasher" {
+  bucket      = aws_s3_bucket.long_user_data_bucket.id
+  key         = "dotnet_scripts/BcryptPasswordHasher.cs"
+  source      = "${path.module}/dotnet_scripts/BcryptPasswordHasher.cs"
+  acl         = "private"
+  source_hash = filemd5("${path.module}/dotnet_scripts/BcryptPasswordHasher.cs")
+}
+
+resource "aws_s3_object" "IPasswordHasher" {
+  bucket      = aws_s3_bucket.long_user_data_bucket.id
+  key         = "dotnet_scripts/IPasswordHasher.cs"
+  source      = "${path.module}/dotnet_scripts/IPasswordHasher.cs"
+  acl         = "private"
+  source_hash = filemd5("${path.module}/dotnet_scripts/IPasswordHasher.cs")
+}
+
 resource "aws_s3_object" "rds_userdata" {
   bucket      = aws_s3_bucket.long_user_data_bucket.id
   key         = "userdatas/rds_userdata.sh"

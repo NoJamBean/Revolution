@@ -1,4 +1,21 @@
 # 1. IAM 역할 생성
+resource "aws_iam_role" "api_server_role" {
+  name = "api_server_role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = {
+          Service = "ec2.amazonaws.com"
+        }
+        Action = "sts:AssumeRole"
+      }
+    ]
+  })
+}
+
 resource "aws_iam_role" "ec2_s3_role" {
   name = "ec2_s3_fullaccess_role"
 
@@ -118,7 +135,22 @@ resource "aws_iam_policy_attachment" "attach_codebuild_s3_read_policy" {
   policy_arn = aws_iam_policy.codebuild_s3_read_policy.arn
 }
 
-
+resource "aws_iam_policy" "cognito_user_mgmt" {
+  name        = "CognitoUserManagementPolicy"
+  description = "Allow Cognito user creation"
+  policy      = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect   = "Allow",
+        Action   = [
+          "cognito-idp:*"
+        ],
+        Resource = "*"
+      }
+    ]
+  })
+}
 
 
 
@@ -341,11 +373,7 @@ resource "aws_iam_policy" "s3_full_access_policy" {
       {
         Effect = "Allow"
         Action = [
-          "s3:GetObject",
-          "s3:PutObject",
-          "s3:ListBucket",
-          "s3:DeleteObject",
-          "s3:ListAllMyBuckets"
+          "s3:*"
         ]
         Resource = [
           "arn:aws:s3:::*/*", # 모든 S3 객체에 대한 접근
@@ -356,9 +384,11 @@ resource "aws_iam_policy" "s3_full_access_policy" {
   })
 }
 
+#Attachment
+
 resource "aws_iam_policy_attachment" "s3_full_access" {
   name       = "s3-full-access-attachment"
-  roles      = [aws_iam_role.ec2_s3_role.name]
+  roles      = [aws_iam_role.ec2_s3_role.name, aws_iam_role.api_server_role.name]
   policy_arn = aws_iam_policy.s3_full_access_policy.arn
 }
 
@@ -369,11 +399,25 @@ resource "aws_iam_role_policy_attachment" "codedeploy_attach" {
   policy_arn = "arn:aws:iam::aws:policy/AWSCodeDeployFullAccess"
 }
 
+# resource "aws_iam_role_policy_attachment" "attach_cognito_policy" {
+#   role       = "ec2_s3_fullaccess_role"
+#   policy_arn = aws_iam_policy.cognito_user_mgmt.arn
+# }
 
-# 3. IAM 인스턴스 프로파일 생성 (EC2에 연결하기 위함)
-resource "aws_iam_instance_profile" "ec2_s3_profile" {
-  name = "ec2_s3_profile"
-  role = aws_iam_role.ec2_s3_role.name
+resource "aws_iam_role_policy_attachment" "attach_to_api_server_role_cognito" {
+  role       = aws_iam_role.api_server_role.name
+  policy_arn = aws_iam_policy.cognito_user_mgmt.arn
+}
+
+resource "aws_iam_role_policy_attachment" "attach_to_api_server_role_s3" {
+  role       = aws_iam_role.api_server_role.name
+  policy_arn = aws_iam_policy.s3_full_access_policy.arn
+}
+
+#Profile
+resource "aws_iam_instance_profile" "api_server_profile" {
+  name = "api_server_profile"
+  role = aws_iam_role.api_server_role.name
 }
 
 
