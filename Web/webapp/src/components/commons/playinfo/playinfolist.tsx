@@ -6,6 +6,7 @@ import {
   getBaseballlMatchList,
   getBasketballMatchList,
   getFootballMatchList,
+  getIceHockeyMatchList,
 } from '@/src/api/getdefaulmatchlist';
 import { useRouter } from 'next/router';
 
@@ -14,7 +15,7 @@ export default function PlayListInfo(props: any) {
   const [isLoading, setIsLoading] = useState(false);
 
   const router = useRouter();
-  const allMatchRef = useRef();
+  const allMatchRef = useRef<string | string[] | undefined>();
 
   const {
     setDefaultApiData,
@@ -27,13 +28,7 @@ export default function PlayListInfo(props: any) {
   } = useMatchInfo();
 
   const getTargetMatch = async (target: any, selectSport: string) => {
-    // if (target === undefined) {
-    //   console.log('API 유료사용 전부 써버림');
-    //   return;
-    // } // API 무료제한 끝났을 경우
-
     const targetMatchInfo = await getTargetedMatchInfo(target, selectSport);
-
     setHomeAwayData(targetMatchInfo, selectSport);
     setClickedPlay(target);
   };
@@ -45,54 +40,119 @@ export default function PlayListInfo(props: any) {
 
   //
   //
+  //
   useEffect(() => {
-    console.log('언제만 useEffect가 트리거 되나요????????', router.asPath);
+    console.log('언제만 useEffect가 트리거 되나요????????');
 
     const getTodayFixtures = async () => {
       setIsLoading(true);
 
       try {
-        // if (selectSport === 'FOOTBALL') {
-        //   // 축구 API (경기 List)
-        //   const playMatchList = await getFootballMatchList();
-        //   const modifiedResult = setDefaultApiData(playMatchList, 'FOOTBALL');
-        //   allMatchRef.current = modifiedResult[0]?.id;
-        //   console.log(modifiedResult.length);
-        //   getTargetMatch(modifiedResult[0]?.id, selectSport);
-        //   return;
-        // }
-        // if (selectSport === 'BASEBALL') {
-        //   const playMatchList = await getBaseballlMatchList();
-        //   const modifiedResult = setDefaultApiData(playMatchList, 'BASEBALL');
-        //   console.log('test', modifiedResult);
-        //   allMatchRef.current = modifiedResult[0]?.id;
-        //   console.log(modifiedResult.length);
-        //   getTargetMatch(modifiedResult[0]?.id, selectSport);
-        // }
-        // if (selectSport === 'BASKETBALL') {
-        //   console.log('여기가 트리거됩니다!');
-        //   const playMatchList = await getBasketballMatchList();
-        //   const modifiedResult = setDefaultApiData(playMatchList, 'BASKETBALL');
-        //   allMatchRef.current = modifiedResult[0]?.id;
-        //   console.log(modifiedResult.length);
-        //   getTargetMatch(modifiedResult[0]?.id, selectSport);
-        //   return;
-        // }
+        if (selectSport === 'FOOTBALL') {
+          // 축구 API (경기 List)
+          const playMatchList = await getFootballMatchList();
+          const modifiedResult = setDefaultApiData(playMatchList, 'FOOTBALL');
+
+          if (router.query.id) {
+            allMatchRef.current = router.query.id;
+          } else {
+            allMatchRef.current = modifiedResult[0]?.id;
+          }
+
+          console.log(modifiedResult.length);
+
+          if (modifiedResult.length === 0) throw Error('API 한도초과');
+          getTargetMatch(allMatchRef.current, selectSport);
+
+          setIsLimit(false);
+          return;
+        }
+        if (selectSport === 'BASEBALL') {
+          const playMatchList = await getBaseballlMatchList();
+          const modifiedResult = setDefaultApiData(playMatchList, 'BASEBALL');
+          allMatchRef.current = modifiedResult[0]?.id;
+
+          console.log(modifiedResult.length);
+
+          getTargetMatch(allMatchRef.current, selectSport);
+
+          setIsLimit(false);
+          return;
+        }
+        if (selectSport === 'BASKETBALL') {
+          console.log('여기가 트리거됩니다!', router.asPath);
+
+          const playMatchList = await getBasketballMatchList();
+          const modifiedResult = setDefaultApiData(playMatchList, 'BASKETBALL');
+
+          allMatchRef.current = modifiedResult[0]?.id;
+          console.log(modifiedResult.length);
+
+          if (modifiedResult.length === 0) throw Error('API 한도초과');
+          getTargetMatch(allMatchRef.current, selectSport);
+
+          setIsLimit(false);
+          return;
+        }
+
+        if (selectSport === 'ICE HOCKEY') {
+          console.log('하키 트리거');
+          const playMatchList = await getIceHockeyMatchList();
+          const modifiedResult = setDefaultApiData(playMatchList, 'ICE HOCKEY');
+
+          if (router.query.id) {
+            allMatchRef.current = router.query.id;
+          } else {
+            allMatchRef.current = modifiedResult[0]?.id;
+          }
+
+          if (modifiedResult.length === 0) throw Error('API 한도초과');
+          getTargetMatch(allMatchRef.current, selectSport);
+
+          setIsLimit(false);
+          return;
+        }
+
         // getTargetMatch(modifiedResult[0]?.id); // 초기 렌더링 시 첫번째 값에 대한 상세정보 표시되도록 미리 트리거
       } catch (error) {
-        console.log((error as Error).message, 123);
+        console.log((error as Error).message);
         const message = (error as Error).message;
 
-        if (message.includes('limit')) setIsLimit(true);
+        if (message === 'API 한도초과') setIsLimit(true);
       }
     };
 
     getTodayFixtures();
   }, [selectSport]);
 
+  useEffect(() => {
+    console.log('페이지 나가게 될 때 모든 라우팅 쿼리 파라미터 제거');
+
+    return () => {
+      router.replace(router.pathname, undefined, { shallow: true });
+    };
+  }, []);
+
+  // 라우팅 경로 변경 시 업데이트
+  // useEffect(() => {
+  //   const handleRouteChange = (url: string) => {
+  //     setSelectSport(selectSport);
+
+  //     console.log('경로',url,router.query.id,router.query.sport, '라우터 쿼리 체크');
+
+  //   };
+
+  //   router.events.on('routeChangeComplete', handleRouteChange);
+
+  //   return () => {
+  //     router.events.off('routeChangeComplete', handleRouteChange);
+  //   };
+  // }, []);
+
   const handleparms = (id: string) => {
     const current = new URLSearchParams(window.location.search);
     current.set('id', id);
+
     router.push(
       `${window.location.pathname}?${current.toString()}`,
       undefined,
@@ -102,6 +162,7 @@ export default function PlayListInfo(props: any) {
 
   const getDate = (timezone: string) => {
     const date = new Date(timezone);
+
     const koreaDate = new Date(date.getTime() + 9 * 60 * 60 * 1000);
 
     const month = String(koreaDate.getMonth() + 1).padStart(2, '0');
@@ -112,7 +173,10 @@ export default function PlayListInfo(props: any) {
 
   const getTime = (timezone: string) => {
     const date = new Date(timezone);
-    const koreaDate = new Date(date.getTime() + 9 * 60 * 60 * 1000);
+
+    const koreaDate = new Date(
+      date.toLocaleString('en-US', { timeZone: 'Asia/Seoul' })
+    );
 
     const hour = String(koreaDate.getHours()).padStart(2, '0');
     const minute = String(koreaDate.getMinutes()).padStart(2, '0');

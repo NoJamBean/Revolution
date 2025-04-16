@@ -109,6 +109,35 @@ export const MatchInfoProvider = ({ children }: { children: any }) => {
           },
         };
       }
+
+      if (type === 'ICE HOCKEY') {
+        return {
+          id: el.id,
+          date: el.date,
+          league: {
+            id: el.league.id,
+            name: el.league.name,
+            logo: el.league.logo,
+            season: el.league.season,
+            country: el.country.name,
+            flag: el.country.flag,
+          },
+          home: {
+            id: el.teams.home.id,
+            logo: el.teams.home.logo,
+            name: el.teams.home.name,
+          },
+          away: {
+            id: el.teams.away.id,
+            logo: el.teams.away.logo,
+            name: el.teams.away.name,
+          },
+          scores: {
+            home: el.scores.home,
+            away: el.scores.away,
+          },
+        };
+      }
     });
 
     setApiData(modified);
@@ -118,8 +147,6 @@ export const MatchInfoProvider = ({ children }: { children: any }) => {
 
   // home, away 각각의 상세정보에 대한 값을 정제하기 위한 API 데이터 정제 메서드
   const setHomeAwayData = (data: any, type: any) => {
-    console.log('dattatatattata12313213123t', data);
-
     if (type === 'FOOTBALL') {
       const modified = {
         home: {

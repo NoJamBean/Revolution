@@ -20,7 +20,7 @@ export default function Main() {
 
   const goToBet = () => {
     console.log(homeAwayInfo);
-    console.log(router.query);
+    console.log(router.query, router.asPath, 333);
 
     router.push({
       pathname: '/bet',
@@ -73,18 +73,34 @@ export default function Main() {
                     <S.Team_Wrap>
                       <S.Home>
                         <S.Team_Mark>
-                          <S.Team_Img src={homeAwayInfo?.home?.team?.logo} />
+                          <S.Team_Img
+                            src={
+                              homeAwayInfo?.home?.team?.logo || '/banner.jpg'
+                            }
+                            onError={(e) => {
+                              e.currentTarget.onerror = null;
+                              e.currentTarget.src = '/banner.jpg';
+                            }}
+                          />
                         </S.Team_Mark>
                         <S.Team_Name>
-                          {homeAwayInfo?.home?.team?.name}
+                          {homeAwayInfo?.home?.team?.name || 'NO_DATA'}
                         </S.Team_Name>
                       </S.Home>
                       <S.Away>
                         <S.Team_Mark>
-                          <S.Team_Img src={homeAwayInfo?.away?.team?.logo} />
+                          <S.Team_Img
+                            src={
+                              homeAwayInfo?.away?.team?.logo || '/banner.jpg'
+                            }
+                            onError={(e) => {
+                              e.currentTarget.onerror = null;
+                              e.currentTarget.src = '/banner.jpg';
+                            }}
+                          />
                         </S.Team_Mark>
                         <S.Team_Name>
-                          {homeAwayInfo?.away?.team?.name}
+                          {homeAwayInfo?.away?.team?.name || 'NO_DATA'}
                         </S.Team_Name>
                       </S.Away>
                     </S.Team_Wrap>
