@@ -9,7 +9,7 @@ opensearch_domain_name = "integration-log-timangs" # 원하는 도메인 이름
 # opensearch_instance_count = 3
 
 # 전역적으로 고유한 S3 버킷 이름 설정
-cloudtrail_s3_bucket_name = "opensearch-timangs"
+cloudtrail_s3_bucket_name = "log-opensearch"
 
 # OpenSearch 마스터 사용자 비밀번호 (실제 비밀번호로 변경)
 # 보안을 위해 환경 변수나 다른 비밀 관리 도구 사용을 강력히 권장합니다.
