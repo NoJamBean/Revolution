@@ -91,7 +91,6 @@ DB_USERNAME="${var.db_username}"
 DB_PASSWORD="${var.db_password}"
 COGNITO_USER_POOL="${aws_cognito_user_pool.user_pool.id}"
 COGNITO_APP_CLIENT="${aws_cognito_user_pool_client.app_client.id}"
-COGNITO_USER_ID = "${aws_cognito_user.dummy_user.id}"
 API_SERVER_DNS="${var.api_dns}"
 
 S3_BUCKET="${aws_s3_bucket.long_user_data_bucket.bucket}"
