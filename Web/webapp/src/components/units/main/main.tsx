@@ -19,7 +19,7 @@ export default function Main() {
   };
 
   const goToBet = () => {
-    console.log(homeAwayInfo);
+    console.log(homeAwayInfo, 11);
     console.log(router.query, router.asPath, 333);
 
     router.push({
