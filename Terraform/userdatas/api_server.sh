@@ -62,8 +62,9 @@ sudo chmod -R 755 /usr/share/dotnet
 
 # S3에서 설정 파일 다운로드
 # sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/appsettings.json $LOCAL_PATH/appsettings.json
-sudo aws s3 cp s3://$S3_BUCKET/userdatas/rds_userdata.sh ~/rdsuserdata
-sudo ./rdsuserdata
+sudo aws s3 cp s3://$S3_BUCKET/userdatas/rds_userdata.sh /home/ec2-user/rdsuserdata.sh
+sudo chmod +x /home/ec2-user/api_server.sh
+sudo /home/ec2-user/rdsuserdata.sh
 
 # S3에서 주요 프로젝트 파일 다운로드
 sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/Program.cs $LOCAL_PATH/Program.cs

@@ -1,8 +1,3 @@
-output "db_endpoint" {
-  value = split(":", aws_db_instance.mysql_multi_az.endpoint)[0]
-  sensitive = true
-}
-
 output "api_address" {
   description = "API SERVER의 공인 IP 주소"
   value       = "http://${aws_instance.api_server_1.public_ip}:5000/api/users/test"

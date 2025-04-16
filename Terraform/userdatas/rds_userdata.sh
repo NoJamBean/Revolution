@@ -50,7 +50,7 @@ CREATE TABLE gameresultTBL (
 
 USE userDB;
 INSERT INTO userTBL (id, uuid, nickname, password, e_mail, phone_number, balance)
-VALUES ('dummyuser', "${cognito_user_id}", 'dummy', '$2y$10$abcdefghijklmnopqrstuvwx', 'dummyuser@example.com', '01012345678', 10000)
+VALUES ('dummyuser', "$COGNITO_USER_ID", 'dummy', '$2y$10$abcdefghijklmnopqrstuvwx', 'dummyuser@example.com', '01012345678', 10000)
 ON DUPLICATE KEY UPDATE 
     uuid = VALUES(uuid),
     password = VALUES(password),

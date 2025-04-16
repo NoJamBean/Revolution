@@ -75,6 +75,10 @@ resource "aws_launch_template" "template" {
   vpc_security_group_ids = [aws_security_group.default_sg.id]
   user_data              = base64encode(data.template_file.app_server.rendered)
 
+  credit_specification {
+    cpu_credits = "standard"
+  }
+  
   tag_specifications {
     resource_type = "instance"
     tags          = { Name = "web-server" }

@@ -42,5 +42,5 @@ resource "aws_route53_record" "db" {
   name    = "db"
   type    = "CNAME"
   ttl     = "300"
-  records = [aws_db_instance.mysql_multi_az.endpoint]
+  records = [split(":", aws_db_instance.mysql_multi_az.endpoint)[0]]
 }

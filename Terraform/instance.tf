@@ -1,10 +1,5 @@
 #DotNet Backend Server1
 #정원빈 수정
-locals {
-  db_host = split(":", aws_db_instance.mysql_multi_az.endpoint)[0]
-}
-
-
 
 # Web 서버 접속 테스트용 인스턴스
 # resource "aws_instance" "api_test_server" {
@@ -91,11 +86,12 @@ resource "aws_instance" "api_server_1" {
 set -e
 
 sudo tee -a /etc/environment > /dev/null <<EOL
-DB_ENDPOINT="${local.db_host}"
+DB_ENDPOINT="${var.rds_dns}"
 DB_USERNAME="${var.db_username}"
 DB_PASSWORD="${var.db_password}"
 COGNITO_USER_POOL="${aws_cognito_user_pool.user_pool.id}"
 COGNITO_APP_CLIENT="${aws_cognito_user_pool_client.app_client.id}"
+COGNITO_USER_ID = "${aws_cognito_user.dummy_user.id}"
 API_SERVER_DNS="${var.api_dns}"
 
 S3_BUCKET="${aws_s3_bucket.long_user_data_bucket.bucket}"
@@ -108,9 +104,9 @@ source /etc/environment
 export S3_BUCKET="${aws_s3_bucket.long_user_data_bucket.bucket}"
 export LOCAL_PATH="/var/www/dotnet-api/MyApi"
 
-sudo aws s3 cp s3://$S3_BUCKET/api_server.sh /tmp/api_server.sh
-sudo chmod +x /tmp/api_server.sh
-sudo /tmp/api_server.sh
+sudo aws s3 cp s3://$S3_BUCKET/api_server.sh /home/ec2-user/api_server.sh
+sudo chmod +x /home/ec2-user/api_server.sh
+sudo /home/ec2-user/api_server.sh
 EOT
 
   tags = {
