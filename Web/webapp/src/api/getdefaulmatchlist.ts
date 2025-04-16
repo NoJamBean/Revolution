@@ -80,8 +80,6 @@ export const getIceHockeyMatchList = async () => {
     },
   });
 
-  console.log('응답확인', response);
-
   if (response.data.errors.length > 0)
     throw Error(response.data.errors.requests);
 

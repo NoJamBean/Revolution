@@ -96,7 +96,6 @@ export default function PlayListInfo(props: any) {
         }
 
         if (selectSport === 'ICE HOCKEY') {
-          console.log('하키 트리거');
           const playMatchList = await getIceHockeyMatchList();
           const modifiedResult = setDefaultApiData(playMatchList, 'ICE HOCKEY');
 
@@ -105,6 +104,8 @@ export default function PlayListInfo(props: any) {
           } else {
             allMatchRef.current = modifiedResult[0]?.id;
           }
+
+          console.log(modifiedResult, 333);
 
           if (modifiedResult.length === 0) throw Error('API 한도초과');
           getTargetMatch(allMatchRef.current, selectSport);

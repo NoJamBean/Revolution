@@ -350,8 +350,75 @@ export const MatchInfoProvider = ({ children }: { children: any }) => {
         },
       };
 
-      setHomeAwayInfo(modified);
-      return;
+      if (type === 'ICE HOCKEY') {
+        console.log('trigger!!');
+        const modified = {
+          home: {
+            league: {
+              id: data?.home?.league?.id,
+              country: data?.home?.country?.name,
+              flag: data?.home?.country?.flag,
+              logo: data?.home?.league?.logo,
+              name: data?.home?.league?.name,
+            },
+            team: {
+              id: data?.home?.team?.id,
+              logo: data?.home?.team?.logo,
+              name: data?.home?.team?.name,
+            },
+            info: {
+              total: data?.home?.games?.played?.all,
+              win: data?.home?.games?.wins?.all?.total,
+              winhome: data?.home?.games?.wins?.home?.total,
+              winaway: data?.home?.games?.wins?.away?.total,
+              loses: data?.home?.games?.loses?.all?.total,
+              loseshome: data?.home?.games?.loses?.home?.total,
+              losesaway: data?.home?.games?.loses?.away?.total,
+
+              fortotal: data?.home?.goals?.for?.total?.all,
+              forhome: data?.home?.goals?.for?.total?.home,
+              foraway: data?.home?.goals?.for?.total?.away,
+              againsttotal: data?.home?.goals?.against?.total?.all,
+              againsthome: data?.home?.goals?.against?.total?.home,
+              againstaway: data?.home?.goals?.against?.total?.away,
+            },
+          },
+
+          away: {
+            league: {
+              id: data?.away?.league?.id,
+              country: data?.away?.country?.name,
+              flag: data?.away?.country?.flag,
+              logo: data?.away?.league?.logo,
+              name: data?.away?.league?.name,
+            },
+            team: {
+              id: data?.away?.team?.id,
+              logo: data?.away?.team?.logo,
+              name: data?.away?.team?.name,
+            },
+            info: {
+              total: data?.away?.games?.played?.all,
+              win: data?.away?.games?.wins?.all?.total,
+              winhome: data?.away?.games?.wins?.home?.total,
+              winaway: data?.away?.games?.wins?.away?.total,
+              loses: data?.away?.games?.loses?.all?.total,
+              loseshome: data?.away?.games?.loses?.home?.total,
+              losesaway: data?.away?.games?.loses?.away?.total,
+
+              fortotal: data?.away?.goals?.for?.total?.all,
+              forhome: data?.away?.goals?.for?.total?.home,
+              foraway: data?.away?.goals?.for?.total?.away,
+              againsttotal: data?.away?.goals?.against?.total?.all,
+              againsthome: data?.away?.goals?.against?.total?.home,
+              againstaway: data?.away?.goals?.against?.total?.away,
+            },
+          },
+        };
+
+        setHomeAwayInfo(modified);
+        return;
+      }
     }
   };
 
