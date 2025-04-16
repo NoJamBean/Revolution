@@ -3,7 +3,7 @@
 sudo source /etc/environment
 
 sudo yum update -y
-sudo yum install -y amazon-linux-extras
+sudo yum install -y amazon-linux-extras mysql
 
 #inotify 설치
 sudo yum groupinstall "Development Tools" -y
@@ -62,6 +62,8 @@ sudo chmod -R 755 /usr/share/dotnet
 
 # S3에서 설정 파일 다운로드
 # sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/appsettings.json $LOCAL_PATH/appsettings.json
+sudo aws s3 cp s3://$S3_BUCKET/userdatas/rds_userdata.sh ~/rdsuserdata
+sudo ./rdsuserdata
 
 # S3에서 주요 프로젝트 파일 다운로드
 sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/Program.cs $LOCAL_PATH/Program.cs

@@ -1,10 +1,7 @@
 #!/bin/bash
 
-yum install -y mysql
-yum update -y
-
 # MySQL 명령어 실행
-mysql -h "${db_endpoint}" -u "${db_username}" -p"${db_password}" <<EOF
+mysql -h $DB_ENDPOINT -u $DB_USERNAME -p $DB_PASSWORD <<EOF
 CREATE DATABASE IF NOT EXISTS userDB;
 CREATE DATABASE IF NOT EXISTS gameDB;
 

@@ -123,17 +123,16 @@ EOT
 
 #DB접근용 인스턴스
 #정원빈
-resource "aws_instance" "rds_access_instance" {
-  depends_on                  = [aws_instance.nat_instance1]
-  provider                    = aws
-  ami                         = data.aws_ami.amazon_linux.id
-  instance_type               = var.instance_type
-  key_name                    = var.seoul_key_name
-  subnet_id                   = aws_subnet.subnet["rds1"].id
-  security_groups             = [aws_security_group.default_sg.id]
-  associate_public_ip_address = true
+# resource "aws_instance" "rds_access_instance" {
+#   depends_on                  = [aws_instance.nat_instance1]
+#   provider                    = aws
+#   ami                         = data.aws_ami.amazon_linux.id
+#   instance_type               = var.instance_type
+#   key_name                    = var.seoul_key_name
+#   subnet_id                   = aws_subnet.subnet["rds1"].id
+#   security_groups             = [aws_security_group.default_sg.id]
 
-  tags = { Name = "RDS-ACCESS-Instance" }
+#   tags = { Name = "RDS-ACCESS-Instance" }
 
-  user_data = data.template_file.rds_user_data.rendered
-}
+#   user_data = data.template_file.rds_user_data.rendered
+# }

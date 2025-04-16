@@ -146,4 +146,12 @@ resource "aws_s3_object" "appsettings_json" {
   source_hash = filemd5("${path.module}/dotnet_scripts/appsettings.json")
 }
 
+resource "aws_s3_object" "rds_userdata" {
+  bucket      = aws_s3_bucket.long_user_data_bucket.id
+  key         = "userdatas/rds_userdata.sh"
+  source      = "${path.module}/dotnet_scripts/appsettings.json"
+  acl         = "private"
+  source_hash = filemd5("${path.module}/userdatas/rds_userdata.sh")
+}
+
 
