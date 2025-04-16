@@ -36,9 +36,9 @@ resource "aws_subnet" "subnet" {
     rds1 = {cidr_block="10.0.50.0/24",availability_zone=var.zone["a"], map_public_ip_on_launch = false } #DB 서버 1
     rds2 = {cidr_block="10.0.51.0/24",availability_zone=var.zone["c"], map_public_ip_on_launch = false } #DB 서버 2
     log1 = {cidr_block="10.0.200.0/24",availability_zone=var.zone["a"], map_public_ip_on_launch = false } #LOG 1
-    log2 = {cidr_block="10.0.201.0/24",availability_zone=var.zone["a"], map_public_ip_on_launch = false } #LOG 2
+    log2 = {cidr_block="10.0.201.0/24",availability_zone=var.zone["b"], map_public_ip_on_launch = false } #LOG 2
     log3 = {cidr_block="10.0.202.0/24",availability_zone=var.zone["c"], map_public_ip_on_launch = false } #LOG 3
-    log4 = {cidr_block="10.0.203.0/24",availability_zone=var.zone["c"], map_public_ip_on_launch = false } #LOG 4
+    log4 = {cidr_block="10.0.203.0/24",availability_zone=var.zone["d"], map_public_ip_on_launch = false } #LOG 4
   }
   vpc_id     = aws_vpc.vpc.id
   cidr_block = each.value.cidr_block
