@@ -8,7 +8,7 @@ files:
 hooks:
   AfterInstall:
     - location: scripts/install.sh
-      timeout: 120
+      timeout: 600
       runas: ec2-user
 
   # 로드밸런서 트래픽 처리용

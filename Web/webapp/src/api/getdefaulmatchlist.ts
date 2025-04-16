@@ -35,6 +35,7 @@ export const getBaseballlMatchList = async () => {
     },
   });
 
+  console.log(response);
   if (response.data.errors.length > 0)
     throw Error(response.data.errors.requests);
 
@@ -92,7 +93,7 @@ export const getHandBallMatchList = async () => {
   const date = new Date();
   const formattedDate = date.toISOString().split('T')[0];
 
-  const response = await axios.get('https://v2.nba.api-sports.io/games', {
+  const response = await axios.get('https://v1.handball.api-sports.io/games', {
     params: {
       date: formattedDate,
     }, // 원하는 날짜

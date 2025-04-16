@@ -143,6 +143,7 @@ export const MatchInfoProvider = ({ children }: { children: any }) => {
       }
 
       if (type === 'HANDBALL') {
+        console.log('handball trigger', el);
         return {
           id: el.id,
           date: el.date,
@@ -246,7 +247,7 @@ export const MatchInfoProvider = ({ children }: { children: any }) => {
         },
       };
 
-      setHomeAwayInfo(modified);
+      setHomeAwayInfo({ ...modified });
       return;
     }
 
@@ -315,7 +316,7 @@ export const MatchInfoProvider = ({ children }: { children: any }) => {
         },
       };
 
-      setHomeAwayInfo(modified);
+      setHomeAwayInfo({ ...modified });
       return;
     }
 
@@ -383,6 +384,8 @@ export const MatchInfoProvider = ({ children }: { children: any }) => {
           },
         },
       };
+      setHomeAwayInfo({ ...modified });
+      return;
     }
 
     if (type === 'ICE HOCKEY') {
@@ -451,7 +454,7 @@ export const MatchInfoProvider = ({ children }: { children: any }) => {
         },
       };
 
-      setHomeAwayInfo(modified);
+      setHomeAwayInfo({ ...modified });
       return;
     }
 
@@ -520,7 +523,7 @@ export const MatchInfoProvider = ({ children }: { children: any }) => {
         },
       };
 
-      setHomeAwayInfo(modified);
+      setHomeAwayInfo({ ...modified });
       return modified;
     }
   };

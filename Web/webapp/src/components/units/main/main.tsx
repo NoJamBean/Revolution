@@ -27,7 +27,7 @@ export default function Main() {
       return;
     }
 
-    router.replace({
+    router.push({
       pathname: '/bet',
       query: {
         id: matchId,

@@ -33,18 +33,23 @@ export default function PlayListInfo(props: any) {
     const targetMatchInfo = await getTargetedMatchInfo(target, selectSport);
     setHomeAwayData(targetMatchInfo, selectSport);
 
-    // shallow routing
-    router.replace(
-      {
-        pathname: '/bet',
-        query: { id: target, sport: selectSport },
-      },
-      undefined,
-      { shallow: true }
-    );
+    // console.log(router.query, 'router query');
+    console.log(target, '시발타겟');
+
+    if (router.pathname === '/bet') {
+      // shallow routing
+      router.push(
+        {
+          pathname: '/bet',
+          query: { id: target.id, sport: selectSport },
+        },
+        undefined,
+        { shallow: true }
+      );
+    }
 
     setClickedPlay(target);
-    setMatchId(target); // 이후 배팅하기 버튼 클릭 시 사용될 쿼리 파라미터 url 값
+    setMatchId(target.id); // 이후 배팅하기 버튼 클릭 시 사용될 쿼리 파라미터 url 값
   };
 
   const clickSport = (e: any) => {
@@ -78,6 +83,8 @@ export default function PlayListInfo(props: any) {
         return;
       }
       if (selectSport === 'BASEBALL') {
+        console.log('BASEBALL HOHO');
+
         const playMatchList = await getBaseballlMatchList();
         const modifiedResult = setDefaultApiData(playMatchList, 'BASEBALL');
 
@@ -164,35 +171,9 @@ export default function PlayListInfo(props: any) {
   //
   //
   useEffect(() => {
+    console.log(router, 'router');
     getTodayFixtures();
-  }, [selectSport]);
-
-  // useEffect(() => {
-  //   const handleRouteChangeStart = () => {
-  //     const currentPathOnly = window.location.pathname;
-  //   };
-
-  //   router.events.on('routeChangeStart', handleRouteChangeStart);
-
-  //   return () => {
-  //     router.events.off('routeChangeStart', handleRouteChangeStart);
-  //   };
-  // }, []);
-  // 라우팅 경로 변경 시 업데이트
-  // useEffect(() => {
-  //   const handleRouteChange = (url: string) => {
-  //     setSelectSport(selectSport);
-
-  //     console.log('경로',url,router.query.id,router.query.sport, '라우터 쿼리 체크');
-
-  //   };
-
-  //   router.events.on('routeChangeComplete', handleRouteChange);
-
-  //   return () => {
-  //     router.events.off('routeChangeComplete', handleRouteChange);
-  //   };
-  // }, []);
+  }, [router.isReady, selectSport]);
 
   const handleparms = (id: string) => {
     const current = new URLSearchParams(window.location.search);

@@ -6,7 +6,7 @@ import { useMatchInfo } from '../../oddwidget/widgetprovider';
 
 export default function Header() {
   const { openModal } = useModal();
-  const { selectSport, setMatchId, matchId } = useMatchInfo();
+  const { selectSport } = useMatchInfo();
 
   return (
     <S.Wrapper>
