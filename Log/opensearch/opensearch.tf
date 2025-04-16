@@ -48,7 +48,7 @@ resource "aws_opensearch_domain" "log_domain" {
         # Condition: IP 주소 제한
         Condition = {
           IpAddress = {
-            "aws:SourceIp" = ["121.160.41.207/32"] # 허용할 IP 주소 (CIDR 형식)
+            "aws:SourceIp" = ["121.160.41.207/32","58.120.222.122/32"] # 허용할 IP 주소 (CIDR 형식)
           }
         }
       }
