@@ -87,3 +87,24 @@ export const getIceHockeyMatchList = async () => {
 
   return playMatchList;
 };
+
+export const getNBAMatchList = async () => {
+  const date = new Date();
+  const formattedDate = date.toISOString().split('T')[0];
+
+  const response = await axios.get('https://v2.nba.api-sports.io/games', {
+    params: {
+      date: formattedDate,
+    }, // 원하는 날짜
+    headers: {
+      'x-apisports-key': process.env.NEXT_PUBLIC_SPORTS_API_KEY,
+    },
+  });
+
+  if (response.data.errors.length > 0)
+    throw Error(response.data.errors.requests);
+
+  const playMatchList = response.data.response;
+
+  return playMatchList;
+};

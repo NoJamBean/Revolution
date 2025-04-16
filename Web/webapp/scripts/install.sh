@@ -23,6 +23,7 @@ EOF
 sudo chmod +x /etc/profile.d/node.sh
 
 
+
 # pm2, yarn 설치
 sudo env "PATH=$PATH" npm install -g pm2
 sudo env "PATH=$PATH" npm install -g yarn

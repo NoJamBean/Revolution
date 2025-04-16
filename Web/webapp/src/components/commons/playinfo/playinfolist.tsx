@@ -134,6 +134,24 @@ export default function PlayListInfo(props: any) {
         return;
       }
 
+      if (selectSport === 'NBA') {
+        const playMatchList = await getIceHockeyMatchList();
+        const modifiedResult = setDefaultApiData(playMatchList, 'NBA');
+
+        if (modifiedResult.length === 0) throw Error('API 한도초과');
+
+        if (router.query.id) {
+          allMatchRef.current = String(router.query.id);
+        } else {
+          allMatchRef.current = modifiedResult?.[0]?.id;
+        }
+
+        getTargetMatch(allMatchRef.current, selectSport);
+
+        setIsLimit(false);
+        return;
+      }
+
       // getTargetMatch(modifiedResult[0]?.id); // 초기 렌더링 시 첫번째 값에 대한 상세정보 표시되도록 미리 트리거
     } catch (error) {
       console.log((error as Error).message);
@@ -219,6 +237,7 @@ export default function PlayListInfo(props: any) {
           <S.Category_Li onClick={clickSport}>BASEBALL</S.Category_Li>
           <S.Category_Li onClick={clickSport}>BASKETBALL</S.Category_Li>
           <S.Category_Li onClick={clickSport}>ICE HOCKEY</S.Category_Li>
+          <S.Category_Li onClick={clickSport}>NBA</S.Category_Li>
         </S.Category>
       </S.Play_Category_Bar>
       {isLimit ? (
