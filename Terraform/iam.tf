@@ -54,25 +54,6 @@ resource "aws_iam_role" "codedeploy_role" {
 
 
 
-# IAM 역할 생성 - Web용 EC2의 권한
-resource "aws_iam_role" "ec2_role" {
-  name = "EC2InstanceRole"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17",
-    Statement = [{
-      Effect = "Allow",
-      Principal = {
-        Service = "ec2.amazonaws.com"
-      },
-      Action = "sts:AssumeRole"
-    }]
-  })
-}
-
-
-
-
 # IAM 역할 생성 - CodePipeline의 권한
 resource "aws_iam_role" "codepipeline_role" {
   name = "codepipeline-execution-role"
@@ -148,22 +129,38 @@ resource "aws_iam_role_policy_attachment" "codedeploy_policy_attach" {
 }
 
 
+# CodeDeploy 정책 생성 (커스텀)
+resource "aws_iam_policy" "codedeploy_autoscaling_custom" {
+  name = "CodeDeployASGCustomPolicy"
 
-
-
-# Web-EC2용 정책 생성
-resource "aws_iam_role_policy_attachment" "ec2_policy_attach" {
-  role       = aws_iam_role.ec2_role.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforAWSCodeDeploy"
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Action = [
+          "autoscaling:*",
+          "iam:PassRole",
+          "iam:GetRole",
+          "ec2:*",
+          "elasticloadbalancing:*",
+          "codedeploy:*"
+          # "autoscaling:CreateAutoScalingGroup",
+          # "autoscaling:UpdateAutoScalingGroup",
+          # "autoscaling:DeleteAutoScalingGroup",
+          # "autoscaling:CreateOrUpdateTags",
+          # "autoscaling:DescribeAutoScalingGroups"
+        ],
+        Resource = "*"
+      }
+    ]
+  })
 }
 
-# Web용 EC2 프로파일 생성 (추후 EC2에 부착하기 위함)
-resource "aws_iam_instance_profile" "ec2_instance_profile" {
-  name = "EC2InstanceProfile"
-  role = aws_iam_role.ec2_role.name
+resource "aws_iam_role_policy_attachment" "codedeploy_autoscaling_custom_attach" {
+  role       = aws_iam_role.codedeploy_role.name
+  policy_arn = aws_iam_policy.codedeploy_autoscaling_custom.arn
 }
-
-
 
 
 
@@ -279,6 +276,39 @@ resource "aws_iam_policy_attachment" "attach_codebuild_logs_policy" {
 
 
 
+# CodePipeline -> CodeDeploy 배포 생성 권한 
+resource "aws_iam_policy" "codepipeline_codedeploy_policy" {
+  name        = "CodePipelineCodeDeployAccess"
+  description = "Allow CodePipeline to trigger CodeDeploy deployment"
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Action = [
+          "codedeploy:CreateDeployment",
+          "codedeploy:GetDeployment",
+          "codedeploy:GetDeployment",
+          "codedeploy:GetDeploymentConfig",
+          "codedeploy:GetApplicationRevision",
+          "codedeploy:RegisterApplicationRevision"
+        ],
+        Resource = "*"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "attach_codedeploy_policy" {
+  role       = aws_iam_role.codepipeline_role.name
+  policy_arn = aws_iam_policy.codepipeline_codedeploy_policy.arn
+}
+
+
+
+
+
 
 resource "aws_iam_role_policy" "codepipeline_use_connection" {
   name = "codepipeline-use-connection"
@@ -332,11 +362,27 @@ resource "aws_iam_policy_attachment" "s3_full_access" {
   policy_arn = aws_iam_policy.s3_full_access_policy.arn
 }
 
+
+# CodeDeploy용 권한 attach
+resource "aws_iam_role_policy_attachment" "codedeploy_attach" {
+  role       = aws_iam_role.ec2_s3_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AWSCodeDeployFullAccess"
+}
+
+
 # 3. IAM 인스턴스 프로파일 생성 (EC2에 연결하기 위함)
 resource "aws_iam_instance_profile" "ec2_s3_profile" {
   name = "ec2_s3_profile"
   role = aws_iam_role.ec2_s3_role.name
 }
+
+
+# Web용 EC2 프로파일 생성 (추후 EC2에 부착하기 위함)
+resource "aws_iam_instance_profile" "ec2_instance_profile" {
+  name = "EC2InstanceProfile"
+  role = aws_iam_role.ec2_s3_role.name
+}
+
 
 
 # resource "aws_iam_role_policy_attachment" "ssm_core_attachment" {

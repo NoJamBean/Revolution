@@ -206,7 +206,7 @@ export const Carousel = styled.div`
   background-color: blue;
   flex: 2;
   width: 100%;
-  max-height: 420px;
+  height: 420px;
   display: flex;
   object-fit: cover;
   border: 5px solid blue;

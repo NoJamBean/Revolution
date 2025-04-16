@@ -39,38 +39,44 @@ resource "aws_codebuild_project" "app_build" {
 
 # 코드 배포용 CodeDeploy Application 생성
 resource "aws_codedeploy_app" "web_app" {
-  name             = "web-app"
+  name             = "web-server"
   compute_platform = "Server" # EC2나 온프레미스 서버를 의미
+
 }
 
 
 # 해당 Apllication에 종속되는 배포그룹 생성
 resource "aws_codedeploy_deployment_group" "web_dg" {
+  depends_on            = [aws_autoscaling_group.asg]
   app_name              = aws_codedeploy_app.web_app.name
   deployment_group_name = "webapp-deployment-group"
   service_role_arn      = aws_iam_role.codedeploy_role.arn
 
   deployment_config_name = "CodeDeployDefault.AllAtOnce" # 배포 방식: 전부 한 번에 (테스트환경에서 쓰고, 이후 HalfAtATime 으로 변경 예정)
 
-  autoscaling_groups = [aws_autoscaling_group.asg.name]
+  autoscaling_groups = [aws_autoscaling_group.asg.id]
+
+
 
   deployment_style {
     deployment_option = "WITH_TRAFFIC_CONTROL"
     deployment_type   = "BLUE_GREEN"
   }
 
+
   blue_green_deployment_config {
-    terminate_blue_instances_on_deployment_success {
-      action                           = "TERMINATE"
-      termination_wait_time_in_minutes = 5
-    }
 
     deployment_ready_option {
       action_on_timeout = "CONTINUE_DEPLOYMENT"
     }
 
     green_fleet_provisioning_option {
-      action = "DISCOVER_EXISTING"
+      action = "COPY_AUTO_SCALING_GROUP"
+    }
+
+    terminate_blue_instances_on_deployment_success {
+      action                           = "TERMINATE"
+      termination_wait_time_in_minutes = 0
     }
   }
 
@@ -78,6 +84,11 @@ resource "aws_codedeploy_deployment_group" "web_dg" {
     target_group_info {
       name = aws_lb_target_group.alb_tg.name
     }
+  }
+
+  # 연결 완료 후 기존의 리소스 (asg) 삭제
+  lifecycle {
+    create_before_destroy = true
   }
 
   auto_rollback_configuration {

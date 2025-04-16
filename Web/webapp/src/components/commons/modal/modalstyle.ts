@@ -17,14 +17,15 @@ export const ModalContent = styled.div`
   /* width: 600px; */
   width: ${({ modalType }: { modalType: any }) =>
     modalType === 'Login' ? '600px' : '450px'};
-  min-height: 400px;
+  height: 400px;
   background-color: white;
 `;
 
 export const Content = styled.div`
   border: 2px solid red;
   display: flex;
-  height: 100%;
+  /* height: 100%; */
+  flex-grow: 1;
 `;
 
 export const ButtonWrap = styled.div`
