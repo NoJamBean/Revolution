@@ -22,35 +22,45 @@ resource "aws_opensearch_domain" "log_domain" {
   }
 
   # 중요: 접근 정책 설정
-  # Lambda 역할 ARN이 포함된 접근 정책
+  # Lambda 역할은 IP 제한 없이 허용하고, 지정된 IP 에서만 일반 접근을 허용하도록 변경
   access_policies = jsonencode({
     Version = "2012-10-17"
     Statement = [
+      # Statement 1: Lambda 역할 접근 허용 (IP 제한 없음)
       {
         Effect = "Allow"
         Principal = {
-          AWS = [
-            # 계정 루트 또는 Terraform 실행 주체 등 기존 접근 허용 Principal
-            "arn:aws:iam::${data.aws_caller_identity.current.account_id}:root",
-            # CloudTrail 로그 수집 Lambda 함수의 실행 역할 ARN 추가
-            "${aws_iam_role.lambda_s3_opensearch_role.arn}"
-          ]
+          AWS = "${aws_iam_role.lambda_s3_opensearch_role.arn}" # Lambda 역할 ARN
         }
-        # 실제 운영 환경에서는 "es:ESHttpPost", "es:ESHttpPut" 등 최소 권한 부여 권장
+        # Lambda에 필요한 최소한의 Action으로 제한하는 것이 좋습니다 (예: "es:ESHttpPost")
         Action = "es:*"
-        # 리소스 ARN 정확히 지정
         Resource = "arn:aws:es:${var.aws_region}:${data.aws_caller_identity.current.account_id}:domain/${var.opensearch_domain_name}/*"
+      },
+      # Statement 2: 지정된 IP 주소에서의 접근 허용
+      {
+        Effect = "Allow"
+        Principal = {
+          AWS = "*" # 모든 사용자 (익명 포함)
+        }
+        # Dashboards 접근 등에 필요한 최소한의 Action으로 제한하는 것이 좋습니다 (예: "es:ESHttpGet")
+        Action = "es:*"
+        Resource = "arn:aws:es:${var.aws_region}:${data.aws_caller_identity.current.account_id}:domain/${var.opensearch_domain_name}/*"
+        # Condition: IP 주소 제한
+        Condition = {
+          IpAddress = {
+            "aws:SourceIp" = ["121.160.41.207/32"] # 허용할 IP 주소 (CIDR 형식)
+          }
+        }
       }
-      # 필요시 IP 기반 제한 등 다른 정책 구문 추가 가능
     ]
   })
   # data.aws_caller_identity.current 는 providers.tf 등에 정의 필요
   # aws_iam_role.lambda_s3_opensearch_role 는 lambda_s3_opensearch.tf 에 정의 필요
 
-  # 고급 보안 옵션 (Fine-Grained Access Control)
+  # 고급 보안 옵션 (Fine-Grained Access Control) - 반드시 활성화 상태 유지
   advanced_security_options {
-    enabled                        = false
-    internal_user_database_enabled = false
+    enabled                        = true
+    internal_user_database_enabled = true
     master_user_options {
       master_user_name     = "admin" # 마스터 사용자 이름
       master_user_password = var.opensearch_master_user_password # 변수 사용 (variables.tf 정의, sensitive = true)
