@@ -17,7 +17,9 @@ variable "zone" {
   type = map(string)
   default = {
     a = "ap-northeast-2a",
-    c = "ap-northeast-2c"
+    b = "ap-northeast-2b",
+    c = "ap-northeast-2c",
+    d = "ap-northeast-2d"
   }
 }
 
