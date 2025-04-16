@@ -25,12 +25,25 @@ export default function PlayListInfo(props: any) {
     selectSport,
     isLimit,
     setIsLimit,
+    setMatchId,
   } = useMatchInfo();
 
   const getTargetMatch = async (target: any, selectSport: string) => {
     const targetMatchInfo = await getTargetedMatchInfo(target, selectSport);
     setHomeAwayData(targetMatchInfo, selectSport);
+
+    // shallow routing
+    router.replace(
+      {
+        pathname: '/bet',
+        query: { id: target, sport: selectSport },
+      },
+      undefined,
+      { shallow: true }
+    );
+
     setClickedPlay(target);
+    setMatchId(target); // 이후 배팅하기 버튼 클릭 시 사용될 쿼리 파라미터 url 값
   };
 
   const clickSport = (e: any) => {
@@ -39,101 +52,113 @@ export default function PlayListInfo(props: any) {
   };
 
   //
+
+  const getTodayFixtures = async () => {
+    setIsLoading(true);
+
+    try {
+      if (selectSport === 'FOOTBALL') {
+        // 축구 API (경기 List)
+        const playMatchList = await getFootballMatchList();
+        const modifiedResult = setDefaultApiData(playMatchList, 'FOOTBALL');
+
+        // console.log(modifiedResult.length)
+        if (modifiedResult.length === 0) throw Error('API 한도초과');
+
+        if (router.query.id) {
+          allMatchRef.current = String(router.query.id);
+        } else {
+          allMatchRef.current = modifiedResult?.[0]?.id;
+        }
+
+        getTargetMatch(allMatchRef.current, selectSport);
+
+        setIsLimit(false);
+        return;
+      }
+      if (selectSport === 'BASEBALL') {
+        const playMatchList = await getBaseballlMatchList();
+        const modifiedResult = setDefaultApiData(playMatchList, 'BASEBALL');
+
+        if (modifiedResult.length === 0) throw Error('API 한도초과');
+
+        if (router.query.id) {
+          allMatchRef.current = String(router.query.id);
+        } else {
+          allMatchRef.current = modifiedResult?.[0]?.id;
+        }
+
+        // console.log(modifiedResult.length);
+
+        getTargetMatch(allMatchRef.current, selectSport);
+
+        setIsLimit(false);
+        return;
+      }
+      if (selectSport === 'BASKETBALL') {
+        console.log('여기가 트리거됩니다!', router.asPath);
+
+        const playMatchList = await getBasketballMatchList();
+        const modifiedResult = setDefaultApiData(playMatchList, 'BASKETBALL');
+
+        // console.log(modifiedResult.length);
+        if (modifiedResult.length === 0) throw Error('API 한도초과');
+
+        if (router.query.id) {
+          allMatchRef.current = String(router.query.id);
+        } else {
+          allMatchRef.current = modifiedResult?.[0]?.id;
+        }
+
+        getTargetMatch(allMatchRef.current, selectSport);
+
+        setIsLimit(false);
+        return;
+      }
+
+      if (selectSport === 'ICE HOCKEY') {
+        const playMatchList = await getIceHockeyMatchList();
+        const modifiedResult = setDefaultApiData(playMatchList, 'ICE HOCKEY');
+
+        if (modifiedResult.length === 0) throw Error('API 한도초과');
+
+        if (router.query.id) {
+          allMatchRef.current = String(router.query.id);
+        } else {
+          allMatchRef.current = modifiedResult?.[0]?.id;
+        }
+
+        getTargetMatch(allMatchRef.current, selectSport);
+
+        setIsLimit(false);
+        return;
+      }
+
+      // getTargetMatch(modifiedResult[0]?.id); // 초기 렌더링 시 첫번째 값에 대한 상세정보 표시되도록 미리 트리거
+    } catch (error) {
+      console.log((error as Error).message);
+      const message = (error as Error).message;
+
+      if (message === 'API 한도초과') setIsLimit(true);
+    }
+  };
   //
   //
   useEffect(() => {
-    console.log('언제만 useEffect가 트리거 되나요????????');
-
-    const getTodayFixtures = async () => {
-      setIsLoading(true);
-
-      try {
-        if (selectSport === 'FOOTBALL') {
-          // 축구 API (경기 List)
-          const playMatchList = await getFootballMatchList();
-          const modifiedResult = setDefaultApiData(playMatchList, 'FOOTBALL');
-
-          if (router.query.id) {
-            allMatchRef.current = router.query.id;
-          } else {
-            allMatchRef.current = modifiedResult[0]?.id;
-          }
-
-          console.log(modifiedResult.length);
-
-          if (modifiedResult.length === 0) throw Error('API 한도초과');
-          getTargetMatch(allMatchRef.current, selectSport);
-
-          setIsLimit(false);
-          return;
-        }
-        if (selectSport === 'BASEBALL') {
-          const playMatchList = await getBaseballlMatchList();
-          const modifiedResult = setDefaultApiData(playMatchList, 'BASEBALL');
-          allMatchRef.current = modifiedResult[0]?.id;
-
-          console.log(modifiedResult.length);
-
-          getTargetMatch(allMatchRef.current, selectSport);
-
-          setIsLimit(false);
-          return;
-        }
-        if (selectSport === 'BASKETBALL') {
-          console.log('여기가 트리거됩니다!', router.asPath);
-
-          const playMatchList = await getBasketballMatchList();
-          const modifiedResult = setDefaultApiData(playMatchList, 'BASKETBALL');
-
-          allMatchRef.current = modifiedResult[0]?.id;
-          console.log(modifiedResult.length);
-
-          if (modifiedResult.length === 0) throw Error('API 한도초과');
-          getTargetMatch(allMatchRef.current, selectSport);
-
-          setIsLimit(false);
-          return;
-        }
-
-        if (selectSport === 'ICE HOCKEY') {
-          const playMatchList = await getIceHockeyMatchList();
-          const modifiedResult = setDefaultApiData(playMatchList, 'ICE HOCKEY');
-
-          if (router.query.id) {
-            allMatchRef.current = router.query.id;
-          } else {
-            allMatchRef.current = modifiedResult[0]?.id;
-          }
-
-          console.log(modifiedResult, 333);
-
-          if (modifiedResult.length === 0) throw Error('API 한도초과');
-          getTargetMatch(allMatchRef.current, selectSport);
-
-          setIsLimit(false);
-          return;
-        }
-
-        // getTargetMatch(modifiedResult[0]?.id); // 초기 렌더링 시 첫번째 값에 대한 상세정보 표시되도록 미리 트리거
-      } catch (error) {
-        console.log((error as Error).message);
-        const message = (error as Error).message;
-
-        if (message === 'API 한도초과') setIsLimit(true);
-      }
-    };
-
     getTodayFixtures();
   }, [selectSport]);
 
-  useEffect(() => {
-    console.log('페이지 나가게 될 때 모든 라우팅 쿼리 파라미터 제거');
+  // useEffect(() => {
+  //   const handleRouteChangeStart = () => {
+  //     const currentPathOnly = window.location.pathname;
+  //   };
 
-    return () => {
-      router.replace(router.pathname, undefined, { shallow: true });
-    };
-  }, []);
+  //   router.events.on('routeChangeStart', handleRouteChangeStart);
 
+  //   return () => {
+  //     router.events.off('routeChangeStart', handleRouteChangeStart);
+  //   };
+  // }, []);
   // 라우팅 경로 변경 시 업데이트
   // useEffect(() => {
   //   const handleRouteChange = (url: string) => {

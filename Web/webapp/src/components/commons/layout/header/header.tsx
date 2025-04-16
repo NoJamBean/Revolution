@@ -6,7 +6,7 @@ import { useMatchInfo } from '../../oddwidget/widgetprovider';
 
 export default function Header() {
   const { openModal } = useModal();
-  const { selectSport } = useMatchInfo();
+  const { selectSport, setMatchId, matchId } = useMatchInfo();
 
   return (
     <S.Wrapper>
@@ -25,7 +25,11 @@ export default function Header() {
           <S.MenuLink href={'/'}>MINI GAME</S.MenuLink>
         </S.Menu>
         <S.Menu>
-          <S.MenuLink href={`/bet?sport=${selectSport}`}>BET GAME</S.MenuLink>
+          <S.MenuLink
+            href={{ pathname: '/bet', query: { sport: selectSport } }}
+          >
+            BET GAME
+          </S.MenuLink>
         </S.Menu>
         <S.Menu>
           <S.MenuLink href={'/test'}>FAQ</S.MenuLink>

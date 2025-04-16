@@ -8,7 +8,7 @@ import { useRouter } from 'next/router';
 
 export default function Main() {
   const [clickedTab, setClickedTab] = useState('info');
-  const { homeAwayInfo, selectSport } = useMatchInfo();
+  const { homeAwayInfo, selectSport, matchId } = useMatchInfo();
 
   const router = useRouter();
   //   const [clickedPlay, setClickedPlay] = useState(0);
@@ -20,12 +20,17 @@ export default function Main() {
 
   const goToBet = () => {
     console.log(homeAwayInfo, 11);
-    console.log(router.query, router.asPath, 333);
+    // console.log(router.query, router.asPath, 333);
 
-    router.push({
+    if (matchId === '') {
+      alert('경기 선택하셈');
+      return;
+    }
+
+    router.replace({
       pathname: '/bet',
       query: {
-        id: router.query.id,
+        id: matchId,
         sport: selectSport,
       },
     });

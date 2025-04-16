@@ -6,6 +6,8 @@ type MatchInfoContextType = {
   isLimit: boolean;
   setDefaultApiData: (data: any, type: string) => any;
   setHomeAwayData: (data: any, type: string) => void;
+  setMatchId: React.Dispatch<React.SetStateAction<string>>;
+  matchId: string;
   apiData: any[];
   setSelectSport: React.Dispatch<React.SetStateAction<string | null>>;
   selectSport: string | null;
@@ -18,6 +20,7 @@ export const MatchInfoProvider = ({ children }: { children: any }) => {
   const [apiData, setApiData] = useState([]);
   const [homeAwayInfo, setHomeAwayInfo] = useState({});
   const [selectSport, setSelectSport] = useState<string | null>('FOOTBALL');
+  const [matchId, setMatchId] = useState('');
 
   const setDefaultApiData = (data: any, type: string) => {
     // 들어온 데이터 입맛에 맞게 객체형식으로 따로 저장 (전체경기 조회 API 데이터 정제용)
@@ -147,6 +150,8 @@ export const MatchInfoProvider = ({ children }: { children: any }) => {
 
   // home, away 각각의 상세정보에 대한 값을 정제하기 위한 API 데이터 정제 메서드
   const setHomeAwayData = (data: any, type: any) => {
+    console.log('여기 data chk', data, type);
+
     if (type === 'FOOTBALL') {
       const modified = {
         home: {
@@ -349,76 +354,76 @@ export const MatchInfoProvider = ({ children }: { children: any }) => {
           },
         },
       };
+    }
 
-      if (type === 'ICE HOCKEY') {
-        console.log('trigger!!');
-        const modified = {
-          home: {
-            league: {
-              id: data?.home?.league?.id,
-              country: data?.home?.country?.name,
-              flag: data?.home?.country?.flag,
-              logo: data?.home?.league?.logo,
-              name: data?.home?.league?.name,
-            },
-            team: {
-              id: data?.home?.team?.id,
-              logo: data?.home?.team?.logo,
-              name: data?.home?.team?.name,
-            },
-            info: {
-              total: data?.home?.games?.played?.all,
-              win: data?.home?.games?.wins?.all?.total,
-              winhome: data?.home?.games?.wins?.home?.total,
-              winaway: data?.home?.games?.wins?.away?.total,
-              loses: data?.home?.games?.loses?.all?.total,
-              loseshome: data?.home?.games?.loses?.home?.total,
-              losesaway: data?.home?.games?.loses?.away?.total,
-
-              fortotal: data?.home?.goals?.for?.total?.all,
-              forhome: data?.home?.goals?.for?.total?.home,
-              foraway: data?.home?.goals?.for?.total?.away,
-              againsttotal: data?.home?.goals?.against?.total?.all,
-              againsthome: data?.home?.goals?.against?.total?.home,
-              againstaway: data?.home?.goals?.against?.total?.away,
-            },
+    if (type === 'ICE HOCKEY') {
+      console.log('trigger!!');
+      const modified = {
+        home: {
+          league: {
+            id: data?.home?.league?.id,
+            country: data?.home?.country?.name,
+            flag: data?.home?.country?.flag,
+            logo: data?.home?.league?.logo,
+            name: data?.home?.league?.name,
           },
-
-          away: {
-            league: {
-              id: data?.away?.league?.id,
-              country: data?.away?.country?.name,
-              flag: data?.away?.country?.flag,
-              logo: data?.away?.league?.logo,
-              name: data?.away?.league?.name,
-            },
-            team: {
-              id: data?.away?.team?.id,
-              logo: data?.away?.team?.logo,
-              name: data?.away?.team?.name,
-            },
-            info: {
-              total: data?.away?.games?.played?.all,
-              win: data?.away?.games?.wins?.all?.total,
-              winhome: data?.away?.games?.wins?.home?.total,
-              winaway: data?.away?.games?.wins?.away?.total,
-              loses: data?.away?.games?.loses?.all?.total,
-              loseshome: data?.away?.games?.loses?.home?.total,
-              losesaway: data?.away?.games?.loses?.away?.total,
-
-              fortotal: data?.away?.goals?.for?.total?.all,
-              forhome: data?.away?.goals?.for?.total?.home,
-              foraway: data?.away?.goals?.for?.total?.away,
-              againsttotal: data?.away?.goals?.against?.total?.all,
-              againsthome: data?.away?.goals?.against?.total?.home,
-              againstaway: data?.away?.goals?.against?.total?.away,
-            },
+          team: {
+            id: data?.home?.team?.id,
+            logo: data?.home?.team?.logo,
+            name: data?.home?.team?.name,
           },
-        };
+          info: {
+            total: data?.home?.games?.played?.all,
+            win: data?.home?.games?.wins?.all?.total,
+            winhome: data?.home?.games?.wins?.home?.total,
+            winaway: data?.home?.games?.wins?.away?.total,
+            loses: data?.home?.games?.loses?.all?.total,
+            loseshome: data?.home?.games?.loses?.home?.total,
+            losesaway: data?.home?.games?.loses?.away?.total,
 
-        setHomeAwayInfo(modified);
-        return;
-      }
+            fortotal: data?.home?.goals?.for?.total?.all,
+            forhome: data?.home?.goals?.for?.total?.home,
+            foraway: data?.home?.goals?.for?.total?.away,
+            againsttotal: data?.home?.goals?.against?.total?.all,
+            againsthome: data?.home?.goals?.against?.total?.home,
+            againstaway: data?.home?.goals?.against?.total?.away,
+          },
+        },
+
+        away: {
+          league: {
+            id: data?.away?.league?.id,
+            country: data?.away?.country?.name,
+            flag: data?.away?.country?.flag,
+            logo: data?.away?.league?.logo,
+            name: data?.away?.league?.name,
+          },
+          team: {
+            id: data?.away?.team?.id,
+            logo: data?.away?.team?.logo,
+            name: data?.away?.team?.name,
+          },
+          info: {
+            total: data?.away?.games?.played?.all,
+            win: data?.away?.games?.wins?.all?.total,
+            winhome: data?.away?.games?.wins?.home?.total,
+            winaway: data?.away?.games?.wins?.away?.total,
+            loses: data?.away?.games?.loses?.all?.total,
+            loseshome: data?.away?.games?.loses?.home?.total,
+            losesaway: data?.away?.games?.loses?.away?.total,
+
+            fortotal: data?.away?.goals?.for?.total?.all,
+            forhome: data?.away?.goals?.for?.total?.home,
+            foraway: data?.away?.goals?.for?.total?.away,
+            againsttotal: data?.away?.goals?.against?.total?.all,
+            againsthome: data?.away?.goals?.against?.total?.home,
+            againstaway: data?.away?.goals?.against?.total?.away,
+          },
+        },
+      };
+
+      setHomeAwayInfo(modified);
+      return;
     }
   };
 
@@ -433,6 +438,8 @@ export const MatchInfoProvider = ({ children }: { children: any }) => {
         selectSport,
         isLimit,
         setIsLimit,
+        setMatchId,
+        matchId,
       }}
     >
       {children}
