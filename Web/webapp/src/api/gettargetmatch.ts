@@ -169,7 +169,7 @@ export const getTargetedMatchInfo = async (
       };
     }
 
-    if (sportType === 'ICE HOCKEY') {
+    if (sportType === 'ICEHOCKEY') {
       // 1. 경기 ID로부터 경기 정보 요청
       const leagueTeam = await axios.get(
         'https://v1.hockey.api-sports.io/games', // 경기 정보 API (football은 fixtures, hockey는 games로 추정)

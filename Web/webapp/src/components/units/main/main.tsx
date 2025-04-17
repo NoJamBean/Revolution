@@ -41,7 +41,11 @@ export default function Main() {
       <S.Main>
         <S.Context>
           <S.Carousel>
-            <img src='/banner.jpg' style={{ width: '100%' }} alt='carousel' />
+            <img
+              src='/banner.jpg'
+              style={{ width: '100%', height: '100%' }}
+              alt='carousel'
+            />
           </S.Carousel>
           <S.Section_Title>LIVE SPORTS</S.Section_Title>
           <S.Body>

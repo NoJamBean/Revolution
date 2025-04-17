@@ -58,7 +58,7 @@ export const LeftSide_Contents = styled.div`
 export const Screen = styled.div`
   /* overflow: auto; */
   height: ${({ clickedTab }: { clickedTab: string }) =>
-    clickedTab === 'info' && 'calc(100%  + 410px)'};
+    clickedTab === 'info' && 'calc(100%  + 455px)'};
 `;
 
 export const Betting_Cart = styled.div`
@@ -204,9 +204,9 @@ export const Context = styled.aside`
 
 export const Carousel = styled.div`
   background-color: blue;
-  flex: 2;
+  /* flex: 1; */
   width: 100%;
-  height: 420px;
+  height: 450px;
   display: flex;
   object-fit: cover;
   border: 5px solid blue;

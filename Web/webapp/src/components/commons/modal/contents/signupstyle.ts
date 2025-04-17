@@ -13,6 +13,7 @@ export const Contents = styled.form`
   position: relative;
   display: flex;
   flex-direction: column;
+  background-color: white;
 `;
 
 export const CloseBtn = styled.div`
@@ -64,9 +65,18 @@ export const Input_Wrapper = styled.div`
   height: 70%;
 `;
 
+export const Email_Input_Wrapper = styled.div`
+  border: 1px solid red;
+  position: relative;
+  height: 70%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+`;
+
 export const Input = styled.input`
-  width: 100%;
-  height: 60%;
+  width: ${({ isReq }: { isReq: boolean }) => (isReq ? '50%' : '100%')};
+  height: 38px;
   padding-left: 10px;
   border-radius: 10px;
   border: none;
@@ -89,11 +99,44 @@ export const NickName = styled.div`
   border: 3px solid blue;
 `;
 
+export const Email = styled.div`
+  height: 150px;
+  margin: 18px 0;
+  padding: 0 14px;
+  border: 3px solid blue;
+`;
+
 export const DoubleCheck = styled.button`
   position: absolute;
   width: 80px;
-  height: 60%;
+  height: 38px;
   top: 0;
+  left: calc(100% - 80px);
+  border-radius: 0 10px 10px 0;
+  border: none;
+  border: 1px solid green;
+  z-index: 3;
+  cursor: pointer;
+`;
+
+export const EmailReqBtn = styled.button`
+  position: absolute;
+  width: 80px;
+  height: 38px;
+  top: 0;
+  left: calc(100% - 80px);
+  border-radius: 0 10px 10px 0;
+  border: none;
+  border: 1px solid green;
+  z-index: 3;
+  cursor: pointer;
+`;
+
+export const EmailChkBtn = styled.button`
+  position: absolute;
+  width: 80px;
+  height: 38px;
+  top: calc(50% - 38px / 2);
   left: calc(100% - 80px);
   border-radius: 0 10px 10px 0;
   border: none;

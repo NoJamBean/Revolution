@@ -25,15 +25,18 @@ export const Category = styled.ul`
 `;
 
 export const Category_Li = styled.li`
-  border: 2px solid red;
+  border: 2px solid green;
   height: 100%;
+  width: 63px;
   font-size: 10px;
   font-weight: 700;
   aspect-ratio: 1 / 1;
   list-style: none;
   display: flex;
-  justify-content: center;
-  align-items: flex-end;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  justify-content: space-around;
   cursor: pointer;
   padding-bottom: 3px;
 `;
@@ -92,7 +95,6 @@ export const League_Info = styled.div`
 `;
 
 export const League_Logo = styled.div`
-  height: 100%;
   aspect-ratio: 1 / 1;
   padding: 3px;
 `;

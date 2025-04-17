@@ -7,11 +7,17 @@ type MatchInfoContextType = {
   setDefaultApiData: (data: any, type: string) => any;
   setHomeAwayData: (data: any, type: string) => void;
   setMatchId: React.Dispatch<React.SetStateAction<string>>;
+  setClickedPlay: React.Dispatch<React.SetStateAction<string>>;
+  setMatchCount: React.Dispatch<React.SetStateAction<Record<Sports, number>>>;
+  clickedPlay: string;
   matchId: string;
   apiData: any[];
+  matchCount: Record<Sports, number>;
   setSelectSport: React.Dispatch<React.SetStateAction<string | null>>;
   selectSport: string | null;
 };
+
+type Sports = 'FOOTBALL' | 'BASEBALL' | 'BASKETBALL' | 'ICEHOCKEY' | 'HANDBALL';
 
 const MatchInfoContext = createContext<MatchInfoContextType | null>(null);
 
@@ -19,8 +25,16 @@ export const MatchInfoProvider = ({ children }: { children: any }) => {
   const [isLimit, setIsLimit] = useState(true);
   const [apiData, setApiData] = useState([]);
   const [homeAwayInfo, setHomeAwayInfo] = useState({});
-  const [selectSport, setSelectSport] = useState<string | null>('FOOTBALL');
+  const [selectSport, setSelectSport] = useState<string | null>('BASEBALL');
   const [matchId, setMatchId] = useState('');
+  const [clickedPlay, setClickedPlay] = useState('');
+  const [matchCount, setMatchCount] = useState<Record<Sports, number>>({
+    FOOTBALL: 0,
+    BASEBALL: 0,
+    BASKETBALL: 0,
+    ICEHOCKEY: 0,
+    HANDBALL: 0,
+  });
 
   const setDefaultApiData = (data: any, type: string) => {
     // 들어온 데이터 입맛에 맞게 객체형식으로 따로 저장 (전체경기 조회 API 데이터 정제용)
@@ -113,7 +127,7 @@ export const MatchInfoProvider = ({ children }: { children: any }) => {
         };
       }
 
-      if (type === 'ICE HOCKEY') {
+      if (type === 'ICEHOCKEY') {
         return {
           id: el.id,
           date: el.date,
@@ -252,13 +266,15 @@ export const MatchInfoProvider = ({ children }: { children: any }) => {
     }
 
     if (type === 'BASEBALL') {
+      console.log(data, 'datatatatt');
+
       const modified = {
         home: {
           league: {
             id: data?.home?.league?.id,
             name: data?.home?.league?.name,
-            country: data?.home?.league?.country,
-            flag: data?.home?.league?.flag,
+            country: data?.home?.country?.name,
+            flag: data?.home?.country?.flag,
             logo: data?.home?.league?.logo,
           },
           team: {
@@ -267,20 +283,20 @@ export const MatchInfoProvider = ({ children }: { children: any }) => {
             name: data?.home?.team?.name,
           },
           info: {
-            total: data?.home?.fixtures?.played?.total,
-            win: data?.home?.fixtures?.wins?.total,
-            winhome: data?.home?.fixtures?.wins?.home,
-            winaway: data?.home?.fixtures?.wins?.away,
-            loses: data?.home?.fixtures?.loses?.total,
-            loseshome: data?.home?.fixtures?.loses?.home,
-            losesaway: data?.home?.fixtures?.loses?.away,
+            total: data?.home?.games?.played?.all,
+            win: data?.home?.games?.wins?.all?.total,
+            winhome: data?.home?.games?.wins?.home?.total,
+            winaway: data?.home?.games?.wins?.away?.total,
+            loses: data?.home?.games?.loses?.all?.total,
+            loseshome: data?.home?.games?.loses?.home?.total,
+            losesaway: data?.home?.games?.loses?.away?.total,
 
-            fortotal: data?.home?.goals?.for?.total?.total,
-            forhome: data?.home?.goals?.for?.total?.home,
-            foraway: data?.home?.goals?.for?.total?.away,
-            againsttotal: data?.home?.goals?.against?.total?.total,
-            againsthome: data?.home?.goals?.against?.total?.home,
-            againstaway: data?.home?.goals?.against?.total?.away,
+            fortotal: data?.home?.points?.for?.total?.all,
+            forhome: data?.home?.points?.for?.total?.home,
+            foraway: data?.home?.points?.for?.total?.away,
+            againsttotal: data?.home?.points?.against?.total?.all,
+            againsthome: data?.home?.points?.against?.total?.home,
+            againstaway: data?.home?.points?.against?.total?.away,
           },
         },
 
@@ -288,8 +304,8 @@ export const MatchInfoProvider = ({ children }: { children: any }) => {
           league: {
             id: data?.away?.league?.id,
             name: data?.away?.league?.name,
-            country: data?.away?.league?.country,
-            flag: data?.away?.league?.flag,
+            country: data?.home?.country?.name,
+            flag: data?.home?.country?.flag,
             logo: data?.away?.league?.logo,
           },
           team: {
@@ -298,20 +314,20 @@ export const MatchInfoProvider = ({ children }: { children: any }) => {
             name: data?.away?.team?.name,
           },
           info: {
-            total: data?.away?.fixtures?.played?.total,
-            win: data?.away?.fixtures?.wins?.total,
-            winhome: data?.away?.fixtures?.wins?.home,
-            winaway: data?.away?.fixtures?.wins?.away,
-            loses: data?.away?.fixtures?.loses?.total,
-            loseshome: data?.away?.fixtures?.loses?.home,
-            losesaway: data?.away?.fixtures?.loses?.away,
+            total: data?.home?.games?.played?.all,
+            win: data?.home?.games?.wins?.all?.total,
+            winhome: data?.home?.games?.wins?.home?.total,
+            winaway: data?.home?.games?.wins?.away?.total,
+            loses: data?.home?.games?.loses?.all?.total,
+            loseshome: data?.home?.games?.loses?.home?.total,
+            losesaway: data?.home?.games?.loses?.away?.total,
 
-            fortotal: data?.away?.goals?.for?.total?.total,
-            forhome: data?.away?.goals?.for?.total?.home,
-            foraway: data?.away?.goals?.for?.total?.away,
-            againsttotal: data?.away?.goals?.against?.total?.total,
-            againsthome: data?.away?.goals?.against?.total?.home,
-            againstaway: data?.away?.goals?.against?.total?.away,
+            fortotal: data?.home?.points?.for?.total?.all,
+            forhome: data?.home?.points?.for?.total?.home,
+            foraway: data?.home?.points?.for?.total?.away,
+            againsttotal: data?.home?.points?.against?.total?.all,
+            againsthome: data?.home?.points?.against?.total?.home,
+            againstaway: data?.home?.points?.against?.total?.away,
           },
         },
       };
@@ -388,7 +404,7 @@ export const MatchInfoProvider = ({ children }: { children: any }) => {
       return;
     }
 
-    if (type === 'ICE HOCKEY') {
+    if (type === 'ICEHOCKEY') {
       console.log('trigger!!');
       const modified = {
         home: {
@@ -541,6 +557,10 @@ export const MatchInfoProvider = ({ children }: { children: any }) => {
         setIsLimit,
         setMatchId,
         matchId,
+        clickedPlay,
+        setClickedPlay,
+        setMatchCount,
+        matchCount,
       }}
     >
       {children}

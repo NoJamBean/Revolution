@@ -10,11 +10,18 @@ import {
   getIceHockeyMatchList,
 } from '@/src/api/getdefaulmatchlist';
 import { useRouter } from 'next/router';
+import { useSportStore } from '@/src/commons/stores/queryparmstore';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCircle, faFutbol } from '@fortawesome/free-regular-svg-icons';
+import {
+  faA,
+  faBaseball,
+  faBasketball,
+  faHockeyPuck,
+} from '@fortawesome/free-solid-svg-icons';
+import { useModal } from '../modal/modalprovider';
 
 export default function PlayListInfo(props: any) {
-  const [clickedPlay, setClickedPlay] = useState(0);
-  const [isLoading, setIsLoading] = useState(false);
-
   const router = useRouter();
   const allMatchRef = useRef<string | string[] | undefined>();
 
@@ -27,40 +34,71 @@ export default function PlayListInfo(props: any) {
     isLimit,
     setIsLimit,
     setMatchId,
+    clickedPlay,
+    setClickedPlay,
+    setMatchCount,
   } = useMatchInfo();
 
+  const { setIsLoading, isLoading, closeModal } = useModal();
+
   const getTargetMatch = async (target: any, selectSport: string) => {
-    const targetMatchInfo = await getTargetedMatchInfo(target, selectSport);
-    setHomeAwayData(targetMatchInfo, selectSport);
+    setIsLoading(true);
 
-    // console.log(router.query, 'router query');
-    console.log(target, '시발타겟');
+    try {
+      const targetMatchInfo = await getTargetedMatchInfo(target, selectSport);
+      console.log('매치인포메이션', targetMatchInfo);
 
-    if (router.pathname === '/bet') {
-      // shallow routing
-      router.push(
-        {
-          pathname: '/bet',
-          query: { id: target.id, sport: selectSport },
-        },
-        undefined,
-        { shallow: true }
-      );
+      setHomeAwayData(targetMatchInfo, selectSport);
+
+      setClickedPlay(target);
+      setMatchId(target); // 이후 배팅하기 버튼 클릭 시 사용될 쿼리 파라미터 url 값
+
+      // 페이지 이동 방지 (url 경로만 변경해서 라우팅)
+      if (router.pathname === '/bet') {
+        // shallow routing
+        router.push(
+          {
+            pathname: '/bet',
+            query: { id: target, sport: selectSport },
+          },
+          undefined,
+          { shallow: true }
+        );
+      }
+    } catch (error) {
+      // setIsLimit(true)
+      console.log(error);
+    } finally {
+      console.log('해결됨됨디ㅚ도디ㅗ미ㅗ디ㅗㅗ디뫼도미');
+      closeModal();
     }
-
-    setClickedPlay(target);
-    setMatchId(target.id); // 이후 배팅하기 버튼 클릭 시 사용될 쿼리 파라미터 url 값
   };
 
   const clickSport = (e: any) => {
-    const selectedSport = e.target.innerHTML;
+    // const selectedSport = e.currentTarget.innerHTML;
+    const selectedSport = e.currentTarget.getAttribute('data-sport');
     setSelectSport(selectedSport);
+    deleteParams(); // 일단 여기만 박아봐
+
+    console.log(selectSport, '경로확인해라 씹새끼야', selectedSport);
+  };
+
+  const deleteParams = async () => {
+    const url = new URL(window.location.href);
+    url.searchParams.delete('id');
+
+    const nextPath =
+      url.pathname +
+      (url.searchParams.toString() ? `?${url.searchParams.toString()}` : '');
+
+    await router.replace(nextPath, undefined, { shallow: true });
+    await new Promise((r) => setTimeout(r, 0));
   };
 
   //
   //
   const getTodayFixtures = async () => {
-    setIsLoading(true);
+    const { source } = useSportStore.getState();
 
     try {
       if (selectSport === 'FOOTBALL') {
@@ -68,8 +106,16 @@ export default function PlayListInfo(props: any) {
         const playMatchList = await getFootballMatchList();
         const modifiedResult = setDefaultApiData(playMatchList, 'FOOTBALL');
 
-        // console.log(modifiedResult.length)
         if (modifiedResult.length === 0) throw Error('API 한도초과');
+
+        setMatchCount((prev) => {
+          return {
+            ...prev,
+            FOOTBALL: modifiedResult.length,
+          };
+        });
+
+        // deleteParams();
 
         if (router.query.id) {
           allMatchRef.current = String(router.query.id);
@@ -79,38 +125,47 @@ export default function PlayListInfo(props: any) {
 
         getTargetMatch(allMatchRef.current, selectSport);
 
-        setIsLimit(false);
+        if (isLimit) setIsLimit(false);
         return;
       }
       if (selectSport === 'BASEBALL') {
-        console.log('BASEBALL HOHO');
-
         const playMatchList = await getBaseballlMatchList();
         const modifiedResult = setDefaultApiData(playMatchList, 'BASEBALL');
 
         if (modifiedResult.length === 0) throw Error('API 한도초과');
 
+        setMatchCount((prev) => {
+          return {
+            ...prev,
+            BASEBALL: modifiedResult.length,
+          };
+        });
+
+        // await deleteParams();
+
         if (router.query.id) {
           allMatchRef.current = String(router.query.id);
         } else {
           allMatchRef.current = modifiedResult?.[0]?.id;
         }
 
-        // console.log(modifiedResult.length);
-
         getTargetMatch(allMatchRef.current, selectSport);
 
-        setIsLimit(false);
+        if (isLimit) setIsLimit(false);
         return;
       }
       if (selectSport === 'BASKETBALL') {
-        console.log('여기가 트리거됩니다!', router.asPath);
-
         const playMatchList = await getBasketballMatchList();
         const modifiedResult = setDefaultApiData(playMatchList, 'BASKETBALL');
 
-        // console.log(modifiedResult.length);
         if (modifiedResult.length === 0) throw Error('API 한도초과');
+
+        setMatchCount((prev) => {
+          return {
+            ...prev,
+            BASKETBALL: modifiedResult.length,
+          };
+        });
 
         if (router.query.id) {
           allMatchRef.current = String(router.query.id);
@@ -120,15 +175,24 @@ export default function PlayListInfo(props: any) {
 
         getTargetMatch(allMatchRef.current, selectSport);
 
-        setIsLimit(false);
+        if (isLimit) setIsLimit(false);
         return;
       }
 
-      if (selectSport === 'ICE HOCKEY') {
+      if (selectSport === 'ICEHOCKEY') {
         const playMatchList = await getIceHockeyMatchList();
-        const modifiedResult = setDefaultApiData(playMatchList, 'ICE HOCKEY');
+        const modifiedResult = setDefaultApiData(playMatchList, 'ICEHOCKEY');
 
         if (modifiedResult.length === 0) throw Error('API 한도초과');
+
+        setMatchCount((prev) => {
+          return {
+            ...prev,
+            ICEHOCKEY: modifiedResult.length,
+          };
+        });
+
+        // deleteParams();
 
         if (router.query.id) {
           allMatchRef.current = String(router.query.id);
@@ -138,7 +202,7 @@ export default function PlayListInfo(props: any) {
 
         getTargetMatch(allMatchRef.current, selectSport);
 
-        setIsLimit(false);
+        if (isLimit) setIsLimit(false);
         return;
       }
 
@@ -148,32 +212,53 @@ export default function PlayListInfo(props: any) {
 
         if (modifiedResult.length === 0) throw Error('API 한도초과');
 
-        if (router.query.id) {
-          allMatchRef.current = String(router.query.id);
+        await deleteParams();
+        // console.log('시발아시발아시발아시발아시발아시발아', router.query);
+
+        setMatchCount((prev) => {
+          return {
+            ...prev,
+            HANDBALL: modifiedResult.length,
+          };
+        });
+
+        const currentId = new URL(window.location.href).searchParams.get('id');
+
+        if (currentId) {
+          allMatchRef.current = String(currentId);
         } else {
           allMatchRef.current = modifiedResult?.[0]?.id;
         }
+        // if (router.query.id) {
+        //   allMatchRef.current = String(router.query.id);
+        // } else {
+        //   allMatchRef.current = modifiedResult?.[0]?.id;
+        // }
 
         getTargetMatch(allMatchRef.current, selectSport);
 
-        setIsLimit(false);
+        if (isLimit) setIsLimit(false);
         return;
       }
 
       // getTargetMatch(modifiedResult[0]?.id); // 초기 렌더링 시 첫번째 값에 대한 상세정보 표시되도록 미리 트리거
     } catch (error) {
-      console.log((error as Error).message);
       const message = (error as Error).message;
-
       if (message === 'API 한도초과') setIsLimit(true);
     }
   };
   //
   //
   useEffect(() => {
-    console.log(router, 'router');
     getTodayFixtures();
-  }, [router.isReady, selectSport]);
+    // console.log(isLoading, 'fdsfksnlfksejoigjzslktjesrl;gjerskjhelrsjgerjsa');
+  }, [selectSport]);
+
+  useEffect(() => {
+    if (router.asPath === '/') {
+      getTodayFixtures();
+    }
+  }, [router.asPath]);
 
   const handleparms = (id: string) => {
     const current = new URLSearchParams(window.location.search);
@@ -186,6 +271,10 @@ export default function PlayListInfo(props: any) {
     );
   };
 
+  //
+  //
+  //
+  // 시간대 설정
   const getDate = (timezone: string) => {
     const date = new Date(timezone);
 
@@ -214,12 +303,30 @@ export default function PlayListInfo(props: any) {
     <S.Right_Side>
       <S.Play_Category_Bar>
         <S.Category>
-          <S.Category_Li onClick={clickSport}>ALL</S.Category_Li>
-          <S.Category_Li onClick={clickSport}>FOOTBALL</S.Category_Li>
-          <S.Category_Li onClick={clickSport}>BASEBALL</S.Category_Li>
-          <S.Category_Li onClick={clickSport}>BASKETBALL</S.Category_Li>
-          <S.Category_Li onClick={clickSport}>ICE HOCKEY</S.Category_Li>
-          <S.Category_Li onClick={clickSport}>HANDBALL</S.Category_Li>
+          <S.Category_Li>
+            <FontAwesomeIcon icon={faA} size='2x' />
+            <span>ALL</span>
+          </S.Category_Li>
+          <S.Category_Li data-sport='FOOTBALL' onClick={clickSport}>
+            <FontAwesomeIcon icon={faFutbol} size='2x' />
+            <span>FOOTBALL</span>
+          </S.Category_Li>
+          <S.Category_Li data-sport='BASEBALL' onClick={clickSport}>
+            <FontAwesomeIcon icon={faBaseball} size='2x' />
+            <span>BASEBALL</span>
+          </S.Category_Li>
+          <S.Category_Li data-sport='BASKETBALL' onClick={clickSport}>
+            <FontAwesomeIcon icon={faBasketball} size='2x' />
+            <span>BASKETBALL</span>
+          </S.Category_Li>
+          <S.Category_Li data-sport='ICEHOCKEY' onClick={clickSport}>
+            <FontAwesomeIcon icon={faHockeyPuck} size='2x' />
+            <span>ICEHOCKEY</span>
+          </S.Category_Li>
+          <S.Category_Li data-sport='HANDBALL' onClick={clickSport}>
+            <FontAwesomeIcon icon={faCircle} size='2x' />
+            <span>HANDBALL</span>
+          </S.Category_Li>
         </S.Category>
       </S.Play_Category_Bar>
       {isLimit ? (
@@ -235,7 +342,7 @@ export default function PlayListInfo(props: any) {
             widget={props.widget}
           >
             <S.Blind
-              isClicked={clickedPlay === el.id}
+              isClicked={String(clickedPlay) === String(el.id)}
               widget={props.widget}
             ></S.Blind>
             <S.Info_Top widget={props.widget}>

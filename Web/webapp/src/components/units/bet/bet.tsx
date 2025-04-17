@@ -4,21 +4,38 @@ import * as S from './betstyle';
 import PlayWidget from '../../commons/oddwidget/widget';
 // import { useRouter } from 'next/router';
 import { useMatchInfo } from '../../commons/oddwidget/widgetprovider';
+import { useRouter } from 'next/router';
 
 export default function Betting() {
-  const BetAmount = [5000, 10000, 50000, 100000, 300000, 500000];
-  // const router = useRouter();
-
-  const { setSelectSport } = useMatchInfo();
-
   const [bet, setBet] = useState(0);
   const [expected, setExpected] = useState(0);
 
-  const changeCategorySport = (e: React.MouseEvent<HTMLElement>) => {
-    const spans = e.currentTarget.querySelectorAll('span');
-    const target = spans[0].innerText;
+  const BetAmount = [5000, 10000, 50000, 100000, 300000, 500000];
 
-    setSelectSport(target);
+  const sportsList = [
+    'FOOTBALL',
+    'BASEBALL',
+    'BASKETBALL',
+    'ICEHOCKEY',
+    'HANDBALL',
+  ];
+
+  const { setSelectSport, matchCount } = useMatchInfo();
+
+  // const changeCategorySport = (e: React.MouseEvent<HTMLElement>) => {
+  //   const spans = e.currentTarget.querySelectorAll('span');
+  //   const target = spans[0].innerText;
+
+  //   useSportStore.getState().setSource('betpage');
+
+  //   setSelectSport(target);
+  // };
+
+  const checkTodayCountsofMatch = (sport: string) => {
+    const count = matchCount[sport as keyof typeof matchCount];
+    if (count > 0) return count;
+
+    return '?';
   };
 
   const payBet = (amount: number) => {
@@ -62,26 +79,12 @@ export default function Betting() {
           </S.MatchBox_Top>
           <S.Category_Nav>
             <S.Category_Ul>
-              <S.Category_Li onClick={changeCategorySport}>
-                <span>FOOTBALL</span>
-                <span>경기 수 51</span>
-              </S.Category_Li>
-              <S.Category_Li onClick={changeCategorySport}>
-                <span>BASEBALL</span>
-                <span>경기 수 15</span>
-              </S.Category_Li>
-              <S.Category_Li onClick={changeCategorySport}>
-                <span>BASKETBALL</span>
-                <span>경기 수 35</span>
-              </S.Category_Li>
-              <S.Category_Li onClick={changeCategorySport}>
-                <span>ICE HOCKEY</span>
-                <span>경기 수 25</span>
-              </S.Category_Li>
-              <S.Category_Li>
-                <span>UFC</span>
-                <span>{`예정 (준비중)`}</span>
-              </S.Category_Li>
+              {sportsList.map((sport) => (
+                <S.Category_Li key={sport}>
+                  <span>{sport}</span>
+                  <span>{checkTodayCountsofMatch(sport)} 경기</span>
+                </S.Category_Li>
+              ))}
               <S.Category_Li>
                 <span>E-SPORTS</span>
                 <span>{`예정 (준비중)`}</span>
@@ -100,7 +103,7 @@ export default function Betting() {
         <S.BettionBox>
           <S.BettingBox_Top>
             <span>BETTING</span>
-            <span>CART</span>{' '}
+            <span>CART</span>
           </S.BettingBox_Top>
           <S.BettingBox_Body>
             <S.BetOdds>

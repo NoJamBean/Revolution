@@ -1,12 +1,14 @@
-import { useEffect } from 'react';
 import { useMatchInfo } from './widgetprovider';
 import * as S from './widgetstyle';
+import { routeModule } from 'next/dist/build/templates/app-page';
+import { useRouter } from 'next/router';
 
 export default function PlayWidget({ isMain }: { isMain: boolean }) {
   const { homeAwayInfo, isLimit } = useMatchInfo();
+  const router = useRouter();
 
   // console.log('데이터 체크용', homeAwayInfo);
-  console.log('rerender check', isLimit);
+  console.log('rerender check', homeAwayInfo);
 
   // 로고 쪽 hover 하면 화면 어두워지면서 해당 팀 승률 표시 (얻어온 data 기반 승률계산)
   return isLimit ? (
@@ -16,24 +18,26 @@ export default function PlayWidget({ isMain }: { isMain: boolean }) {
       <S.Info_Top>
         <S.Info_Top_Home>
           <S.Team_Logo
+            isBet={router.asPath.includes('/bet')}
             src={homeAwayInfo?.home?.team?.logo || '/banner.jpg'}
             onError={(e) => {
               e.currentTarget.onerror = null;
               e.currentTarget.src = '/banner.jpg';
             }}
           />
-          <S.Team_Name>{homeAwayInfo?.home?.team?.name}</S.Team_Name>
+          {/* <S.Team_Name>{homeAwayInfo?.home?.team?.name}</S.Team_Name> */}
         </S.Info_Top_Home>
         <S.Verses>VS</S.Verses>
         <S.Info_Top_Away>
           <S.Team_Logo
+            isBet={router.asPath.includes('/bet')}
             src={homeAwayInfo?.away?.team?.logo || '/banner.jpg'}
             onError={(e) => {
               e.currentTarget.onerror = null;
               e.currentTarget.src = '/banner.jpg';
             }}
           />
-          <S.Team_Name>{homeAwayInfo?.away?.team?.name}</S.Team_Name>
+          {/* <S.Team_Name>{homeAwayInfo?.away?.team?.name}</S.Team_Name> */}
         </S.Info_Top_Away>
       </S.Info_Top>
       <S.Info_Body isMain={isMain}>
@@ -160,7 +164,7 @@ export default function PlayWidget({ isMain }: { isMain: boolean }) {
             </S.Section_Right>
           </S.Info_Section>
         </S.HomeInfo>
-        <S.AwayInfo>
+        <S.AwayInfo isMain={isMain}>
           <S.Team_Title className='second'>
             <S.Team_Title_Logo
               src={homeAwayInfo?.away?.team?.logo || '/banner.jpg'}

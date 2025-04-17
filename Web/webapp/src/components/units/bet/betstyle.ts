@@ -49,6 +49,7 @@ export const Category_Li = styled.div`
   justify-content: space-between;
   align-items: center;
   padding: 0 10px;
+  background-color: white;
   cursor: pointer;
 `;
 
@@ -60,6 +61,7 @@ export const Section2 = styled.div`
 export const Section3 = styled.div`
   width: 100%;
   flex: 1;
+  background-color: white;
 `;
 
 export const Section4 = styled.div`
@@ -69,6 +71,7 @@ export const Section4 = styled.div`
 
 export const BettionBox = styled.div`
   /* height: 80%; */
+  background-color: white;
 `;
 
 export const BettingBox_Top = styled.div`

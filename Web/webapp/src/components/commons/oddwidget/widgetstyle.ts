@@ -8,8 +8,8 @@ export const Wrapper = styled.div`
 `;
 
 export const Info_Top = styled.div`
-  border: 2px solid blue;
-  height: 140px;
+  border: 5px solid gold;
+  height: 200px;
   display: flex;
 `;
 
@@ -21,10 +21,9 @@ export const Info_Body = styled.div`
 `;
 
 export const Info_Top_Home = styled.div`
-  height: 100%;
-  /* flex: 1; */
-  width: 43%;
+  /* height: 200px; */
   display: flex;
+  flex: 1;
   flex-direction: column;
   justify-content: center;
   align-items: center;
@@ -33,7 +32,9 @@ export const Info_Top_Home = styled.div`
 
 export const Team_Logo = styled.img`
   border: 2px solid orange;
-  height: 70%;
+  width: ${({ isBet }: { isBet: boolean }) => (isBet ? '100%' : '50%')};
+  height: 100%;
+  padding: 15px;
 `;
 
 export const Team_Name = styled.div`
@@ -101,6 +102,7 @@ export const HomeInfo = styled.div`
 export const AwayInfo = styled.div`
   border: 3px solid blue;
   width: 100%;
+  margin-top: ${({ isMain }: { isMain: boolean }) => (isMain ? '0' : '50px')};
   /* height: calc((100% - 60px) / 2); */
 `;
 
