@@ -28,13 +28,8 @@ namespace MyApi.Data
         [Required]
         [StringLength(10)]
         public string? Id { get; set; }
-
-        [Column("uuid")]
-        [StringLength(255)]
-        public string? Uuid { get; set; }
         
         [Column("nickname")]
-        [Required]
         [StringLength(30)]
         public string? Nickname { get; set; }
 
@@ -48,7 +43,6 @@ namespace MyApi.Data
         [StringLength(320)]
         public string? Email { get; set; }
 
-        // [Required]
         [Column("phone_number")]
         [StringLength(20)]
         public string? PhoneNumber { get; set; }
@@ -61,5 +55,22 @@ namespace MyApi.Data
         public DateTime ModifiedDate { get; set; } = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("Asia/Seoul"));
 
         public User() {}
+    }
+
+    public class ResendRequest
+    {
+        public string Id { get; set; }
+    }
+
+    public class ConfirmRequest
+    {
+        public string Id { get; set; }
+        public string Code { get; set; }
+    }
+
+    public class LoginRequest
+    {
+        public string Id { get; set; }
+        public string Password { get; set; }
     }
 }

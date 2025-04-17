@@ -19,6 +19,7 @@ using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Serilog;
 using System;
 using System.Collections.Concurrent;
+using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Security.Claims;
@@ -95,7 +96,7 @@ builder.Services.AddCors(options =>
         policy =>
         {
             // policy.WithOrigins($"{agw_url}") // 모든 도메인 허용 (Nginx의 `Access-Control-Allow-Origin: *` 과 동일)
-                policy.WithOrigins("http://localhost:3000")
+                policy.WithOrigins("http://localhost:3000")//AllowAnyOrigin()
                   .WithMethods("GET", "POST") // GET, POST 메서드만 허용
                   .AllowAnyHeader() // 특정 헤더만 허용
                   .AllowCredentials(); // 인증 정보 포함 허용
@@ -127,6 +128,25 @@ WebApplication app = builder.Build();
 // CORS 미들웨어 추가
 app.UseRouting();
 app.UseCors("AllowAll");
+app.Use(async (context, next) =>
+{
+    try
+    {
+        var culture = context.Request.Headers["Accept-Language"].ToString();
+        if (!string.IsNullOrEmpty(culture))
+        {
+            var parsedCulture = new CultureInfo(culture);
+            CultureInfo.CurrentCulture = parsedCulture;
+            CultureInfo.CurrentUICulture = parsedCulture;
+        }
+    }
+    catch (CultureNotFoundException)
+    {
+
+    }
+
+    await next();
+});
 
 // Configure the HTTP request pipeline.
 app.UseAuthorization();
@@ -134,7 +154,7 @@ app.UseAuthorization();
 app.MapControllers();
 
 string directoryPath = "/var/log/api/";
-string s3Folder = "DotNet/";
+string s3Folder = "API_Server/DotNet/";
 
 using var s3Client = new AmazonS3Client(Amazon.RegionEndpoint.APNortheast2);
 TransferUtility fileTransferUtility = new TransferUtility(s3Client);
@@ -175,19 +195,69 @@ Task.Run(async () =>
 async Task UploadToS3(string filePath)
 {
     string bucketName = Environment.GetEnvironmentVariable("S3_LOG_BUCKET") ?? "my-log-bucket";
-    string fileName = Path.GetFileName(filePath);
-    string keyName = $"{s3Folder}{fileName}";
+
+    string fileName = Path.GetFileNameWithoutExtension(filePath);
+    string extension = Path.GetExtension(filePath);
+    var koreaTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("Asia/Seoul"));
+
+    string timestamp = koreaTime.ToString("yyyyMMdd-HHmmss-fff");
+    string datePath = koreaTime.ToString("yyyy/MM/dd");
+    string uniqueFileName = $"{fileName}-{timestamp}{extension}";
+    string keyName = $"{s3Folder}{datePath}/{uniqueFileName}";
+
+    // Upload metadata
+    string eventTime = koreaTime.ToString("yyyy-MM-ddTHH:mm:ss.fffK");
+    string awsRegion = "ap-northeast-2";
+    string eventName = "UploadLog";
+    string eventSource = "DotNetAPIServer";
+    string sourceIPAddress = GetLocalIPAddress();
 
     try
     {
         await fileTransferUtility.UploadAsync(filePath, bucketName, keyName);
-        Console.WriteLine($"파일 업로드 성공: {fileName}");
-        processedFiles.TryRemove(filePath, out _); // 업로드 완료 후 제거
+
+        string eventLogContent = $@"[UploadLog]
+eventTime      : {eventTime}
+awsRegion      : {awsRegion}
+eventName      : {eventName}
+eventSource    : {eventSource}
+sourceIPAddress: {sourceIPAddress}
+s3Key          : {keyName}
+status         : Success";
+
+        string localLogFile = $"/var/log/api/upload-{timestamp}.log";
+        await File.WriteAllTextAsync(localLogFile, eventLogContent);
+
+        await fileTransferUtility.UploadAsync(localLogFile, bucketName, $"API_Server/DotNet/upload-events/{Path.GetFileName(localLogFile)}");
+
+        File.Delete(localLogFile);
+
+        Log.Information("업로드 완료: {S3Key}", keyName);
+
+        processedFiles.TryRemove(filePath, out _);
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"파일 업로드 중 오류 발생: {fileName}, 오류: {ex.Message}");
+        Log.Error(ex, "업로드 실패: {FilePath}", filePath);
     }
+}
+
+string GetLocalIPAddress()
+{
+    try
+    {
+        var host = Dns.GetHostEntry(Dns.GetHostName());
+        foreach (var ip in host.AddressList)
+        {
+            if (ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
+                return ip.ToString();
+        }
+    }
+    catch
+    {
+        // ignore
+    }
+    return "unknown";
 }
 
 try

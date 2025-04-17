@@ -1,21 +1,21 @@
 #tfstatefile저장용 버킷
-resource "aws_s3_bucket" "tf_state" {
-  bucket = "tfstate-bucket-revolution112233"
+# resource "aws_s3_bucket" "tf_state" {
+#   bucket = "tfstate-bucket-revolution112233"
 
-  lifecycle {
-    prevent_destroy = true
-  }
-}
+#   lifecycle {
+#     prevent_destroy = true
+#   }
+# }
 
-resource "aws_s3_bucket_server_side_encryption_configuration" "tf_state_sse" {
-  bucket = aws_s3_bucket.tf_state.id
+# resource "aws_s3_bucket_server_side_encryption_configuration" "tf_state_sse" {
+#   bucket = aws_s3_bucket.tf_state.id
 
-  rule {
-    apply_server_side_encryption_by_default {
-      sse_algorithm = "AES256"
-    }
-  }
-}
+#   rule {
+#     apply_server_side_encryption_by_default {
+#       sse_algorithm = "AES256"
+#     }
+#   }
+# }
 
 resource "aws_s3_bucket" "long_user_data_bucket" {
   bucket = "long-user-data-bucket"
@@ -101,6 +101,14 @@ resource "aws_s3_object" "api_server_script" {
   source_hash = filemd5("${path.module}/userdatas/api_server.sh")
 }
 
+resource "aws_s3_object" "rds_userdata" {
+  bucket      = aws_s3_bucket.long_user_data_bucket.id
+  key         = "userdatas/rds_userdata.sh"
+  source      = "${path.module}/userdatas/rds_userdata.sh"
+  acl         = "private"
+  source_hash = filemd5("${path.module}/userdatas/rds_userdata.sh")
+}
+
 resource "aws_s3_object" "users_controller" {
   bucket      = aws_s3_bucket.long_user_data_bucket.id
   key         = "dotnet_scripts/UsersController.cs"
@@ -157,13 +165,13 @@ resource "aws_s3_object" "dotnet_run_script" {
   source_hash = filemd5("${path.module}/dotnet_scripts/dotnet_run.sh")
 }
 
-resource "aws_s3_object" "appsettings_json" {
-  bucket      = aws_s3_bucket.long_user_data_bucket.id
-  key         = "dotnet_scripts/appsettings.json"
-  source      = "${path.module}/dotnet_scripts/appsettings.json"
-  acl         = "private"
-  source_hash = filemd5("${path.module}/dotnet_scripts/appsettings.json")
-}
+# resource "aws_s3_object" "appsettings_json" {
+#   bucket      = aws_s3_bucket.long_user_data_bucket.id
+#   key         = "dotnet_scripts/appsettings.json"
+#   source      = "${path.module}/dotnet_scripts/appsettings.json"
+#   acl         = "private"
+#   source_hash = filemd5("${path.module}/dotnet_scripts/appsettings.json")
+# }
 
 resource "aws_s3_object" "BcryptPasswordHasher" {
   bucket      = aws_s3_bucket.long_user_data_bucket.id
@@ -179,14 +187,6 @@ resource "aws_s3_object" "IPasswordHasher" {
   source      = "${path.module}/dotnet_scripts/IPasswordHasher.cs"
   acl         = "private"
   source_hash = filemd5("${path.module}/dotnet_scripts/IPasswordHasher.cs")
-}
-
-resource "aws_s3_object" "rds_userdata" {
-  bucket      = aws_s3_bucket.long_user_data_bucket.id
-  key         = "userdatas/rds_userdata.sh"
-  source      = "${path.module}/dotnet_scripts/appsettings.json"
-  acl         = "private"
-  source_hash = filemd5("${path.module}/userdatas/rds_userdata.sh")
 }
 
 

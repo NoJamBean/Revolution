@@ -65,7 +65,7 @@ sudo chmod -R 755 /usr/share/dotnet
 # S3에서 설정 파일 다운로드
 # sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/appsettings.json $LOCAL_PATH/appsettings.json
 sudo aws s3 cp s3://$S3_BUCKET/userdatas/rds_userdata.sh /home/ec2-user/rdsuserdata.sh
-sudo chmod +x /home/ec2-user/api_server.sh
+sudo chmod +x /home/ec2-user/rdsuserdata.sh
 sudo /home/ec2-user/rdsuserdata.sh
 
 # S3에서 주요 프로젝트 파일 다운로드
@@ -96,11 +96,16 @@ echo "[Watcher] Starting Nginx log watcher..." >> "${WATCH_LOG}"
 
 for LOG_FILE in "${LOG_FILES[@]}"; do
   (
-    S3_DEST="s3://${S3_LOG_BUCKET}/nginx/$(basename "${LOG_FILE}")"
     echo "[Watcher] Watching ${LOG_FILE} for changes..." >> "${WATCH_LOG}"
 
     while inotifywait -e modify "${LOG_FILE}"; do
-      echo "[Watcher] Change detected in ${LOG_FILE}, uploading to S3..." >> "${WATCH_LOG}"
+      # 한국 시간 기준 타임스탬프
+      TZ="Asia/Seoul" TIMESTAMP=$(date +"%Y%m%d-%H%M%S")
+      BASENAME=$(basename "${LOG_FILE}")
+      DEST_FILENAME="${BASENAME%.*}-${TIMESTAMP}.${BASENAME##*.}"
+      S3_DEST="s3://${S3_LOG_BUCKET}/API_Server/nginx/${DEST_FILENAME}"
+
+      echo "[Watcher] Change detected in ${LOG_FILE}, uploading to ${S3_DEST}..." >> "${WATCH_LOG}"
       aws s3 cp "${LOG_FILE}" "${S3_DEST}" >> "${WATCH_LOG}" 2>&1
     done
   ) &
@@ -174,25 +179,25 @@ server {
     listen 80;
     server_name ${API_SERVER_DNS};
 
-    location / {
-        proxy_pass http://localhost:5000;
-        # proxy_pass_request_headers on;
+    # location / {
+    #     proxy_pass http://localhost:5000;
+    #     # proxy_pass_request_headers on;
 
-        # CORS 설정 추가
-        add_header 'Access-Control-Allow-Origin' '*' always;
-        add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS' always;
-        add_header 'Access-Control-Allow-Headers' '*' always;
-        add_header 'Access-Control-Allow-Credentials' 'true' always; # Credential 허용
+    #     # CORS 설정 추가
+    #     add_header 'Access-Control-Allow-Origin' 'http://localhost:3000' always;
+    #     add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS' always;
+    #     add_header 'Access-Control-Allow-Headers' '*' always;
+    #     add_header 'Access-Control-Allow-Credentials' 'true' always; # Credential 허용
 
-        # OPTIONS 요청 처리 (Preflight 요청에 응답)
-        if (\$request_method = OPTIONS) {
-            add_header 'Access-Control-Allow-Origin' '*';
-            add_header 'Access-Control-Allow-Methods' 'GET, POST';
-            add_header 'Access-Control-Allow-Headers' '*';
-            add_header 'Access-Control-Allow-Credentials' 'true';
-            return 204; # No Content 응답
-        }
-    }
+    #     # OPTIONS 요청 처리 (Preflight 요청에 응답)
+    #     if (\$request_method = OPTIONS) {
+    #         add_header 'Access-Control-Allow-Origin' 'http://localhost:3000';
+    #         add_header 'Access-Control-Allow-Methods' 'GET, POST';
+    #         add_header 'Access-Control-Allow-Headers' '*';
+    #         add_header 'Access-Control-Allow-Credentials' 'true';
+    #         return 204; # No Content 응답
+    #     }
+    # }
 }
 EOL
 

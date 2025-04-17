@@ -110,5 +110,46 @@ namespace MyApi.Services
 
             Console.WriteLine("[Cognito] 사용자 인증 대기 시간 초과");
         }
+        
+        //이메일 인증번호 확인
+        public async Task ConfirmCodeAsync(string id, string code)
+        {
+            var request = new ConfirmSignUpRequest
+            {
+                ClientId = _userPoolClientId,
+                Username = id,
+                ConfirmationCode = code
+            };
+
+            var response = await _cognitoClient.ConfirmSignUpAsync(request);
+            Console.WriteLine("[Cognito] 이메일 인증 성공");
+        }
+
+        //로그인 확인 및 토큰 발급
+        public async Task<(string IdToken, string RefreshToken)> LoginAsync(string id, string password)
+        {
+            var request = new InitiateAuthRequest
+            {
+                AuthFlow = AuthFlowType.USER_PASSWORD_AUTH,
+                ClientId = _userPoolClientId,
+                AuthParameters = new Dictionary<string, string>
+                {
+                    { "USERNAME", id },
+                    { "PASSWORD", password }
+                }
+            };
+
+            var response = await _cognitoClient.InitiateAuthAsync(request);
+            var authResult = response.AuthenticationResult;
+
+            if (authResult == null)
+                throw new Exception("로그인 실패: Cognito에서 토큰을 반환하지 않았습니다.");
+
+            return (
+                IdToken: authResult.IdToken,
+                RefreshToken: authResult.RefreshToken
+            );
+        }
+
     }
 }

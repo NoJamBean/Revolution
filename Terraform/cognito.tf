@@ -28,7 +28,7 @@ resource "aws_cognito_user_pool_client" "app_client" {
 
   explicit_auth_flows = [
     "ALLOW_ADMIN_USER_PASSWORD_AUTH",
-    # "ALLOW_USER_PASSWORD_AUTH",
+    "ALLOW_USER_PASSWORD_AUTH",
     "ALLOW_REFRESH_TOKEN_AUTH",
     "ALLOW_CUSTOM_AUTH",
     "ALLOW_USER_SRP_AUTH"
@@ -36,16 +36,16 @@ resource "aws_cognito_user_pool_client" "app_client" {
 }
 
 #더미데이터
-resource "aws_cognito_user" "dummy_user" {
-  username   = "dummyuser"
-  user_pool_id = aws_cognito_user_pool.user_pool.id
-  attributes = {
-    email = "dummyuser@example.com"
-  }
+# resource "aws_cognito_user" "dummy_user" {
+#   username   = "dummyuser"
+#   user_pool_id = aws_cognito_user_pool.user_pool.id
+#   attributes = {
+#     email = "dummyuser@example.com"
+#   }
   
-  temporary_password = "TemporaryPassword123!"
+#   temporary_password = "TemporaryPassword123!"
   
-  message_action = "SUPPRESS"  # 인증 메일 발송을 방지
+#   message_action = "SUPPRESS"  # 인증 메일 발송을 방지
   
-  force_alias_creation = false
-}
+#   force_alias_creation = false
+# }
