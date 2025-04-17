@@ -9,6 +9,7 @@ resource "aws_s3_bucket" "cloudtrail_bucket" {
   # 이전과 동일 ...
   # 버킷 이름 변수 값이 'opensearch-timangs-log' 로 설정되어 있다고 가정합니다.
   bucket = "${var.cloudtrail_s3_bucket_name}-${random_id.bucket_suffix.hex}"
+  force_destroy = true
   tags   = var.tags
 }
 

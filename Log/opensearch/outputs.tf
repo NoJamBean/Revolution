@@ -25,3 +25,9 @@ output "cloudtrail_name" {
   description = "생성된 CloudTrail 추적 이름"
   value       = aws_cloudtrail.main_trail.name
 }
+
+output "lambda_iam_role_arn" {
+  description = "The ARN of the Lambda function's execution role."
+  # aws_iam_role 리소스 (lambda_s3_opensearch.tf 에 정의됨)의 arn 속성 참조
+  value = aws_iam_role.lambda_s3_opensearch_role.arn
+}
