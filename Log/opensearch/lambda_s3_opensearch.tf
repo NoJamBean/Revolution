@@ -51,7 +51,7 @@ resource "aws_iam_policy" "lambda_s3_opensearch_policy" {
         Effect   = "Allow"
         # 중요: 대상 S3 버킷 및 객체 경로를 정확히 지정
         Resource = [
-          "${aws_s3_bucket.cloudtrail_bucket.arn}",
+          aws_s3_bucket.cloudtrail_bucket.arn,       # 버킷 자체 ARN
           "${aws_s3_bucket.cloudtrail_bucket.arn}/*" # 버킷 내 모든 객체 ARN
         ]
         # aws_s3_bucket.cloudtrail_bucket 리소스는 cloudtrail.tf 에 정의되어 있어야 함
@@ -80,7 +80,7 @@ resource "aws_iam_role_policy_attachment" "lambda_s3_opensearch_attach" {
 
 # --- Lambda 함수 정의 ---
 
-# 4. Python 코드를 포함하는 zip 아카이브 생성 (archive_file 데이터 소스 사용)
+# 4. Lambda 함수 코드 자체를 포함하는 zip 아카이브 생성
 data "archive_file" "lambda_zip" {
   type        = "zip"
   output_path = "${path.module}/lambda_function_payload.zip" # 임시 zip 파일 경로
@@ -89,13 +89,14 @@ data "archive_file" "lambda_zip" {
   source {
     # zip 파일 내에서 사용될 파일 이름 (Lambda 핸들러와 일치해야 함: index.py)
     filename = "index.py"
-    # 인라인 Python 코드 내용
+    # 인라인 Python 코드 내용 (Layer 라이브러리 사용 및 SigV4 서명 적용)
     content = <<-EOF
 import json
 import boto3
 import gzip
 import os
-from urllib.request import Request, urlopen
+import requests # Layer 에 포함된 라이브러리 import
+from aws_requests_auth.aws_auth import AWSRequestsAuth # Layer 에 포함된 라이브러리 import
 from datetime import datetime
 import logging
 
@@ -105,7 +106,18 @@ logger.setLevel(logging.INFO)
 
 s3 = boto3.client('s3')
 opensearch_endpoint = os.environ['OPENSEARCH_ENDPOINT']
-# index_prefix = os.environ.get('INDEX_PREFIX', 'cloudtrail') # 환경 변수에서 인덱스 접두사 가져오기 (선택 사항)
+# 현재 리전 가져오기 (SigV4 서명에 필요)
+aws_region = os.environ.get('AWS_REGION', 'ap-northeast-2') # Lambda 환경 변수에서 가져오거나 기본값 사용
+
+# --- SigV4 인증 설정 ---
+# Lambda 실행 역할의 자격 증명을 자동으로 사용
+credentials = boto3.Session().get_credentials()
+aws_auth = AWSRequestsAuth(aws_access_key=credentials.access_key,
+                           aws_secret_access_key=credentials.secret_key,
+                           aws_token=credentials.token, # 임시 자격 증명 토큰 포함
+                           aws_host=opensearch_endpoint,
+                           aws_region=aws_region,
+                           aws_service='es') # OpenSearch 서비스 이름 'es'
 
 def lambda_handler(event, context):
     logger.info("Received event: " + json.dumps(event, indent=2))
@@ -120,7 +132,7 @@ def lambda_handler(event, context):
         logger.error(f"Could not extract bucket/key from event: {e}")
         return {'statusCode': 400, 'body': json.dumps('Invalid S3 event format')}
 
-
+    # --- 안정성을 위해 try-except 블록 복구 ---
     try:
         # S3에서 로그 파일 다운로드
         response = s3.get_object(Bucket=bucket, Key=key)
@@ -142,11 +154,9 @@ def lambda_handler(event, context):
         for record in records:
             try:
                 # 인덱스 이름 생성 (예: cloudtrail-YYYY-MM-DD)
-                # eventTime 필드를 사용하여 날짜 결정 시도, 없으면 현재 시간 사용
                 event_time_str = record.get('eventTime')
                 if event_time_str:
                     try:
-                        # ISO 8601 형식 파싱 시도 (예: '2025-04-16T14:30:00Z')
                         dt_obj = datetime.fromisoformat(event_time_str.replace('Z', '+00:00'))
                         index_date_str = dt_obj.strftime('%Y-%m-%d')
                     except ValueError:
@@ -163,39 +173,34 @@ def lambda_handler(event, context):
                 bulk_data += json.dumps(record) + "\\n"
             except Exception as e:
                 logger.error(f"Error processing individual record: {e}. Record: {json.dumps(record)}")
-                # 개별 레코드 오류 시 다음 레코드로 계속 진행 (선택적)
 
-
-        # OpenSearch로 데이터 전송 (Bulk API 사용)
-        # 중요: 실제 환경에서는 requests 라이브러리 사용 및 오류 처리 강화 권장
-        # 중요: FGAC 사용 시 인증 헤더 추가 필요 (예: HTTP Basic Auth 또는 SigV4)
+        # OpenSearch로 데이터 전송 (requests 및 SigV4 사용)
         url = f"https://{opensearch_endpoint}/_bulk"
         headers = {"Content-Type": "application/x-ndjson"}
 
-        req = Request(url, data=bulk_data.encode('utf-8'), headers=headers, method='POST')
-        with urlopen(req) as response:
-            response_status = response.status
-            response_body = response.read().decode('utf-8')
-            logger.info(f"OpenSearch response status: {response_status}")
-            # logger.debug(f"OpenSearch response body: {response_body}") # 상세 응답 필요 시 DEBUG 레벨 사용
+        # 'requests' 라이브러리 사용 및 aws_auth 로 SigV4 서명 적용
+        r = requests.post(url, auth=aws_auth, data=bulk_data.encode('utf-8'), headers=headers)
 
-            # 응답 내용 확인 (오류 확인 등)
-            if response_status >= 300:
-                 logger.error(f"OpenSearch request failed with status {response_status}: {response_body}")
+        logger.info(f"OpenSearch response status: {r.status_code}")
+        # logger.debug(f"OpenSearch response body: {r.text}") # 상세 응답 필요 시 DEBUG 레벨 사용
 
-            response_json = json.loads(response_body)
-            if response_json.get('errors'):
-                error_count = 0
-                logger.warning("Errors reported by OpenSearch Bulk API:")
-                # 오류 상세 로깅 (샘플)
-                for item in response_json.get('items', []):
-                    if 'error' in item.get('index', {}):
-                         error_count += 1
-                         # 로그가 너무 길어지는 것을 방지하기 위해 일부 오류만 로깅할 수 있음
-                         if error_count < 10:
-                            logger.warning(f"  Item Error: {item['index']['error']}")
-                if error_count >= 10:
-                    logger.warning(f"  ... and {error_count - 9} more errors.")
+        # 응답 내용 확인 (오류 확인 등)
+        if r.status_code >= 300:
+             logger.error(f"OpenSearch request failed with status {r.status_code}: {r.text}")
+
+        response_json = r.json() # requests 는 json() 메소드 제공
+        if response_json.get('errors'):
+            error_count = 0
+            logger.warning("Errors reported by OpenSearch Bulk API:")
+            # 오류 상세 로깅 (샘플)
+            for item in response_json.get('items', []):
+                if 'error' in item.get('index', {}):
+                     error_count += 1
+                     # 로그가 너무 길어지는 것을 방지하기 위해 일부 오류만 로깅할 수 있음
+                     if error_count < 10:
+                        logger.warning(f"  Item Error: {item['index']['error']}")
+            if error_count >= 10:
+                logger.warning(f"  ... and {error_count - 9} more errors.")
 
 
         logger.info(f"Successfully processed {key} and attempted to send {len(records)} records.")
@@ -208,14 +213,15 @@ def lambda_handler(event, context):
     except Exception as e:
         logger.error(f"Error processing file {key} from bucket {bucket}: {e}", exc_info=True)
         raise e # 그 외 오류 발생 시 Lambda 재시도 유도
+    # --- 여기까지 try-except 블록 ---
 
 EOF
   }
 }
 
-# 5. Lambda 함수 리소스 정의
+# 5. Lambda 함수 리소스 정의 (Layer 적용)
 resource "aws_lambda_function" "s3_to_opensearch_lambda" {
-  # archive_file 데이터 소스에서 생성된 zip 파일 참조
+  # 함수 코드 zip 파일 참조
   filename         = data.archive_file.lambda_zip.output_path
   source_code_hash = data.archive_file.lambda_zip.output_base64sha256
 
@@ -231,8 +237,15 @@ resource "aws_lambda_function" "s3_to_opensearch_lambda" {
       # OpenSearch 엔드포인트를 Lambda 환경 변수로 전달
       OPENSEARCH_ENDPOINT = aws_opensearch_domain.log_domain.endpoint
       # aws_opensearch_domain.log_domain 리소스는 opensearch.tf 에 정의되어 있어야 함
+      # AWS_REGION 환경 변수는 Lambda 실행 환경에 자동으로 설정되는 경우가 많음
+      # AWS_REGION = var.aws_region
     }
   }
+
+  # --- 추가된 부분: 생성한 Lambda Layer 연결 ---
+  # aws_lambda_layer_version.opensearch_libs_layer 리소스는 lambda_layer.tf 에 정의되어 있어야 함
+  layers = [aws_lambda_layer_version.opensearch_libs_layer.arn]
+  # --- 여기까지 ---
 
   tags = var.tags # 공통 태그 적용
 }
