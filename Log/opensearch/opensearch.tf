@@ -42,7 +42,7 @@ resource "aws_opensearch_domain" "log_domain" {
         Resource = "arn:aws:es:${var.aws_region}:${data.aws_caller_identity.current.account_id}:domain/${var.opensearch_domain_name}/*"
         Condition = {
           IpAddress = {
-            "aws:SourceIp" = ["121.160.41.207/32","58.120.222.122/32","59.9.132.74/32","118.37.11.111/32"]
+            "aws:SourceIp" = ["121.160.41.207/32","58.120.222.122/32","59.9.132.74/32","118.37.11.111/32","211.104.182.166/32"]
           }
         }
       }
