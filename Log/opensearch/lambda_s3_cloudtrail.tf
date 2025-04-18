@@ -1,58 +1,25 @@
-# lambda_s3_opensearch.tf
-
-# --- Lambda 함수 실행을 위한 IAM 역할 및 정책 ---
-# (IAM 역할, 정책, 정책 연결 부분은 이전과 동일)
-resource "aws_iam_role" "lambda_s3_opensearch_role" {
-  name = "lambda-s3-opensearch-role"
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [ { Action = "sts:AssumeRole", Effect = "Allow", Principal = { Service = "lambda.amazonaws.com" } } ]
-  })
-  tags = var.tags
-}
-resource "aws_iam_policy" "lambda_s3_opensearch_policy" {
-  name        = "lambda-s3-opensearch-policy"
-  description = "Policy for Lambda to read CloudTrail logs from S3 and write to OpenSearch"
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      { Action = ["logs:CreateLogGroup", "logs:CreateLogStream", "logs:PutLogEvents"], Effect = "Allow", Resource = "arn:aws:logs:*:*:*" },
-      { Action = ["s3:GetObject", "s3:ListBucket"], Effect = "Allow", Resource = [ aws_s3_bucket.cloudtrail_bucket.arn, "${aws_s3_bucket.cloudtrail_bucket.arn}/*" ] },
-      { Action = ["es:ESHttpPost", "es:ESHttpPut", "es:ESHttpGet"], Effect = "Allow", Resource = "${aws_opensearch_domain.log_domain.arn}/*" }
-    ]
-  })
-}
-resource "aws_iam_role_policy_attachment" "lambda_s3_opensearch_attach" {
-  role       = aws_iam_role.lambda_s3_opensearch_role.name
-  policy_arn = aws_iam_policy.lambda_s3_opensearch_policy.arn
-}
+# lambda_s3_cloudtrail.tf
 
 # --- Lambda 함수 정의 ---
-
-# 4. Lambda 함수 코드 자체를 포함하는 zip 아카이브 생성
-data "archive_file" "lambda_zip" {
+data "archive_file" "lambda_s3_cloudtrail_zip" {
   type        = "zip"
-  output_path = "${path.module}/lambda_function_payload.zip" # 임시 zip 파일 경로
+  output_path = "${path.module}/lambda_s3_cloudtrail.zip" # 임시 zip 파일 경로
 
   # source 블록을 사용하여 인라인 코드 제공
   source {
-    # zip 파일 내에서 사용될 파일 이름 (Lambda 핸들러와 일치해야 함: index.py)
     filename = "index.py"
-    # 인라인 Python 코드 내용 (Bulk 데이터 생성 방식 수정)
     content = <<-EOF
 import json
 import boto3
 import gzip
 import os
-import requests # Layer 에 포함된 라이브러리 import
-from aws_requests_auth.aws_auth import AWSRequestsAuth # Layer 에 포함된 라이브러리 import
+import requests
+from aws_requests_auth.aws_auth import AWSRequestsAuth 
 from datetime import datetime
 import logging
 
-# 로깅 설정
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
-
 s3 = boto3.client('s3')
 opensearch_endpoint = os.environ['OPENSEARCH_ENDPOINT']
 aws_region = os.environ.get('AWS_REGION', 'ap-northeast-2')
@@ -175,9 +142,9 @@ EOF
 }
 
 # 5. Lambda 함수 리소스 정의 (Layer 적용)
-resource "aws_lambda_function" "s3_to_opensearch_lambda" {
-  filename         = data.archive_file.lambda_zip.output_path
-  source_code_hash = data.archive_file.lambda_zip.output_base64sha256
+resource "aws_lambda_function" "s3_to_cloudtrail_lambda" {
+  filename         = data.archive_file.lambda_s3_cloudtrail_zip.output_path
+  source_code_hash = data.archive_file.lambda_s3_cloudtrail_zip.output_base64sha256
   function_name = "s3-to-opensearch-cloudtrail"
   role          = aws_iam_role.lambda_s3_opensearch_role.arn
   handler       = "index.lambda_handler"
@@ -194,11 +161,10 @@ resource "aws_lambda_function" "s3_to_opensearch_lambda" {
 }
 
 # --- Lambda 함수 호출 권한 및 S3 이벤트 트리거 설정 ---
-# (이전과 동일)
-resource "aws_lambda_permission" "allow_s3_invocation" {
+resource "aws_lambda_permission" "allow_s3_invocation_cloudtrail" {
   statement_id  = "AllowS3InvokeFunction"
   action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.s3_to_opensearch_lambda.function_name
+  function_name = aws_lambda_function.s3_to_cloudtrail_lambda.function_name
   principal     = "s3.amazonaws.com"
   source_arn    = aws_s3_bucket.cloudtrail_bucket.arn
   source_account = data.aws_caller_identity.current.account_id
@@ -206,10 +172,9 @@ resource "aws_lambda_permission" "allow_s3_invocation" {
 resource "aws_s3_bucket_notification" "bucket_notification" {
   bucket = aws_s3_bucket.cloudtrail_bucket.id
   lambda_function {
-    lambda_function_arn = aws_lambda_function.s3_to_opensearch_lambda.arn
+    lambda_function_arn = aws_lambda_function.s3_to_cloudtrail_lambda.arn
     events              = ["s3:ObjectCreated:*"]
     filter_suffix       = ".gz"
-    # filter_prefix     = "AWSLogs/${data.aws_caller_identity.current.account_id}/"
   }
-  depends_on = [aws_lambda_permission.allow_s3_invocation]
+  depends_on = [aws_lambda_permission.allow_s3_invocation_cloudtrail]
 }

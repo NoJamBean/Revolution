@@ -2,9 +2,6 @@ resource "random_id" "bucket_suffix" {
   byte_length = 8
 }
 
-# --- CloudTrail 설정 ---
-
-# 1. CloudTrail 로그 저장을 위한 S3 버킷 생성
 resource "aws_s3_bucket" "cloudtrail_bucket" {
   # 이전과 동일 ...
   # 버킷 이름 변수 값이 'opensearch-timangs-log' 로 설정되어 있다고 가정합니다.
@@ -62,13 +59,8 @@ resource "aws_cloudtrail" "main_trail" {
 
   tags = var.tags
 
-  # --- 추가된 부분 ---
   # S3 버킷 정책이 먼저 적용되도록 명시적 의존성 추가
   depends_on = [
     aws_s3_bucket_policy.cloudtrail_bucket_policy
   ]
-  # --- 여기까지 ---
 }
-
-# --- 로그 전송 설정 (추가 구현 필요) ---
-# ...

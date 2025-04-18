@@ -22,33 +22,27 @@ resource "aws_opensearch_domain" "log_domain" {
   }
 
   # 중요: 접근 정책 설정
-  # Lambda 역할은 IP 제한 없이 허용하고, 지정된 IP 에서만 일반 접근을 허용하도록 변경
   access_policies = jsonencode({
     Version = "2012-10-17"
     Statement = [
-      # Statement 1: Lambda 역할 접근 허용 (IP 제한 없음)
       {
         Effect = "Allow"
         Principal = {
-          AWS = "${aws_iam_role.lambda_s3_opensearch_role.arn}" # Lambda 역할 ARN
+          AWS = "${aws_iam_role.lambda_s3_opensearch_role.arn}"
         }
-        # Lambda에 필요한 최소한의 Action으로 제한하는 것이 좋습니다 (예: "es:ESHttpPost")
         Action = "es:*"
         Resource = "arn:aws:es:${var.aws_region}:${data.aws_caller_identity.current.account_id}:domain/${var.opensearch_domain_name}/*"
       },
-      # Statement 2: 지정된 IP 주소에서의 접근 허용
       {
         Effect = "Allow"
         Principal = {
-          AWS = "*" # 모든 사용자 (익명 포함)
+          AWS = "*"
         }
-        # Dashboards 접근 등에 필요한 최소한의 Action으로 제한하는 것이 좋습니다 (예: "es:ESHttpGet")
         Action = "es:*"
         Resource = "arn:aws:es:${var.aws_region}:${data.aws_caller_identity.current.account_id}:domain/${var.opensearch_domain_name}/*"
-        # Condition: IP 주소 제한
         Condition = {
           IpAddress = {
-            "aws:SourceIp" = ["121.160.41.207/32","58.120.222.122/32"] # 허용할 IP 주소 (CIDR 형식)
+            "aws:SourceIp" = ["121.160.41.207/32","58.120.222.122/32","59.9.132.74/32","118.37.11.111/32"]
           }
         }
       }

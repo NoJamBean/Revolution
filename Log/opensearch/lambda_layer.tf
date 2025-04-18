@@ -1,9 +1,33 @@
 # lambda_layer.tf
 
-# Dockerfile 등으로 생성된 lambda_layer.zip 파일이
-# 현재 Terraform 실행 디렉토리(${path.module})에 있다고 가정합니다.
+# --- Lambda 함수 실행을 위한 IAM 역할 및 정책 ---
+# (IAM 역할, 정책, 정책 연결 부분은 이전과 동일)
+resource "aws_iam_role" "lambda_s3_opensearch_role" {
+  name = "lambda-s3-opensearch-role"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [ { Action = "sts:AssumeRole", Effect = "Allow", Principal = { Service = "lambda.amazonaws.com" } } ]
+  })
+  tags = var.tags
+}
+resource "aws_iam_policy" "lambda_s3_opensearch_policy" {
+  name        = "lambda-s3-opensearch-policy"
+  description = "Policy for Lambda to read CloudTrail logs from S3 and write to OpenSearch"
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      { Action = ["logs:CreateLogGroup", "logs:CreateLogStream", "logs:PutLogEvents"], Effect = "Allow", Resource = "arn:aws:logs:*:*:*" },
+      { Action = ["s3:GetObject", "s3:ListBucket"], Effect = "Allow", Resource = [ "${aws_s3_bucket.cloudtrail_bucket.arn}", "${aws_s3_bucket.cloudtrail_bucket.arn}/*" ] },
+      { Action = ["es:ESHttpPost", "es:ESHttpPut", "es:ESHttpGet"], Effect = "Allow", Resource = "${aws_opensearch_domain.log_domain.arn}/*" }
+    ]
+  })
+}
+resource "aws_iam_role_policy_attachment" "lambda_s3_opensearch_attach" {
+  role       = aws_iam_role.lambda_s3_opensearch_role.name
+  policy_arn = aws_iam_policy.lambda_s3_opensearch_policy.arn
+}
 
-# Lambda Layer Version 리소스 생성
+
 resource "aws_lambda_layer_version" "opensearch_libs_layer" {
   layer_name = "opensearch-python-libs" # Lambda Layer 이름
 
