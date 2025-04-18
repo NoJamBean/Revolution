@@ -1,0 +1,18 @@
+{
+  "Records": [
+    {
+      "eventSource": "webapp.example.com",
+      "awsRegion": "ap-northeast-2",
+      "eventTime": "2025-04-18T07:19:04.373Z",
+      "eventName": "PageRouting",
+      "requestParameters": {
+        "httpMethod": "GET",
+        "requestPath": "/?id=162439&sport=BASEBALL",
+        "queryString": "id=162439&sport=BASEBALL",
+        "statusCode": 200
+      },
+      "sourceIPAddress": "::1",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36"
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "Records": [
+    {
+      "eventSource": "webapp.example.com",
+      "awsRegion": "ap-northeast-2",
+      "eventTime": "2025-04-18T07:37:10.982Z",
+      "eventName": "LoginSuccess",
+      "requestParameters": {
+        "httpMethod": "POST",
+        "requestPath": "/api/users/login",
+        "queryString": "{\"id\":\"songseop\",\"password\":\"Guswls85@\"}",
+        "statusCode": 200
+      },
+      "sourceIPAddress": "::1",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36"
+    },
+    {
+      "eventSource": "webapp.example.com",
+      "awsRegion": "ap-northeast-2",
+      "eventTime": "2025-04-18T07:38:23.917Z",
+      "eventName": "PageRouting",
+      "requestParameters": {
+        "httpMethod": "GET",
+        "requestPath": "/bet?sport=BASEBALL&id=163560",
+        "queryString": "sport=BASEBALL&id=163560",
+        "statusCode": 200
+      },
+      "sourceIPAddress": "::1",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36"
+    }
+  ]
+}
