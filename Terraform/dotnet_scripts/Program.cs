@@ -149,6 +149,7 @@ app.Use(async (context, next) =>
 });
 app.UseMiddleware<RequestLoggingMiddleware>();
 // Configure the HTTP request pipeline.
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

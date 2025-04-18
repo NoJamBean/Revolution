@@ -67,7 +67,7 @@ namespace MyApi.Data
         
         [Required]
         [Column("status")]
-        public bool Status { get; set; } = true;
+        public string? Status { get; set; }
 
         [Column("modified_date")]
         public DateTime ModifiedDate { get; set; } = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("Asia/Seoul"));
@@ -111,7 +111,7 @@ namespace MyApi.Data
         [Column("result")]
         [Required]
         public string? Result { get; set; }  // 'win', 'lose'
-        
+
         [Column("resultPrice", TypeName = "bigint")]
         public long ResultPrice { get; set; } = 0;
 

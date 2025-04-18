@@ -29,6 +29,33 @@ namespace MyApi.Controllers
         }
 
         //GET
+        [HttpGet("me")]
+        public async Task<IActionResult> GetTokenInfo()
+        {
+            try
+            {
+                // Claims 가져오는 작업 자체는 동기지만, Task.FromResult로 래핑 가능
+                var claims = await Task.FromResult(
+                    User.Claims.ToDictionary(claim => claim.Type, claim => claim.Value)
+                );
+
+                if (claims == null || claims.Count == 0)
+                {
+                    return Unauthorized(new { message = "토큰에서 사용자 정보를 찾을 수 없습니다." });
+                }
+
+                return Ok(claims);
+            }
+            catch (Exception ex)
+            {
+                return Unauthorized(new
+                {
+                    message = "토큰 확인 중 오류가 발생했습니다.",
+                    error = ex.Message
+                });
+            }
+        }
+
         // 특정 사용자의 잔액 조회
         [HttpGet("{id}/balance")]
         public async Task<ActionResult<long>> GetBalance(string id)
@@ -46,29 +73,6 @@ namespace MyApi.Controllers
 
             return Ok(balance.Value);
         }
-
-        // [Authorize] // JWT 인증이 필요
-        // [HttpGet("profile")]
-        // public IActionResult GetUserProfile()
-        // {
-        //     // 현재 사용자의 Cognito ID를 추출 (JWT 토큰에서 sub 값을 추출)
-        //     string userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
-        //     if (userId == null)
-        //     {
-        //         return Unauthorized("사용자 인증 실패");
-        //     }
-
-        //     // DB에서 사용자 정보를 조회
-        //     User user = _userContext.Users.SingleOrDefault(u => u.Uuid == userId);
-        
-        //     if (user == null)
-        //     {
-        //         return NotFound("사용자를 찾을 수 없습니다.");
-        //     }
-
-        //     return Ok(user);
-        // }        
 
         // 모든 사용자 조회
         [HttpGet]
@@ -109,10 +113,8 @@ namespace MyApi.Controllers
         {
             try
             {
-                // 1. Cognito에서 삭제
                 await _cognitoService.DeleteUserAsync(id);
 
-                // 2. DB에서 사용자 삭제 (선택)
                 var user = await _userContext.Users.SingleOrDefaultAsync(u => u.Id == id);
                 if (user != null)
                 {
@@ -122,13 +124,15 @@ namespace MyApi.Controllers
 
                 return Ok(new { message = $"사용자 {id} 삭제 완료" });
             }
-            catch (UserNotFoundException)
-            {
-                return NotFound(new { message = $"Cognito에서 사용자 {id}를 찾을 수 없습니다." });
-            }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = $"사용자 삭제 실패", error = ex.Message });
+                // Cognito에서 사용자를 못 찾은 경우에도 여기서 처리
+                if (ex.Message.Contains("UserNotFoundException"))
+                {
+                    return NotFound(new { message = $"Cognito에서 사용자 {id}를 찾을 수 없습니다." });
+                }
+
+                return StatusCode(500, new { message = "사용자 삭제 실패", error = ex.Message });
             }
         }
 

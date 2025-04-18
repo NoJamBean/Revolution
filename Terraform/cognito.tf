@@ -1,6 +1,6 @@
 #Cognito
 resource "aws_cognito_user_pool" "user_pool" {
-  name = "my-user-pool"
+  name = "bet-user-pool"
 
   auto_verified_attributes = ["email"]
 
@@ -20,7 +20,7 @@ resource "aws_cognito_user_pool" "user_pool" {
 }
 
 resource "aws_cognito_user_pool_client" "app_client" {
-  name         = "my-app-client"
+  name         = "bet-app-client"
   user_pool_id = aws_cognito_user_pool.user_pool.id
 
   generate_secret = false

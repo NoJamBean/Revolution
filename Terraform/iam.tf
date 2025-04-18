@@ -16,6 +16,21 @@ resource "aws_iam_role" "api_server_role" {
   })
 }
 
+resource "aws_iam_role" "rds_to_cwlogs" {
+  name = "rds-cloudwatch-logs-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Principal = {
+        Service = "rds.amazonaws.com"
+      }
+      Action = "sts:AssumeRole"
+    }]
+  })
+}
+
 resource "aws_iam_role" "ec2_s3_role" {
   name = "ec2_s3_fullaccess_role"
 
@@ -412,6 +427,11 @@ resource "aws_iam_role_policy_attachment" "attach_to_api_server_role_cognito" {
 resource "aws_iam_role_policy_attachment" "attach_to_api_server_role_s3" {
   role       = aws_iam_role.api_server_role.name
   policy_arn = aws_iam_policy.s3_full_access_policy.arn
+}
+
+resource "aws_iam_role_policy_attachment" "rds_logs" {
+  role       = aws_iam_role.rds_to_cwlogs.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonRDSFullAccess"
 }
 
 #Profile

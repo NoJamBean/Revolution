@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MyApi.Data;
@@ -20,11 +21,18 @@ namespace MyApi.Controllers
         }
 
         // 특정 사용자의 게임 정보 조회
-        [HttpGet("{id}")]
-        public async Task<ActionResult<IEnumerable<GameInfo>>> GetGamesByUser(string id)
+        [HttpGet("mygames")]
+        public async Task<ActionResult<IEnumerable<GameInfo>>> GetGamesByUser()
         {
             try
             {
+                string id = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+                if (string.IsNullOrEmpty(id))
+                {
+                    return Unauthorized(new { message = "토큰에서 사용자 ID를 찾을 수 없습니다." });
+                }
+
                 var games = await _gameContext.GameInfos
                                             .Where(g => g.Id == id)
                                             .OrderByDescending(g => g.GameDate)
@@ -61,9 +69,6 @@ namespace MyApi.Controllers
             }
             catch (Exception ex)
             {
-                // 로그 남기기 (옵션)
-                // _logger.LogError(ex, "게임 저장 중 오류 발생");
-
                 return StatusCode(500, new { message = "게임 정보 저장 중 서버 오류가 발생했습니다.", error = ex.Message });
             }
         }

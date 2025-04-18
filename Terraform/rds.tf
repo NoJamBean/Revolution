@@ -24,7 +24,7 @@ resource "aws_db_parameter_group" "parm" {
 }
 
 resource "aws_db_instance" "mysql_multi_az" {
-  identifier                          = "mysql-multi-az-instance"
+  identifier                          = "mysql-multi-az-rds-instance"
   engine                              = "mysql"
   engine_version                      = "8.0.40"
   instance_class                      = "db.t3.micro"
@@ -45,7 +45,9 @@ resource "aws_db_instance" "mysql_multi_az" {
   iam_database_authentication_enabled = false # IAM 인증 비활성화 (암호 인증 사용)
   parameter_group_name                = aws_db_parameter_group.parm.name
   availability_zone                   = null # 자동 배정
-  tags                                = { Name = "MySQL Multi-AZ Instance" }
+  enabled_cloudwatch_logs_exports = ["error", "general", "slowquery"]
+  monitoring_role_arn = aws_iam_role.rds_to_cwlogs.arn
+  tags                                = { Name = "MySQL Multi-AZ RDS Instance" }
 }
 
 #읽기 복제본 프록시

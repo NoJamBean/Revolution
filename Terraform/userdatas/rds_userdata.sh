@@ -28,10 +28,10 @@ CREATE TABLE gameinfoTBL (
     away VARCHAR(20) NOT NULL,
     wdl ENUM('WIN', 'DRAW', 'LOSE')  NOT NULL,
     odds DECIMAL(5,2) NOT NULL,
-    price BIGINT DEFAULT 0, 
-    status BOOLEAN DEFAULT TRUE
-    modified_date DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-    PRIMARY KEY (id, gametypeDate)
+    price BIGINT DEFAULT 0 NOT NULL, 
+    status ENUM ('BEFORE', 'PLAYING', 'FINISH') NOT NULL,
+    modified_date DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (id, gameDate)
 );
 
 DROP TABLE IF EXISTS gameresultTBL;
@@ -45,8 +45,8 @@ CREATE TABLE gameresultTBL (
     price BIGINT DEFAULT 0, 
     result ENUM('WIN', 'DRAW', 'LOSE')  NOT NULL,
     resultPrice BIGINT DEFAULT 0,
-    PRIMARY KEY (id, type), 
-    FOREIGN KEY (id, type) REFERENCES gameinfoTBL(id, type) ON DELETE CASCADE
+    PRIMARY KEY (id, gameDate), 
+    FOREIGN KEY (id, gameDate) REFERENCES gameinfoTBL(id, gameDate) ON DELETE CASCADE
 );
 
 EOT
