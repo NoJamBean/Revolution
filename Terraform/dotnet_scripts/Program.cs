@@ -36,12 +36,12 @@ IConfiguration configuration = configBuilder.Build(); // IConfiguration 생성
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
-builder.Host.UseSerilog((context, services, loggerConfiguration) =>
+builder.Host.UseSerilog((context, services, configuration) =>
 {
-    loggerConfiguration
+    configuration
         .ReadFrom.Configuration(context.Configuration)
-        .WriteTo.Console(outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss} {Level:u3}] {Message}{NewLine}{Exception}")
-        .WriteTo.File("/var/log/api/app.log", rollingInterval: RollingInterval.Day);
+        .WriteTo.Console(new Serilog.Formatting.Json.JsonFormatter())
+        .WriteTo.File(new Serilog.Formatting.Json.JsonFormatter(), "/var/log/api/app.log", rollingInterval: RollingInterval.Day);
 });
 
 // 환경 변수에서 데이터베이스 및 Cognito 정보 가져오기
@@ -147,7 +147,7 @@ app.Use(async (context, next) =>
 
     await next();
 });
-
+app.UseMiddleware<RequestLoggingMiddleware>();
 // Configure the HTTP request pipeline.
 app.UseAuthorization();
 
@@ -192,7 +192,7 @@ Task.Run(async () =>
     }
 });
 
-async Task UploadToS3(string filePath)
+async Task UploadToS3(string filePath, string httpMethod = "PUT", string requestBody = "", string queryString = "")
 {
     string bucketName = Environment.GetEnvironmentVariable("S3_LOG_BUCKET") ?? "my-log-bucket";
 
@@ -201,38 +201,62 @@ async Task UploadToS3(string filePath)
     var koreaTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("Asia/Seoul"));
 
     string timestamp = koreaTime.ToString("yyyyMMdd-HHmmss-fff");
-    string datePath = koreaTime.ToString("yyyy/MM/dd");
     string uniqueFileName = $"{fileName}-{timestamp}{extension}";
-    string keyName = $"{s3Folder}{datePath}/{uniqueFileName}";
+    string keyName = $"{s3Folder}{uniqueFileName}";
 
-    // Upload metadata
     string eventTime = koreaTime.ToString("yyyy-MM-ddTHH:mm:ss.fffK");
     string awsRegion = "ap-northeast-2";
     string eventName = "UploadLog";
     string eventSource = "DotNetAPIServer";
     string sourceIPAddress = GetLocalIPAddress();
+    string userAgent = "dotnet-uploader/1.0";
 
     try
     {
         await fileTransferUtility.UploadAsync(filePath, bucketName, keyName);
 
-        string eventLogContent = $@"[UploadLog]
-eventTime      : {eventTime}
-awsRegion      : {awsRegion}
-eventName      : {eventName}
-eventSource    : {eventSource}
-sourceIPAddress: {sourceIPAddress}
-s3Key          : {keyName}
-status         : Success";
+        object requestParams;
 
-        string localLogFile = $"/var/log/api/upload-{timestamp}.log";
-        await File.WriteAllTextAsync(localLogFile, eventLogContent);
+        if (httpMethod.ToUpper() == "POST")
+        {
+            requestParams = new
+            {
+                httpMethod,
+                requestPath = "/upload",
+                message = requestBody,
+                statusCode = 200
+            };
+        }
+        else
+        {
+            requestParams = new
+            {
+                httpMethod,
+                requestPath = "/upload",
+                queryString,
+                statusCode = 200
+            };
+        }
 
-        await fileTransferUtility.UploadAsync(localLogFile, bucketName, $"API_Server/DotNet/upload-events/{Path.GetFileName(localLogFile)}");
+        var logObject = new
+        {
+            Records = new[]
+            {
+                new
+                {
+                    eventSource,
+                    awsRegion,
+                    eventTime,
+                    eventName,
+                    requestParameters = requestParams,
+                    sourceIPAddress,
+                    userAgent
+                }
+            }
+        };
 
-        File.Delete(localLogFile);
-
-        Log.Information("업로드 완료: {S3Key}", keyName);
+        string jsonLog = JsonSerializer.Serialize(logObject, new JsonSerializerOptions { WriteIndented = false });
+        Log.Information(jsonLog);
 
         processedFiles.TryRemove(filePath, out _);
     }

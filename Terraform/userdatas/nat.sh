@@ -18,25 +18,9 @@ server {
     listen 80;
     server_name \$INSTANCE_PUBLIC_IP;
 
-    # location / {
-    #     proxy_pass http://api.backend.internal;
-    #     # proxy_pass_request_headers on;
-
-    #     # CORS 설정 추가
-    #     add_header 'Access-Control-Allow-Origin' 'http://localhost:3000' always;
-    #     add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS' always;
-    #     add_header 'Access-Control-Allow-Headers' '*' always;
-    #     add_header 'Access-Control-Allow-Credentials' 'true' always; # Credential 허용
-
-    #     # OPTIONS 요청 처리 (Preflight 요청에 응답)
-    #     if (\$request_method = OPTIONS) {
-    #         add_header 'Access-Control-Allow-Origin' 'http://localhost:3000';
-    #         add_header 'Access-Control-Allow-Methods' 'GET, POST';
-    #         add_header 'Access-Control-Allow-Headers' '*';
-    #         add_header 'Access-Control-Allow-Credentials' 'true';
-    #         return 204; # No Content 응답
-    #     }
-    # }
+    location / {
+        proxy_pass http://api.backend.internal;
+    }
 }
 EOL
 

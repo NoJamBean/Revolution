@@ -104,6 +104,34 @@ namespace MyApi.Controllers
             return Ok(user);
         }
 
+        [HttpGet("delete/{id}")]
+        public async Task<IActionResult> DeleteUser(string id)
+        {
+            try
+            {
+                // 1. Cognito에서 삭제
+                await _cognitoService.DeleteUserAsync(id);
+
+                // 2. DB에서 사용자 삭제 (선택)
+                var user = await _userContext.Users.SingleOrDefaultAsync(u => u.Id == id);
+                if (user != null)
+                {
+                    _userContext.Users.Remove(user);
+                    await _userContext.SaveChangesAsync();
+                }
+
+                return Ok(new { message = $"사용자 {id} 삭제 완료" });
+            }
+            catch (UserNotFoundException)
+            {
+                return NotFound(new { message = $"Cognito에서 사용자 {id}를 찾을 수 없습니다." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = $"사용자 삭제 실패", error = ex.Message });
+            }
+        }
+
          // 기본적인 값을 반환하는 예시
         [HttpGet("test")]
         public ActionResult<IEnumerable<string>> Test()

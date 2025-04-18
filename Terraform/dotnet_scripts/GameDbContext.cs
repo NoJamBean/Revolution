@@ -61,11 +61,16 @@ namespace MyApi.Data
         [Column("odds", TypeName = "decimal(5,2)")]
         public decimal Odds { get; set; }
 
+        [Required]
         [Column("price", TypeName = "bigint")]
         public long Price { get; set; } = 0;
-
+        
+        [Required]
         [Column("status")]
         public bool Status { get; set; } = true;
+
+        [Column("modified_date")]
+        public DateTime ModifiedDate { get; set; } = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("Asia/Seoul"));
 
         public GameInfo() {}
     }
@@ -106,9 +111,12 @@ namespace MyApi.Data
         [Column("result")]
         [Required]
         public string? Result { get; set; }  // 'win', 'lose'
-
+        
         [Column("resultPrice", TypeName = "bigint")]
         public long ResultPrice { get; set; } = 0;
+
+        [Column("modified_date")]
+        public DateTime ModifiedDate { get; set; } = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("Asia/Seoul"));
 
         // 외래 키 관계 설정
         [ForeignKey("Id, GameDate")]

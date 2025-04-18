@@ -151,5 +151,18 @@ namespace MyApi.Services
             );
         }
 
+
+        //관리자 권한!!!!!!!!!
+        public async Task DeleteUserAsync(string username)
+        {
+            var request = new AdminDeleteUserRequest
+            {
+                Username = username,
+                UserPoolId = _userPoolId
+            };
+
+            await _cognitoClient.AdminDeleteUserAsync(request);
+        }
+
     }
 }

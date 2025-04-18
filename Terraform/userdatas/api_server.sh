@@ -77,6 +77,7 @@ sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/GamesController.cs $LOCAL_PATH/Con
 sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/CognitoService.cs $LOCAL_PATH/Service/CognitoService.cs
 sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/BcryptPasswordHasher.cs $LOCAL_PATH/Service/BcryptPasswordHasher.cs
 sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/IPasswordHasher.cs $LOCAL_PATH/Service/IPasswordHasher.cs
+sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/RequestLoggingMiddleware.cs $LOCAL_PATH/Service/RequestLoggingMiddleware.cs
 
 sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/dotnet_run.sh ~/run.sh
 
@@ -173,31 +174,14 @@ sudo systemctl enable nginx
 sudo systemctl start nginx
 
 # Nginx 프록시 설정
-# INSTANCE_PRIVATE_IP=$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4)
 sudo tee /etc/nginx/conf.d/dotnet-api.conf > /dev/null <<EOL
 server {
     listen 80;
     server_name ${API_SERVER_DNS};
 
-    # location / {
-    #     proxy_pass http://localhost:5000;
-    #     # proxy_pass_request_headers on;
-
-    #     # CORS 설정 추가
-    #     add_header 'Access-Control-Allow-Origin' 'http://localhost:3000' always;
-    #     add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS' always;
-    #     add_header 'Access-Control-Allow-Headers' '*' always;
-    #     add_header 'Access-Control-Allow-Credentials' 'true' always; # Credential 허용
-
-    #     # OPTIONS 요청 처리 (Preflight 요청에 응답)
-    #     if (\$request_method = OPTIONS) {
-    #         add_header 'Access-Control-Allow-Origin' 'http://localhost:3000';
-    #         add_header 'Access-Control-Allow-Methods' 'GET, POST';
-    #         add_header 'Access-Control-Allow-Headers' '*';
-    #         add_header 'Access-Control-Allow-Credentials' 'true';
-    #         return 204; # No Content 응답
-    #     }
-    # }
+    location / {
+        proxy_pass http://localhost:5000;
+    }
 }
 EOL
 

@@ -4,11 +4,18 @@ resource "aws_cognito_user_pool" "user_pool" {
 
   auto_verified_attributes = ["email"]
 
-  schema {
-    name                     = "email"
-    attribute_data_type      = "String"
-    required                 = true
-    developer_only_attribute = false
+  dynamic "schema" {
+    for_each = [
+      { name = "email", attribute_data_type = "String", required = true, mutable = true, developer_only_attribute = false },
+      { name = "nickname", attribute_data_type = "String", required = false, mutable = true, developer_only_attribute = false }
+    ]
+    content {
+      name                     = schema.value.name
+      attribute_data_type      = schema.value.attribute_data_type
+      required                 = schema.value.required
+      mutable                  = schema.value.mutable
+      developer_only_attribute = schema.value.developer_only_attribute
+    }
   }
 }
 
@@ -34,18 +41,3 @@ resource "aws_cognito_user_pool_client" "app_client" {
     "ALLOW_USER_SRP_AUTH"
   ]
 }
-
-#더미데이터
-# resource "aws_cognito_user" "dummy_user" {
-#   username   = "dummyuser"
-#   user_pool_id = aws_cognito_user_pool.user_pool.id
-#   attributes = {
-#     email = "dummyuser@example.com"
-#   }
-  
-#   temporary_password = "TemporaryPassword123!"
-  
-#   message_action = "SUPPRESS"  # 인증 메일 발송을 방지
-  
-#   force_alias_creation = false
-# }

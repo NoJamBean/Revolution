@@ -189,4 +189,12 @@ resource "aws_s3_object" "IPasswordHasher" {
   source_hash = filemd5("${path.module}/dotnet_scripts/IPasswordHasher.cs")
 }
 
+resource "aws_s3_object" "LoggingMidleWare" {
+  bucket      = aws_s3_bucket.long_user_data_bucket.id
+  key         = "dotnet_scripts/RequestLoggingMiddleware.cs"
+  source      = "${path.module}/dotnet_scripts/RequestLoggingMiddleware.cs"
+  acl         = "private"
+  source_hash = filemd5("${path.module}/dotnet_scripts/RequestLoggingMiddleware.cs")
+}
+
 
