@@ -1,28 +1,6 @@
 import { keyframes } from '@emotion/react';
 import styled from '@emotion/styled';
 
-const blurIn = keyframes`
-  0% {
-    backdrop-filter: blur(0px);
-    background-color: rgba(0, 0, 0, 0);
-  }
-  100% {
-    backdrop-filter: blur(7px);
-    background-color: rgba(0, 0, 0, 0.3);
-  }
-`;
-
-const blurOut = keyframes`
-  100% {
-    backdrop-filter: blur(7px);
-    background-color: rgba(0, 0, 0, 0);
-  }
-  0% {
-    backdrop-filter: blur(0px);
-    background-color: rgba(0, 0, 0, 0.3);
-  }
-`;
-
 export const LoadingModalOverlay = styled.div`
   position: fixed;
   top: 0;
@@ -33,10 +11,14 @@ export const LoadingModalOverlay = styled.div`
   justify-content: center;
   align-items: center;
   z-index: 9999;
-  backdrop-filter: blur(6px);
-  animation: ${({ isLoading }: { isLoading: boolean }) =>
-      isLoading ? blurIn : blurOut}
-    0.2s ease forwards;
+  backdrop-filter: ${({ isLoading }: { isLoading: boolean }) =>
+    isLoading ? 'blur(7px)' : 'blur(0px)'};
+  background-color: ${({ isLoading }) =>
+    isLoading ? 'rgba(0, 0, 0, 0.3)' : 'rgba(0, 0, 0, 0)'};
+
+  transition: backdrop-filter 0.3s ease, background-color 0.3s ease;
+  will-change: backdrop-filter, background-color;
+  transform: translateZ(0);
 `;
 
 const fadeIn = keyframes`
@@ -65,23 +47,26 @@ export const LoadingModalContent = styled.div<{
   modalType: any;
   isLoading: boolean;
 }>`
-  /* width: 600px; */
   width: ${({ modalType }) => (modalType === 'Login' ? '600px' : '450px')};
   height: 400px;
-  background-color: white;
-  animation: ${({ isLoading }) => (isLoading ? fadeIn : fadeOut)} 0.3s ease
+  background-color: #343b4a;
+  animation: ${({ isLoading }) => (isLoading ? fadeIn : fadeOut)} 0.5s ease
     forwards;
+  width: 260px;
+  height: 300px;
+  border-radius: 10px;
 `;
 
 export const LoadingContent = styled.div`
-  border: 2px solid red;
   display: flex;
-  /* height: 100%; */
+  height: 100%;
+  background-color: #343b4a;
+  border-radius: 10px;
   flex-grow: 1;
 `;
 
 export const ButtonWrap = styled.div`
-  border: 3px solid green;
+  /* border: 3px solid green; */
 `;
 
 export const Button = styled.div`

@@ -4,6 +4,7 @@ import { validators } from '@/src/commons/validators/validator';
 import { useModal } from '../modalprovider';
 import axios from 'axios';
 import { useRouter } from 'next/router';
+import { sendLog } from '@/src/commons/utils/sendlogs';
 
 type SignUpVal = {
   id: string;
@@ -67,7 +68,7 @@ export default function SignUp() {
 
     try {
       const result = await axios.post(
-        'http://43.202.52.99/api/users/register/confirm',
+        'http://52.78.153.99/api/users/register/confirm',
         {
           id: id,
           password: password,
@@ -80,6 +81,26 @@ export default function SignUp() {
           headers: { 'Content-type': 'application/json' },
         }
       );
+
+      // 회원가입 성공 시 로그기록
+      if (result.status === 200) {
+        await sendLog({
+          eventSource: 'webapp.example.com',
+          awsRegion: 'ap-northeast-2',
+          eventTime: new Date().toISOString(),
+          eventName: 'SignupSuccess',
+          requestParameters: {
+            httpMethod: 'POST',
+            requestPath: '/api/users/register/confirm',
+            queryString: '',
+            statusCode: result.status,
+          },
+          sourceIPAddress: '',
+          userAgent: '',
+        });
+      }
+
+      console.log(result, '회원가입 성공');
 
       closeModal();
       router.push('/');
@@ -110,7 +131,7 @@ export default function SignUp() {
 
     try {
       const result = await axios.post(
-        'http://43.202.52.99/api/users/register',
+        'http://52.78.153.99/api/users/register',
         {
           id: id,
           password: password,
@@ -124,7 +145,24 @@ export default function SignUp() {
         }
       );
 
-      console.log(result, '결과체크용');
+      // 이메일 인증코드 요청 시 로그 기록
+      if (result.status === 200) {
+        await sendLog({
+          eventSource: 'webapp.example.com',
+          awsRegion: 'ap-northeast-2',
+          eventTime: new Date().toISOString(),
+          eventName: 'RequestEmailVerification',
+          requestParameters: {
+            httpMethod: 'POST',
+            requestPath: '/api/users/register',
+            queryString: '',
+            statusCode: result.status,
+          },
+          sourceIPAddress: '',
+          userAgent: '',
+        });
+      }
+
       alert('이메일 요청 전송완료');
       setIsRequed(true);
     } catch (error) {
@@ -158,7 +196,7 @@ export default function SignUp() {
 
     try {
       const result = await axios.post(
-        'http://43.202.52.99/api/users/register/validate',
+        'http://52.78.153.99/api/users/register/validate',
         {
           id: id,
           code: emailauth,
@@ -167,6 +205,24 @@ export default function SignUp() {
           headers: { 'Content-type': 'application/json' },
         }
       );
+
+      // 이메일 인증코드 입력 및 전송시 로그 기록
+      if (result.status === 200) {
+        await sendLog({
+          eventSource: 'webapp.example.com',
+          awsRegion: 'ap-northeast-2',
+          eventTime: new Date().toISOString(),
+          eventName: 'VerifyEmailCode',
+          requestParameters: {
+            httpMethod: 'POST',
+            requestPath: '/api/users/register/validate',
+            queryString: '',
+            statusCode: result.status,
+          },
+          sourceIPAddress: '',
+          userAgent: '',
+        });
+      }
 
       alert('인증이 완료되었습니다');
       setIsRequed(false);
@@ -251,32 +307,7 @@ export default function SignUp() {
             />
           </S.Input_Wrapper>
         </S.Phone>
-        {/* <S.Sex>
-          <S.SubTitle>성별</S.SubTitle>
-          <S.Radio_Wrapper>
-            <S.RadioLabel>
-              <S.HiddenRadio
-                type='radio'
-                name='gender'
-                value='male'
-                onChange={changeInputValue}
-              />
-              <S.RadioMark />
-              <S.RadioText>남자</S.RadioText>
-            </S.RadioLabel>
-            <S.RadioLabel>
-              <S.HiddenRadio
-                type='radio'
-                name='gender'
-                value='female'
-                onChange={changeInputValue}
-              />
-              <S.RadioMark />
-              <S.RadioText>여자</S.RadioText>
-            </S.RadioLabel>
-          </S.Radio_Wrapper>
-        </S.Sex> */}
-        <S.SignUpBtn type='submit'>회원가입</S.SignUpBtn>
+        <S.SignUpBtn type='submit'>SIGN UP</S.SignUpBtn>
       </S.Contents>
     </S.Wrapper>
   );

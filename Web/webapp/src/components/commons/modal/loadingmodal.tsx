@@ -3,7 +3,6 @@ import { useModal } from './modalprovider';
 
 type ModalProps = {
   content: React.ComponentType<any> | null;
-  isLoading: boolean;
 };
 
 export default function LoadingModal({ content: Content }: ModalProps) {

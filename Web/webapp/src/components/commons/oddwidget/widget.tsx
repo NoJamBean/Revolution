@@ -14,15 +14,15 @@ export default function PlayWidget({ isMain }: { isMain: boolean }) {
   return isLimit ? (
     <div>API LIMITED</div>
   ) : (
-    <S.Wrapper>
+    <S.Wrapper isMain={isMain}>
       <S.Info_Top>
         <S.Info_Top_Home>
           <S.Team_Logo
             isBet={router.asPath.includes('/bet')}
-            src={homeAwayInfo?.home?.team?.logo || '/banner.jpg'}
+            src={homeAwayInfo?.home?.team?.logo || '/noimage.png'}
             onError={(e) => {
               e.currentTarget.onerror = null;
-              e.currentTarget.src = '/banner.jpg';
+              e.currentTarget.src = '/noimage.png';
             }}
           />
           {/* <S.Team_Name>{homeAwayInfo?.home?.team?.name}</S.Team_Name> */}
@@ -31,10 +31,10 @@ export default function PlayWidget({ isMain }: { isMain: boolean }) {
         <S.Info_Top_Away>
           <S.Team_Logo
             isBet={router.asPath.includes('/bet')}
-            src={homeAwayInfo?.away?.team?.logo || '/banner.jpg'}
+            src={homeAwayInfo?.away?.team?.logo || '/noimage.png'}
             onError={(e) => {
               e.currentTarget.onerror = null;
-              e.currentTarget.src = '/banner.jpg';
+              e.currentTarget.src = '/noimage.png';
             }}
           />
           {/* <S.Team_Name>{homeAwayInfo?.away?.team?.name}</S.Team_Name> */}
@@ -44,10 +44,10 @@ export default function PlayWidget({ isMain }: { isMain: boolean }) {
         <S.HomeInfo>
           <S.Team_Title className='first'>
             <S.Team_Title_Logo
-              src={homeAwayInfo?.home?.team?.logo || '/banner.jpg'}
+              src={homeAwayInfo?.home?.team?.logo || '/noimage.png'}
               onError={(e) => {
                 e.currentTarget.onerror = null;
-                e.currentTarget.src = '/banner.jpg';
+                e.currentTarget.src = '/noimage.png';
               }}
             />
             <S.Team_Title_Name>
@@ -59,10 +59,10 @@ export default function PlayWidget({ isMain }: { isMain: boolean }) {
             <S.Section_Left>리그</S.Section_Left>
             <S.Section_Right>
               <S.Section_Right_Img
-                src={homeAwayInfo.home?.league?.logo || '/banner.jpg'}
+                src={homeAwayInfo.home?.league?.logo || '/noimage.png'}
                 onError={(e) => {
                   e.currentTarget.onerror = null;
-                  e.currentTarget.src = '/banner.jpg';
+                  e.currentTarget.src = '/noimage.png';
                 }}
               />
               <span>{homeAwayInfo.home?.league?.name || 'NO_DATA'}</span>
@@ -72,10 +72,10 @@ export default function PlayWidget({ isMain }: { isMain: boolean }) {
             <S.Section_Left>국가</S.Section_Left>
             <S.Section_Right>
               <S.Section_Right_Img
-                src={homeAwayInfo.home?.league?.flag || '/banner.jpg'}
+                src={homeAwayInfo.home?.league?.flag || '/noimage.png'}
                 onError={(e) => {
                   e.currentTarget.onerror = null;
-                  e.currentTarget.src = '/banner.jpg';
+                  e.currentTarget.src = '/noimage.png';
                 }}
               />
               <span>{homeAwayInfo.home?.league?.country || 'NO_DATA'}</span>
@@ -164,13 +164,14 @@ export default function PlayWidget({ isMain }: { isMain: boolean }) {
             </S.Section_Right>
           </S.Info_Section>
         </S.HomeInfo>
+        {!isMain && <S.DivdedTag></S.DivdedTag>}
         <S.AwayInfo isMain={isMain}>
           <S.Team_Title className='second'>
             <S.Team_Title_Logo
-              src={homeAwayInfo?.away?.team?.logo || '/banner.jpg'}
+              src={homeAwayInfo?.away?.team?.logo || '/noimage.png'}
               onError={(e) => {
                 e.currentTarget.onerror = null;
-                e.currentTarget.src = '/banner.jpg';
+                e.currentTarget.src = '/noimage.png';
               }}
             />
             <S.Team_Title_Name>
@@ -182,10 +183,10 @@ export default function PlayWidget({ isMain }: { isMain: boolean }) {
             <S.Section_Left>리그</S.Section_Left>
             <S.Section_Right>
               <S.Section_Right_Img
-                src={homeAwayInfo?.away?.league.logo || '/banner.jpg'}
+                src={homeAwayInfo?.away?.league.logo || '/noimage.png'}
                 onError={(e) => {
                   e.currentTarget.onerror = null;
-                  e.currentTarget.src = '/banner.jpg';
+                  e.currentTarget.src = '/noimage.png';
                 }}
               />
               <span>{homeAwayInfo?.away?.league.name ?? 'NO_DATA'}</span>
@@ -195,10 +196,10 @@ export default function PlayWidget({ isMain }: { isMain: boolean }) {
             <S.Section_Left>국가</S.Section_Left>
             <S.Section_Right>
               <S.Section_Right_Img
-                src={homeAwayInfo.away?.league.flag || '/banner.jpg'}
+                src={homeAwayInfo.away?.league.flag || '/noimage.png'}
                 onError={(e) => {
                   e.currentTarget.onerror = null;
-                  e.currentTarget.src = '/banner.jpg';
+                  e.currentTarget.src = '/noimage.png';
                 }}
               />
               <span>{homeAwayInfo.away?.league.country || 'NO_DATA'}</span>

@@ -10,7 +10,6 @@ import {
   getIceHockeyMatchList,
 } from '@/src/api/getdefaulmatchlist';
 import { useRouter } from 'next/router';
-import { useSportStore } from '@/src/commons/stores/queryparmstore';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCircle, faFutbol } from '@fortawesome/free-regular-svg-icons';
 import {
@@ -20,6 +19,8 @@ import {
   faHockeyPuck,
 } from '@fortawesome/free-solid-svg-icons';
 import { useModal } from '../modal/modalprovider';
+import Loading from '../modal/contents/loading';
+import { useGetDateandTime } from '@/src/commons/utils/getdatetime';
 
 export default function PlayListInfo(props: any) {
   const router = useRouter();
@@ -33,43 +34,49 @@ export default function PlayListInfo(props: any) {
     selectSport,
     isLimit,
     setIsLimit,
-    setMatchId,
     clickedPlay,
     setClickedPlay,
-    setMatchCount,
   } = useMatchInfo();
 
-  const { setIsLoading, isLoading, closeModal } = useModal();
+  const { openModal, closeModal, isLoading } = useModal();
+  const { getDate, getTime } = useGetDateandTime();
+
+  const sportsList = [
+    { sport: 'ALL', label: 'ALL', icon: faA },
+    { sport: 'FOOTBALL', label: 'FOOTBALL', icon: faFutbol },
+    { sport: 'BASEBALL', label: 'BASEBALL', icon: faBaseball },
+    { sport: 'BASKETBALL', label: 'BASKETBALL', icon: faBasketball },
+    { sport: 'ICEHOCKEY', label: 'ICEHOCKEY', icon: faHockeyPuck },
+    { sport: 'HANDBALL', label: 'HANDBALL', icon: faCircle },
+  ];
 
   const getTargetMatch = async (target: any, selectSport: string) => {
-    setIsLoading(true);
+    console.log(target, 'targettete');
+
+    if (!isLoading) {
+      openModal(Loading); // API 응답 때 까지 로딩모달 open
+    }
 
     try {
       const targetMatchInfo = await getTargetedMatchInfo(target, selectSport);
-      console.log('매치인포메이션', targetMatchInfo);
+      console.log('매치인포메이12w션', targetMatchInfo);
 
       setHomeAwayData(targetMatchInfo, selectSport);
-
       setClickedPlay(target);
-      setMatchId(target); // 이후 배팅하기 버튼 클릭 시 사용될 쿼리 파라미터 url 값
 
-      // 페이지 이동 방지 (url 경로만 변경해서 라우팅)
-      if (router.pathname === '/bet') {
-        // shallow routing
-        router.push(
-          {
-            pathname: '/bet',
-            query: { id: target, sport: selectSport },
-          },
-          undefined,
-          { shallow: true }
-        );
-      }
+      // 자체적으로 선택된 값 (ex. 초기 페이지 렌더링 시, 그 때의 선택된 값을 그대로 query parms에 추가)
+      const current = new URLSearchParams(window.location.search);
+      current.set('id', target);
+      current.set('sport', selectSport);
+
+      router.push(
+        `${window.location.pathname}?${current.toString()}`,
+        undefined,
+        { shallow: true }
+      );
     } catch (error) {
       // setIsLimit(true)
-      console.log(error);
     } finally {
-      console.log('해결됨됨디ㅚ도디ㅗ미ㅗ디ㅗㅗ디뫼도미');
       closeModal();
     }
   };
@@ -78,180 +85,108 @@ export default function PlayListInfo(props: any) {
     // const selectedSport = e.currentTarget.innerHTML;
     const selectedSport = e.currentTarget.getAttribute('data-sport');
     setSelectSport(selectedSport);
-    deleteParams(); // 일단 여기만 박아봐
+    // deleteParams(); // 일단 여기만 박아봐
 
-    console.log(selectSport, '경로확인해라 씹새끼야', selectedSport);
+    const current = new URLSearchParams(window.location.search);
+
+    // ❗ id 제거
+    current.delete('id');
+
+    // ✅ sport 추가 또는 덮어쓰기
+    current.set('sport', selectedSport);
+
+    router.push(
+      `${window.location.pathname}?${current.toString()}`,
+      undefined,
+      { shallow: true }
+    );
+
+    console.log(selectSport, '경로확인해라', selectedSport);
   };
 
-  const deleteParams = async () => {
-    const url = new URL(window.location.href);
-    url.searchParams.delete('id');
+  // const deleteParams = async () => {
+  //   const url = new URL(window.location.href);
+  //   url.searchParams.delete('id');
 
-    const nextPath =
-      url.pathname +
-      (url.searchParams.toString() ? `?${url.searchParams.toString()}` : '');
+  //   const nextPath =
+  //     url.pathname +
+  //     (url.searchParams.toString() ? `?${url.searchParams.toString()}` : '');
 
-    await router.replace(nextPath, undefined, { shallow: true });
-    await new Promise((r) => setTimeout(r, 0));
-  };
+  //   await router.replace(nextPath, undefined, { shallow: true });
+  //   await new Promise((r) => setTimeout(r, 0));
+  // };
 
   //
   //
   const getTodayFixtures = async () => {
-    const { source } = useSportStore.getState();
+    console.log('로딩중인가요??????', isLoading);
+
+    if (!isLoading) {
+      openModal(Loading); // API 응답 때 까지 로딩모달 open
+    }
 
     try {
-      if (selectSport === 'FOOTBALL') {
-        // 축구 API (경기 List)
-        const playMatchList = await getFootballMatchList();
-        const modifiedResult = setDefaultApiData(playMatchList, 'FOOTBALL');
+      let playMatchList = [];
+      let sportKey = selectSport;
 
-        if (modifiedResult.length === 0) throw Error('API 한도초과');
-
-        setMatchCount((prev) => {
-          return {
-            ...prev,
-            FOOTBALL: modifiedResult.length,
-          };
-        });
-
-        // deleteParams();
-
-        if (router.query.id) {
-          allMatchRef.current = String(router.query.id);
-        } else {
-          allMatchRef.current = modifiedResult?.[0]?.id;
-        }
-
-        getTargetMatch(allMatchRef.current, selectSport);
-
-        if (isLimit) setIsLimit(false);
-        return;
-      }
-      if (selectSport === 'BASEBALL') {
-        const playMatchList = await getBaseballlMatchList();
-        const modifiedResult = setDefaultApiData(playMatchList, 'BASEBALL');
-
-        if (modifiedResult.length === 0) throw Error('API 한도초과');
-
-        setMatchCount((prev) => {
-          return {
-            ...prev,
-            BASEBALL: modifiedResult.length,
-          };
-        });
-
-        // await deleteParams();
-
-        if (router.query.id) {
-          allMatchRef.current = String(router.query.id);
-        } else {
-          allMatchRef.current = modifiedResult?.[0]?.id;
-        }
-
-        getTargetMatch(allMatchRef.current, selectSport);
-
-        if (isLimit) setIsLimit(false);
-        return;
-      }
-      if (selectSport === 'BASKETBALL') {
-        const playMatchList = await getBasketballMatchList();
-        const modifiedResult = setDefaultApiData(playMatchList, 'BASKETBALL');
-
-        if (modifiedResult.length === 0) throw Error('API 한도초과');
-
-        setMatchCount((prev) => {
-          return {
-            ...prev,
-            BASKETBALL: modifiedResult.length,
-          };
-        });
-
-        if (router.query.id) {
-          allMatchRef.current = String(router.query.id);
-        } else {
-          allMatchRef.current = modifiedResult?.[0]?.id;
-        }
-
-        getTargetMatch(allMatchRef.current, selectSport);
-
-        if (isLimit) setIsLimit(false);
-        return;
+      if (sportKey === 'FOOTBALL') {
+        playMatchList = await getFootballMatchList();
+        if (playMatchList.length === 0) closeModal();
+      } else if (sportKey === 'BASEBALL') {
+        playMatchList = await getBaseballlMatchList();
+        if (playMatchList.length === 0) closeModal();
+      } else if (sportKey === 'BASKETBALL') {
+        playMatchList = await getBasketballMatchList();
+        if (playMatchList.length === 0) closeModal();
+      } else if (sportKey === 'ICEHOCKEY') {
+        playMatchList = await getIceHockeyMatchList();
+        if (playMatchList.length === 0) closeModal();
+      } else if (sportKey === 'HANDBALL') {
+        playMatchList = await getHandBallMatchList();
+        if (playMatchList.length === 0) closeModal();
       }
 
-      if (selectSport === 'ICEHOCKEY') {
-        const playMatchList = await getIceHockeyMatchList();
-        const modifiedResult = setDefaultApiData(playMatchList, 'ICEHOCKEY');
+      const modifiedResult = setDefaultApiData(
+        playMatchList,
+        sportKey ?? 'BASEBALL'
+      );
 
-        if (modifiedResult.length === 0) throw Error('API 한도초과');
+      if (modifiedResult.length === 0) throw Error('API 한도초과');
 
-        setMatchCount((prev) => {
-          return {
-            ...prev,
-            ICEHOCKEY: modifiedResult.length,
-          };
-        });
+      // ✅ 공통 처리 구간
+      const currentId = String(router.query.id);
+      const validId = modifiedResult.some(
+        (match: any) => String(match.id) === currentId
+      )
+        ? currentId
+        : modifiedResult[0]?.id;
 
-        // deleteParams();
+      // ❗ 유효하지 않은 경우 replace로 URL 정정
+      if (validId !== currentId) {
+        const params = new URLSearchParams(window.location.search);
+        params.set('id', validId);
+        params.set('sport', sportKey ?? 'BASEBALL');
 
-        if (router.query.id) {
-          allMatchRef.current = String(router.query.id);
-        } else {
-          allMatchRef.current = modifiedResult?.[0]?.id;
-        }
-
-        getTargetMatch(allMatchRef.current, selectSport);
-
-        if (isLimit) setIsLimit(false);
-        return;
+        await router.replace(
+          `${window.location.pathname}?${params.toString()}`,
+          undefined,
+          { shallow: true }
+        );
       }
 
-      if (selectSport === 'HANDBALL') {
-        const playMatchList = await getHandBallMatchList();
-        const modifiedResult = setDefaultApiData(playMatchList, 'HANDBALL');
+      allMatchRef.current = validId;
+      setClickedPlay(validId);
+      getTargetMatch(validId, sportKey ?? 'BASEBALL'); // router.push 안함
 
-        if (modifiedResult.length === 0) throw Error('API 한도초과');
-
-        await deleteParams();
-        // console.log('시발아시발아시발아시발아시발아시발아', router.query);
-
-        setMatchCount((prev) => {
-          return {
-            ...prev,
-            HANDBALL: modifiedResult.length,
-          };
-        });
-
-        const currentId = new URL(window.location.href).searchParams.get('id');
-
-        if (currentId) {
-          allMatchRef.current = String(currentId);
-        } else {
-          allMatchRef.current = modifiedResult?.[0]?.id;
-        }
-        // if (router.query.id) {
-        //   allMatchRef.current = String(router.query.id);
-        // } else {
-        //   allMatchRef.current = modifiedResult?.[0]?.id;
-        // }
-
-        getTargetMatch(allMatchRef.current, selectSport);
-
-        if (isLimit) setIsLimit(false);
-        return;
-      }
-
-      // getTargetMatch(modifiedResult[0]?.id); // 초기 렌더링 시 첫번째 값에 대한 상세정보 표시되도록 미리 트리거
+      if (isLimit) setIsLimit(false);
     } catch (error) {
-      const message = (error as Error).message;
-      if (message === 'API 한도초과') setIsLimit(true);
+      if ((error as Error).message === 'API 한도초과') setIsLimit(true);
     }
   };
   //
   //
   useEffect(() => {
     getTodayFixtures();
-    // console.log(isLoading, 'fdsfksnlfksejoigjzslktjesrl;gjerskjhelrsjgerjsa');
   }, [selectSport]);
 
   useEffect(() => {
@@ -274,59 +209,26 @@ export default function PlayListInfo(props: any) {
   //
   //
   //
-  // 시간대 설정
-  const getDate = (timezone: string) => {
-    const date = new Date(timezone);
-
-    const koreaDate = new Date(date.getTime() + 9 * 60 * 60 * 1000);
-
-    const month = String(koreaDate.getMonth() + 1).padStart(2, '0');
-    const day = String(koreaDate.getDate()).padStart(2, '0');
-
-    return `${month}-${day}`;
-  };
-
-  const getTime = (timezone: string) => {
-    const date = new Date(timezone);
-
-    const koreaDate = new Date(
-      date.toLocaleString('en-US', { timeZone: 'Asia/Seoul' })
-    );
-
-    const hour = String(koreaDate.getHours()).padStart(2, '0');
-    const minute = String(koreaDate.getMinutes()).padStart(2, '0');
-
-    return `${hour}:${minute}`;
-  };
 
   return (
     <S.Right_Side>
       <S.Play_Category_Bar>
         <S.Category>
-          <S.Category_Li>
-            <FontAwesomeIcon icon={faA} size='2x' />
-            <span>ALL</span>
-          </S.Category_Li>
-          <S.Category_Li data-sport='FOOTBALL' onClick={clickSport}>
-            <FontAwesomeIcon icon={faFutbol} size='2x' />
-            <span>FOOTBALL</span>
-          </S.Category_Li>
-          <S.Category_Li data-sport='BASEBALL' onClick={clickSport}>
-            <FontAwesomeIcon icon={faBaseball} size='2x' />
-            <span>BASEBALL</span>
-          </S.Category_Li>
-          <S.Category_Li data-sport='BASKETBALL' onClick={clickSport}>
-            <FontAwesomeIcon icon={faBasketball} size='2x' />
-            <span>BASKETBALL</span>
-          </S.Category_Li>
-          <S.Category_Li data-sport='ICEHOCKEY' onClick={clickSport}>
-            <FontAwesomeIcon icon={faHockeyPuck} size='2x' />
-            <span>ICEHOCKEY</span>
-          </S.Category_Li>
-          <S.Category_Li data-sport='HANDBALL' onClick={clickSport}>
-            <FontAwesomeIcon icon={faCircle} size='2x' />
-            <span>HANDBALL</span>
-          </S.Category_Li>
+          {sportsList.map(({ sport, label, icon }) => (
+            <S.Category_Li
+              key={sport}
+              data-sport={sport}
+              onClick={sport === 'ALL' ? undefined : clickSport}
+              isClicked={selectSport === sport}
+            >
+              <FontAwesomeIcon
+                icon={icon}
+                size='2x'
+                style={{ color: selectSport === sport ? '#94a3b8' : '#fdfcf9' }}
+              />
+              <span>{label}</span>
+            </S.Category_Li>
+          ))}
         </S.Category>
       </S.Play_Category_Bar>
       {isLimit ? (

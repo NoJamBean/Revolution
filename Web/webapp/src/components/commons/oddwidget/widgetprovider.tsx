@@ -8,11 +8,9 @@ type MatchInfoContextType = {
   setHomeAwayData: (data: any, type: string) => void;
   setMatchId: React.Dispatch<React.SetStateAction<string>>;
   setClickedPlay: React.Dispatch<React.SetStateAction<string>>;
-  setMatchCount: React.Dispatch<React.SetStateAction<Record<Sports, number>>>;
   clickedPlay: string;
   matchId: string;
   apiData: any[];
-  matchCount: Record<Sports, number>;
   setSelectSport: React.Dispatch<React.SetStateAction<string | null>>;
   selectSport: string | null;
 };
@@ -28,13 +26,6 @@ export const MatchInfoProvider = ({ children }: { children: any }) => {
   const [selectSport, setSelectSport] = useState<string | null>('BASEBALL');
   const [matchId, setMatchId] = useState('');
   const [clickedPlay, setClickedPlay] = useState('');
-  const [matchCount, setMatchCount] = useState<Record<Sports, number>>({
-    FOOTBALL: 0,
-    BASEBALL: 0,
-    BASKETBALL: 0,
-    ICEHOCKEY: 0,
-    HANDBALL: 0,
-  });
 
   const setDefaultApiData = (data: any, type: string) => {
     // 들어온 데이터 입맛에 맞게 객체형식으로 따로 저장 (전체경기 조회 API 데이터 정제용)
@@ -304,8 +295,8 @@ export const MatchInfoProvider = ({ children }: { children: any }) => {
           league: {
             id: data?.away?.league?.id,
             name: data?.away?.league?.name,
-            country: data?.home?.country?.name,
-            flag: data?.home?.country?.flag,
+            country: data?.away?.country?.name,
+            flag: data?.away?.country?.flag,
             logo: data?.away?.league?.logo,
           },
           team: {
@@ -314,20 +305,20 @@ export const MatchInfoProvider = ({ children }: { children: any }) => {
             name: data?.away?.team?.name,
           },
           info: {
-            total: data?.home?.games?.played?.all,
-            win: data?.home?.games?.wins?.all?.total,
-            winhome: data?.home?.games?.wins?.home?.total,
-            winaway: data?.home?.games?.wins?.away?.total,
-            loses: data?.home?.games?.loses?.all?.total,
-            loseshome: data?.home?.games?.loses?.home?.total,
-            losesaway: data?.home?.games?.loses?.away?.total,
+            total: data?.away?.games?.played?.all,
+            win: data?.away?.games?.wins?.all?.total,
+            winhome: data?.away?.games?.wins?.home?.total,
+            winaway: data?.away?.games?.wins?.away?.total,
+            loses: data?.away?.games?.loses?.all?.total,
+            loseshome: data?.away?.games?.loses?.home?.total,
+            losesaway: data?.away?.games?.loses?.away?.total,
 
-            fortotal: data?.home?.points?.for?.total?.all,
-            forhome: data?.home?.points?.for?.total?.home,
-            foraway: data?.home?.points?.for?.total?.away,
-            againsttotal: data?.home?.points?.against?.total?.all,
-            againsthome: data?.home?.points?.against?.total?.home,
-            againstaway: data?.home?.points?.against?.total?.away,
+            fortotal: data?.away?.points?.for?.total?.all,
+            forhome: data?.away?.points?.for?.total?.home,
+            foraway: data?.away?.points?.for?.total?.away,
+            againsttotal: data?.away?.points?.against?.total?.all,
+            againsthome: data?.away?.points?.against?.total?.home,
+            againstaway: data?.away?.points?.against?.total?.away,
           },
         },
       };
@@ -559,8 +550,6 @@ export const MatchInfoProvider = ({ children }: { children: any }) => {
         matchId,
         clickedPlay,
         setClickedPlay,
-        setMatchCount,
-        matchCount,
       }}
     >
       {children}

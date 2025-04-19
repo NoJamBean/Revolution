@@ -1,64 +1,85 @@
 import styled from '@emotion/styled';
 
 export const LoginMain = styled.div`
-  width: 600px;
+  width: 550px;
   height: 400px;
   display: flex;
   flex-direction: column;
-  padding: 0 40px;
-  border: 3px solid blue;
+  border-radius: 15px;
   position: relative;
+  border: 1px solid #94a3b8;
 `;
 
 export const CloseBtn = styled.div`
-  width: 25px;
-  height: 25px;
+  position: absolute;
+  height: 40px;
+  width: 40px;
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 22px;
+  text-align: center;
+  line-height: 1;
+  font-size: 30px;
   font-weight: 900;
-  position: absolute;
-  top: 2px;
-  left: calc(100% - 25px);
+  color: white;
+  top: 10px;
+  left: calc(100% - 40px - 10px);
   cursor: pointer;
+  z-index: 9;
 `;
 
-export const Logo = styled.div`
-  height: 20%;
+export const LogoImgBox = styled.div`
+  height: 35%;
   display: flex;
   justify-content: center;
-  align-items: center;
-  border: 5px solid purple;
+  border-radius: 10px 10px 0 0;
+  font-size: 30px;
+  color: white;
+  z-index: 2;
+  filter: brightness(0.8);
 `;
+
+export const LogoImg = styled.img`
+  position: absolute;
+  width: 170px;
+  height: 160px;
+  filter: blur(0.5px);
+  filter: saturate(0.7);
+`;
+
+export const Logo = styled.div``;
 
 export const Form = styled.form`
-  border: 3px solid gold;
   display: flex;
   flex-direction: column;
   justify-content: center;
   height: 100%;
-  /* display: flex; */
+  border-radius: 0 0 10px 10px;
 `;
 
 export const UserSection = styled.div`
-  height: 25%;
+  height: 22%;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border: 3px solid red;
+  padding: 0 40px;
 `;
 
 export const Title = styled.div`
   font-size: 20px;
-  font-weight: 600;
+  font-weight: 800;
+  color: #ffffff;
 `;
 
 export const Input = styled.input`
-  padding-left: 10px;
-  font-size: 16px;
-  width: 300px;
-  height: 45px;
+  all: unset;
+  padding-left: 15px;
+  font-size: 18px;
+  width: 270px;
+  height: 55px;
+  background-color: #3a3a3a;
+  border-radius: 5px;
+  color: #f1f5f9;
 `;
 
 export const Password = styled.div`
@@ -71,16 +92,50 @@ export const ButtonWrap = styled.div`
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  border: 3px solid green;
+  justify-content: space-between;
+  padding: 2px 40px;
 `;
 
 export const Button = styled.button`
-  background-color: white;
-  width: 300px;
-  height: 100%;
+  border: none;
+  width: 285px;
+  height: 55px;
   display: flex;
   justify-content: center;
   align-items: center;
   cursor: pointer;
-  border: 3px solid gold;
+  border-radius: 5px;
+  background-color: #5c6e83;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 700;
+  position: relative;
+  overflow: hidden;
+  z-index: 0;
+  transition: color 0.3s ease;
+
+  &::before {
+    content: '';
+    position: absolute;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(135deg, #2a3f55, #2a3f55);
+    border-radius: 50%;
+    clip-path: circle(0% at 0% 100%); /* 왼쪽 아래 시작 */
+    transition: clip-path 0.6s ease;
+    z-index: 1;
+  }
+
+  &:hover::before {
+    clip-path: circle(150% at 0% 100%);
+  }
+
+  & > span {
+    position: relative;
+    z-index: 2;
+  }
+
+  &:hover {
+    color: #192736;
+  }
 `;

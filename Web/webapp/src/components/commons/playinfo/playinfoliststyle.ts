@@ -1,31 +1,32 @@
 import styled from '@emotion/styled';
 
 export const Right_Side = styled.aside`
-  border: 5px solid purple;
+  /* border: 5px solid purple; */
   width: 100%;
   height: 100%;
   position: relative;
   overflow-y: auto;
-  background-color: white;
+  border-bottom: 10px solid #152230;
+  background-color: #152230;
+  border-left: 3px solid #152230;
 `;
 
 export const Play_Category_Bar = styled.nav`
   height: 70px;
   position: sticky;
   top: 0;
-  background-color: aliceblue;
-  border: 3px solid red;
+  background-color: #1e2a38;
   z-index: 9;
 `;
 
 export const Category = styled.ul`
-  border: 3px solid blue;
+  border: 3px solid #152230;
   height: 100%;
   display: flex;
 `;
 
 export const Category_Li = styled.li`
-  border: 2px solid green;
+  border: 1px solid #475569;
   height: 100%;
   width: 63px;
   font-size: 10px;
@@ -39,6 +40,15 @@ export const Category_Li = styled.li`
   justify-content: space-around;
   cursor: pointer;
   padding-bottom: 3px;
+  font-weight: 700;
+  color: ${({ isClicked }: { isClicked: boolean }) =>
+    isClicked ? '#94a3b8' : '#e2e8f0'};
+  background-color: ${({ isClicked }: { isClicked: boolean }) =>
+    isClicked ? '#6c7a91' : '#2a3f55'};
+
+  &:hover {
+    background-color: #6c7a91;
+  }
 `;
 
 export const PlayInfo = styled.div`
@@ -47,6 +57,11 @@ export const PlayInfo = styled.div`
   cursor: pointer;
   position: relative;
   overflow: hidden;
+  background-color: #d8e4f0;
+
+  &:hover {
+    color: '#555';
+  }
 `;
 
 type BlindProps = {
@@ -55,19 +70,20 @@ type BlindProps = {
 };
 
 export const Blind = styled.div<BlindProps>`
-  border: 1px solid orange;
   width: 100%;
   height: ${({ widget }: { widget: any }) => (widget ? '200px' : '150px')};
   border-radius: 15px;
   cursor: pointer;
   position: absolute;
-  background-color: ${({ isClicked }: { isClicked: any }) =>
-    isClicked ? 'transparent' : 'rgba(30, 30, 30, 0.7)'}; // 진한 회색
-  filter: ${({ isClicked }: { isClicked: any }) =>
-    isClicked ? 'none' : 'grayscale(100%) brightness(0.4) contrast(0.7)'};
-
   z-index: 3;
   transition: all 0.2s ease;
+  background-color: ${({ isClicked }) =>
+    isClicked ? 'transparent' : '#3a3a3a'};
+
+  mix-blend-mode: ${({ isClicked }) => (isClicked ? 'normal' : 'multiply')};
+
+  filter: ${({ isClicked }) =>
+    isClicked ? 'none' : 'grayscale(100%) brightness(0.7) contrast(0.8)'};
 
   ${PlayInfo}:hover & {
     background-color: transparent;
@@ -76,7 +92,7 @@ export const Blind = styled.div<BlindProps>`
 `;
 
 export const Info_Top = styled.div`
-  border: 3px solid green;
+  border: 3px solid #88a7c4;
   height: ${({ widget }: { widget: any }) => (widget ? '25%' : '40%')};
   border-radius: 13px 13px 0 0;
   display: flex;
@@ -91,7 +107,6 @@ export const League_Info = styled.div`
   display: flex;
   justify-content: center;
   text-align: center;
-  /* border: 3px solid blueviolet; */
 `;
 
 export const League_Logo = styled.div`
@@ -116,7 +131,10 @@ export const LeagueName = styled.div`
 `;
 
 export const Game_Time_Wrap = styled.div`
-  border: 3px solid orange;
+  border: 3px solid #88a7c4;
+  border-bottom: none;
+  border-right: none;
+  border-top: none;
   width: 70px;
   height: 100%;
   font-size: ${({ widget }: { widget: any }) => (widget ? '12px' : '16px')};
@@ -133,18 +151,17 @@ export const Game_Start_Date = styled.div`
   font-weight: 700;
 `;
 
-export const Game_Start_Time = styled.div``;
+export const Game_Start_Time = styled.div`
+  font-size: 14px;
+`;
 
 export const Info_Bottom = styled.div`
-  border: 3px solid hotpink;
   height: ${({ widget }: { widget: any }) => (widget ? '150px' : '60%')};
   border-radius: 0 0 13px 13px;
   display: flex;
-  border: 3px solid green;
 `;
 
 export const Info_TeamName = styled.div`
-  border: 3px solid blue;
   flex: ${({ widget }: { widget: any }) => (widget ? 1 : 2.5)};
   font-size: 15px;
   display: flex;
@@ -152,16 +169,17 @@ export const Info_TeamName = styled.div`
   align-items: center;
   text-align: center;
   font-weight: 600;
-  border: 3px solid gold;
+  border: 3px solid #88a7c4;
+  border-top: none;
 `;
 
 export const Info_TeamMark = styled.div`
-  border: 3px solid blue;
   flex: ${({ widget }: { widget: any }) => (widget ? 2.5 : 1)};
   padding: 10px;
   height: ${({ widget }: { widget: any }) => (widget ? '70%' : '100%')};
   object-fit: cover;
-  border: 3px solid red;
+  border: 3px solid #88a7c4;
+  border-top: none;
 `;
 
 export const Info_Team_Img = styled.img`
@@ -170,7 +188,6 @@ export const Info_Team_Img = styled.img`
 `;
 
 export const Play_Home = styled.div`
-  /* border: 3px solid navy; */
   border-radius: 0 0 11px 11px;
   height: 100%;
   width: 50%;
@@ -188,7 +205,6 @@ export const Play_Home = styled.div`
 `;
 
 export const Verses = styled.div`
-  border: 2px solid red;
   width: ${({ widget }: { widget: any }) => (widget ? '30%' : '25%')};
   font-size: ${({ widget }) => (widget ? '24px' : '34px')};
   display: flex;
@@ -196,7 +212,7 @@ export const Verses = styled.div`
   align-items: center;
   font-size: 22px;
   font-weight: 600;
-  border: 3px solid blue;
+  border: none;
 
   span {
     :nth-of-type(2) {
@@ -207,7 +223,6 @@ export const Verses = styled.div`
 `;
 
 export const Play_Away = styled.div`
-  /* border: 3px solid navy; */
   border-radius: 0 0 11px 11px;
   height: 100%;
   width: 50%;

@@ -77,6 +77,8 @@ export const getTargetedMatchInfo = async (
       const homeId = game?.teams?.home?.id;
       const awayId = game?.teams?.away?.id;
 
+      console.log(leagueId, homeId, awayId, 1111);
+
       // 2. 홈팀 통계 정보 요청
       const homeStat = await axios.get(
         'https://v1.baseball.api-sports.io/teams/statistics',
@@ -92,6 +94,8 @@ export const getTargetedMatchInfo = async (
         }
       );
 
+      console.log(homeStat, 'homehomehome');
+
       // 3. 어웨이팀 통계 정보 요청
       const awayStat = await axios.get(
         'https://v1.baseball.api-sports.io/teams/statistics',
@@ -106,6 +110,8 @@ export const getTargetedMatchInfo = async (
           },
         }
       );
+
+      console.log(awayStat, 'awayawayaway');
 
       return {
         home: homeStat.data.response,
