@@ -76,7 +76,6 @@ export const Bet_Contents = styled.div`
   flex: 1;
   height: 140px;
   position: relative;
-  /* border: 2px solid green; */
 `;
 
 export const Match_Detail = styled.div`
@@ -125,8 +124,6 @@ export const Games = styled.div`
   color: #e6c81a;
   text-shadow: 0 0 0.3px #e6c81a, 0 0 0.6px #dabd1a, 0 0 1.1px #c0a200;
   margin-bottom: 5px;
-
-  /* border: 2px solid blue; */
 `;
 
 export const MyBet = styled.div`
@@ -180,12 +177,14 @@ export const HomeandAway = styled.div`
   font-weight: 600;
 
   span {
-    :nth-of-type(4) {
-      /* margin-left: 8px; */
+    :nth-of-type(1) {
+      margin-right: 8px;
+      color: #3da5f5;
     }
 
     :nth-of-type(3) {
-      /* margin-left: 8px; */
+      margin-left: 8px;
+      color: #f25b5b;
     }
   }
 `;

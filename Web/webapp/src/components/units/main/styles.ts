@@ -241,7 +241,7 @@ export const Carousel = styled.div`
   background-color: #152230;
   /* flex: 1; */
   width: 100%;
-  height: 455px;
+  height: 453px;
   display: flex;
   object-fit: cover;
 `;

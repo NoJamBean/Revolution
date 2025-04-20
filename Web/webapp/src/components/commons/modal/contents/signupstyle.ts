@@ -36,7 +36,7 @@ export const CloseBtn = styled.div`
 export const Title = styled.div`
   position: sticky;
   width: 100%;
-  border-radius: 10px 10px 0 0;
+  /* border-radius: 5px 5px 0 0; */
   background-color: #192736;
   top: 0;
   z-index: 99;

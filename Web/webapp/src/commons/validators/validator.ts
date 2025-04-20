@@ -45,9 +45,8 @@ export const validators = {
   },
 
   phoneNum: (val: any) => {
-    console.log(val, '길이', val.length);
     if (val?.trim() === '') return '연락처를 입력해주세요';
-    if (!/^[0-9]+$/.test(val)) return '연락처는 숫자로만 입력 가능합니다';
+    if (val.length !== 13) return '연락처 11자리를 전부 입력해주세요';
 
     return 'SUCCESS';
   },

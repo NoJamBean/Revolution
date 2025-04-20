@@ -5,8 +5,8 @@ export default function MyBetList() {
     <S.InfoWrapper>
       <S.Info_Top>배팅 내역</S.Info_Top>
       <S.Info_Body>
-        {new Array(8).fill(1).map((el) => (
-          <S.Bet_InfoBlock>
+        {new Array(8).fill(1).map((_, idx) => (
+          <S.Bet_InfoBlock key={idx}>
             <S.SelectSport>
               <S.Sport_Img src='/baseball_ball.png' />
             </S.SelectSport>

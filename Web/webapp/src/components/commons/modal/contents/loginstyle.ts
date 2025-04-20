@@ -5,9 +5,10 @@ export const LoginMain = styled.div`
   height: 400px;
   display: flex;
   flex-direction: column;
-  border-radius: 15px;
   position: relative;
-  border: 1px solid #94a3b8;
+  border: 1px solid rgba(100, 140, 180, 0.15);
+  border-radius: 15px;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.04), 0 4px 8px rgba(0, 0, 0, 0.5);
 `;
 
 export const CloseBtn = styled.div`

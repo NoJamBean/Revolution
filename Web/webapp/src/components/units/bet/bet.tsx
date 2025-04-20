@@ -17,6 +17,7 @@ type SportMatchInfo = {
 
 export default function Betting() {
   const [selectOdd, setSelectOdd] = useState(0);
+  const [selectTeam, setSelectTeam] = useState('');
   const [expected, setExpected] = useState(0);
   const [sportsCountList, setSportsCountList] = useState<SportMatchInfo[]>([]);
   const [noOdds, setNoOdds] = useState('');
@@ -69,11 +70,12 @@ export default function Betting() {
   }, [isLoading, betError]);
 
   // 배당률 선택
-  const clickOdd = (e: any) => {
+  const clickOdd = (e: any, key) => {
     const selected = e.currentTarget.getAttribute('data-odd');
     const selectOdd = Number(selected);
 
     setSelectOdd(selectOdd);
+    setSelectTeam(key);
 
     //이전 선택금액 기록 reset
     resetBet();
@@ -177,6 +179,10 @@ export default function Betting() {
                 </S.Category_Li>
               ))}
               <S.Category_Li>
+                <span>VOLLEYBALL</span>
+                <span>{`예정 (준비중)`}</span>
+              </S.Category_Li>
+              <S.Category_Li>
                 <span>E-SPORTS</span>
                 <span>{`예정 (준비중)`}</span>
               </S.Category_Li>
@@ -207,10 +213,10 @@ export default function Betting() {
                   data-odd={value}
                   onClick={
                     isVariableOdd && !Number.isNaN(Number(value))
-                      ? clickOdd
+                      ? (e) => clickOdd(e, key)
                       : undefined
                   }
-                  isClicked={selectOdd === Number(value)}
+                  isClicked={selectOdd === Number(value) && selectTeam === key}
                 >
                   <span>{key.charAt(0).toUpperCase() + key.slice(1)}</span>
                   <span>{`(${value})`}</span>

@@ -65,8 +65,8 @@ export const ModalContent = styled.div<{
   left: 50%;
   animation: ${({ isModalOpen }) => (isModalOpen ? slideFadeIn : slideFadeOut)}
     0.5s ease;
-  animation-fill-mode: forwards; // 👈 이거 필수
-  border-radius: 20px;
+  animation-fill-mode: forwards; // 이거 필수
+  border-radius: 15px;
 
   &::before {
     content: '';
@@ -74,21 +74,21 @@ export const ModalContent = styled.div<{
     inset: 0;
     background: rgba(255, 255, 255, 0.05); /* 아주 연한 투명 덮개 */
     backdrop-filter: blur(0.7px); /* 살짝만 흐림 */
+    border-radius: 15px;
   }
 `;
 
 export const Content = styled.div`
   display: flex;
-  /* height: 100%; */
   flex-grow: 1;
-  border-radius: 20px;
+  border-radius: 15px;
 `;
 
-export const ButtonWrap = styled.div`
-  border: 3px solid green;
-`;
+// export const ButtonWrap = styled.div`
+//   border: 3px solid green;
+// `;
 
-export const Button = styled.div`
-  width: 100px;
-  border: 3px solid gold;
-`;
+// export const Button = styled.div`
+//   width: 100px;
+//   border: 3px solid gold;
+// `;

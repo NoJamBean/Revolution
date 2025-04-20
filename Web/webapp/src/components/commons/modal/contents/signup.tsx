@@ -48,7 +48,32 @@ export default function SignUp() {
 
   const changeInputValue = (e: any) => {
     const { name, value } = e.target;
+
+    // console.log(name, '일므이다오오오오');
+
+    if (name === 'phoneNum') {
+      const formatted = formatPhoneNumber(value);
+      setSignUpVal((prev) => ({ ...prev, [name]: formatted }));
+      return;
+    }
+
     setSignUpVal((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const formatPhoneNumber = (input: string) => {
+    // 숫자만 남기기
+    const digitsOnly = input.replace(/\D/g, '').slice(0, 11); // 최대 11자리 제한
+
+    if (digitsOnly.length < 4) {
+      return digitsOnly;
+    } else if (digitsOnly.length < 8) {
+      return `${digitsOnly.slice(0, 3)}-${digitsOnly.slice(3)}`;
+    } else {
+      return `${digitsOnly.slice(0, 3)}-${digitsOnly.slice(
+        3,
+        7
+      )}-${digitsOnly.slice(7)}`;
+    }
   };
 
   const handleSubmit = async (e: any) => {
@@ -301,6 +326,8 @@ export default function SignUp() {
           <S.SubTitle>연락처</S.SubTitle>
           <S.Input_Wrapper>
             <S.Input
+              type='text'
+              value={signUpVal['phoneNum']}
               isReq={false}
               name='phoneNum'
               onChange={changeInputValue}
