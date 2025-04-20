@@ -14,8 +14,10 @@ export const LoadingContent = styled.div`
   align-items: center;
   justify-content: space-around;
   border-radius: 10px;
-  border: 2px solid #2c313d;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5), 0 8px 24px rgba(0, 0, 0, 0.3),
+    inset 0 1px 1px rgba(255, 255, 255, 0.05);
 `;
 
 export const ImgBox = styled.div`

@@ -86,8 +86,7 @@ export const Sign_Container = styled.div`
 
 export const LogIn_User_Container = styled.div`
   /* order: 2; */
-  width: 145px;
-  /* height: 40px; */
+  width: 190px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -140,12 +139,47 @@ export const SignUp = styled.button`
   }
 `;
 
-export const LogOut = styled.button`
-  width: 65px;
-  height: 100%;
-  border-radius: 5px;
-  /* background-color: #ffed00; */
-  box-shadow: 2px 2px 0px #c5b800;
-  border: none;
+export const UserInfo = styled.div`
+  flex: 1;
+  height: 33px;
+  display: flex;
+  align-items: center;
   cursor: pointer;
+`;
+
+export const Profile_Img = styled.img`
+  width: 33px;
+  height: 100%;
+  object-fit: cover;
+`;
+
+export const Profile_Name = styled.span`
+  display: inline-block;
+  margin-left: 3px;
+  color: #94a3b8;
+  font-weight: 600;
+  font-size: 16px;
+`;
+
+export const LogOut = styled.button`
+  all: unset;
+  width: 65px;
+  height: 40px;
+  /* border-radius: 3px; */
+  /* border: 1px solid #94a3b8; */
+  color: #94a3b8;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: 700;
+  /* background-color: #ffed00; */
+  /* box-shadow: 2px 2px 0px #c5b800; */
+  cursor: pointer;
+
+  &:hover {
+    color: #ffed00;
+
+    text-shadow: 0 0 5px #ffed00, 0 0 10px #ffed00, 0 0 20px #ffe100,
+      0 0 40px #ffc800;
+  }
 `;

@@ -1,12 +1,20 @@
 import { useEffect, useState } from 'react';
 import * as S from './styles';
-import Chat from '../tabsection/chat';
+import Chat from '../../commons/tabsection/chat';
 import PlayListInfo from '../../commons/playinfo/playinfolist';
 import PlayWidget from '../../commons/oddwidget/widget';
 import { useMatchInfo } from '../../commons/oddwidget/widgetprovider';
 import { useRouter } from 'next/router';
 import { useModal } from '../../commons/modal/modalprovider';
 import { useOddHooks } from '@/src/commons/hooks/useodhook';
+import dynamic from 'next/dynamic';
+
+const BannerCarousel = dynamic(
+  () => import('../../commons/carousel/carousel'),
+  {
+    ssr: false,
+  }
+);
 
 export default function Main() {
   const [clickedTab, setClickedTab] = useState('info');
@@ -53,11 +61,7 @@ export default function Main() {
       <S.Main>
         <S.Context>
           <S.Carousel>
-            <img
-              src='/banner.jpg'
-              style={{ width: '100%', height: '100%' }}
-              alt='carousel'
-            />
+            <BannerCarousel />
           </S.Carousel>
           <S.Section_Title>LIVE SPORTS</S.Section_Title>
           <S.Body id='info-sport-section'>

@@ -21,6 +21,10 @@ import {
 } from '../api/getdefaulmatchlist';
 config.autoAddCss = false;
 
+// 캐러셀 css import
+import 'slick-carousel/slick/slick.css';
+import 'slick-carousel/slick/slick-theme.css';
+
 export default function App({ Component, pageProps }: AppProps) {
   const router = useRouter();
 

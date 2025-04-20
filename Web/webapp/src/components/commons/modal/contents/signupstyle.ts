@@ -85,6 +85,12 @@ export const Input = styled.input`
   border: 1px solid #94a3b8;
   position: relative;
   z-index: 1;
+
+  &:-webkit-autofill {
+    box-shadow: 0 0 0px 1000px #273848 inset;
+    -webkit-text-fill-color: white;
+    transition: background-color 9999s ease-in-out 0s;
+  }
 `;
 
 export const UserName = styled.div`

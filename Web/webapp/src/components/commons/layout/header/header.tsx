@@ -25,10 +25,16 @@ export default function Header() {
     }
   };
 
+  // 라우팅 이벤트 클릭 함수
   const clickLogo = () => {
     router.push('/');
   };
 
+  const clickMyPageInfo = () => {
+    router.push('/mypage');
+  };
+
+  // 스크롤링 이벤트 클릭 함수
   const scrollToSportInfo = () => {
     const sportInfo = document.getElementById('info-sport-section');
     if (sportInfo) sportInfo?.scrollIntoView({ behavior: 'smooth' });
@@ -99,13 +105,16 @@ export default function Header() {
           </S.Menu>
 
           <S.Menu>
-            <S.MenuLink href={'/'}>MY PAGE</S.MenuLink>
+            <S.MenuLink href={'/mypage'}>MY PAGE</S.MenuLink>
           </S.Menu>
         </S.Menu_Bar>
         {userToken ? (
           <S.LogIn_User_Container>
-            <span>로그인완료</span>
-            <S.LogOut onClick={logout}>로그아웃</S.LogOut>
+            <S.UserInfo onClick={clickMyPageInfo}>
+              <S.Profile_Img src='/user_profile.png' />
+              <S.Profile_Name>Songseop</S.Profile_Name>
+            </S.UserInfo>
+            <S.LogOut onClick={logout}>LOGOUT</S.LogOut>
           </S.LogIn_User_Container>
         ) : (
           <S.Sign_Container>

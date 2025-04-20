@@ -41,7 +41,7 @@ export const ModalContent = styled.div<{
   isModalOpen: boolean;
 }>`
   /* width: 600px; */
-  width: ${({ modalType }) => (modalType === 'Login' ? '550px' : '450px')};
+  width: ${({ modalType }) => (modalType === 'Login' ? '550px' : '400px')};
   height: 400px;
   position: absolute;
   backdrop-filter: brightness(1) saturate(0.9);
@@ -57,7 +57,7 @@ export const ModalContent = styled.div<{
         to right,
         rgba(120, 160, 200, 0.05),
         rgba(60, 60, 60, 0.05)
-      ), url('/signupbg.png')`};
+      )`};
   background-position: 40% 5%;
   background-repeat: no-repeat;
   background-blend-mode: overlay;

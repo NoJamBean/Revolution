@@ -35,7 +35,7 @@ export default function Login() {
 
     try {
       const result = await axios.post(
-        'http://52.78.153.99/api/users/login',
+        `${process.env.NEXT_PUBLIC_BACKEND_API_ENDPOINT}/api/users/login`,
         {
           id: userMail,
           password: password,

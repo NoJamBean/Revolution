@@ -133,7 +133,7 @@ export default function Betting() {
     // console.log(username, '23123123123');
 
     const result = await axios.post(
-      'http://52.78.153.99/api/games/update',
+      `${process.env.NEXT_PUBLIC_BACKEND_API_ENDPOINT}/api/games/update`,
       {
         id: userId,
         type: sport,

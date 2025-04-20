@@ -231,7 +231,6 @@ export const Betting_Btn = styled.div`
 `;
 
 export const Context = styled.aside`
-  /* border: 3px solid green; */
   width: 100%;
   /* height: 100%; */
   display: flex;
@@ -239,13 +238,12 @@ export const Context = styled.aside`
 `;
 
 export const Carousel = styled.div`
-  background-color: blue;
+  background-color: #152230;
   /* flex: 1; */
   width: 100%;
-  height: 450px;
+  height: 455px;
   display: flex;
   object-fit: cover;
-  /* border: 5px solid blue; */
 `;
 
 export const Section_Title = styled.div`

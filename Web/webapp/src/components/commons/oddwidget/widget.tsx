@@ -25,7 +25,6 @@ export default function PlayWidget({ isMain }: { isMain: boolean }) {
               e.currentTarget.src = '/noimage.png';
             }}
           />
-          {/* <S.Team_Name>{homeAwayInfo?.home?.team?.name}</S.Team_Name> */}
         </S.Info_Top_Home>
         <S.Verses>VS</S.Verses>
         <S.Info_Top_Away>
@@ -37,7 +36,6 @@ export default function PlayWidget({ isMain }: { isMain: boolean }) {
               e.currentTarget.src = '/noimage.png';
             }}
           />
-          {/* <S.Team_Name>{homeAwayInfo?.away?.team?.name}</S.Team_Name> */}
         </S.Info_Top_Away>
       </S.Info_Top>
       <S.Info_Body isMain={isMain}>
