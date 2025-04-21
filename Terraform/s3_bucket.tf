@@ -93,11 +93,9 @@ resource "aws_s3_bucket" "log_bucket" {
 
 resource "aws_s3_object" "api_server_script" {
   bucket = aws_s3_bucket.long_user_data_bucket.id
-  key    = "api_server.sh"
+  key    = "userdatas/api_server.sh"
   source = "${path.module}/userdatas/api_server.sh"
   acl    = "private"
-
-  # 파일 변경이 감지되면 항상 덮어쓰기
   source_hash = filemd5("${path.module}/userdatas/api_server.sh")
 }
 

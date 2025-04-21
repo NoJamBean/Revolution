@@ -5,12 +5,17 @@ resource "aws_db_parameter_group" "parm" {
 
   dynamic "parameter" {
     for_each = {
-      time_zone            = "Asia/Seoul"
-      character_set_client = "utf8mb4"
-      character_set_results = "utf8mb4"
-      character_set_server  = "utf8mb4"
-      collation_connection  = "utf8mb4_general_ci"
-      collation_server      = "utf8mb4_general_ci"
+      time_zone              = "Asia/Seoul"
+      character_set_client   = "utf8mb4"
+      character_set_results  = "utf8mb4"
+      character_set_server   = "utf8mb4"
+      collation_connection   = "utf8mb4_general_ci"
+      collation_server       = "utf8mb4_general_ci"
+      general_log            = "1"            # 일반 쿼리 로그 활성화
+      slow_query_log         = "1"            # 슬로우 쿼리 로그 활성화
+      log_output             = "FILE"         # 로그 출력 형식
+      long_query_time        = "1"            # 슬로우 쿼리 판별 기준 시간 (초)
+      log_queries_not_using_indexes = "1"     # 인덱스를 사용하지 않는 쿼리도 로그
     }
     content {
       name  = parameter.key
@@ -41,12 +46,12 @@ resource "aws_db_instance" "mysql_multi_az" {
   deletion_protection                 = false
   publicly_accessible                 = false
   storage_encrypted                   = true
-  monitoring_interval                 = 0     # 모니터링 비활성화
+  monitoring_interval                 = 0 
   iam_database_authentication_enabled = false # IAM 인증 비활성화 (암호 인증 사용)
   parameter_group_name                = aws_db_parameter_group.parm.name
   availability_zone                   = null # 자동 배정
   enabled_cloudwatch_logs_exports = ["error", "general", "slowquery"]
-  monitoring_role_arn = aws_iam_role.rds_to_cwlogs.arn
+  # monitoring_role_arn    = aws_iam_role.rds_to_cwlogs.arn
   tags                                = { Name = "MySQL Multi-AZ RDS Instance" }
 }
 

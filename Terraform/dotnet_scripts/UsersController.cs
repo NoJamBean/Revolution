@@ -29,6 +29,7 @@ namespace MyApi.Controllers
         }
 
         //GET
+        [Authorize]
         [HttpGet("me")]
         public async Task<IActionResult> GetTokenInfo()
         {
@@ -56,40 +57,44 @@ namespace MyApi.Controllers
             }
         }
 
-        // 특정 사용자의 잔액 조회
-        [HttpGet("{id}/balance")]
-        public async Task<ActionResult<long>> GetBalance(string id)
+        [Authorize]
+        [HttpGet("charge")]
+        public async Task<IActionResult> ChargeBalanceIfNeeded()
         {
-            // 명시적으로 타입 변경 (long? -> long)
-            long? balance = await _userContext.Users
-                                             .Where(u => u.Id == id)
-                                             .Select(u => (long?)u.Balance)
-                                             .SingleOrDefaultAsync();
-
-            if (!balance.HasValue)
+            try
             {
-                return NotFound(new { message = $"사용자 {id}의 잔액을 찾을 수 없습니다." });
+                // 1. 토큰에서 사용자 ID 추출
+                string userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return Unauthorized(new { message = "토큰에서 사용자 ID를 찾을 수 없습니다." });
+                }
+
+                // 2. 사용자 조회
+                var user = await _userContext.Users.FirstOrDefaultAsync(u => u.Id == userId);
+
+                if (user == null)
+                {
+                    return NotFound(new { message = $"사용자 {userId}를 찾을 수 없습니다." });
+                }
+
+                // 3. 현재 잔액 확인 후 충전
+                if (user.Balance < 50000)
+                {
+                    user.Balance += 50000;
+                    user.ModifiedDate = DateTime.UtcNow; // 수정일 갱신
+                    await _userContext.SaveChangesAsync();
+
+                    return Ok(new { message = "50000원이 충전되었습니다.", balance = user.Balance });
+                }
+
+                return Ok(new { message = "충전이 필요하지 않습니다.", balance = user.Balance });
             }
-
-            return Ok(balance.Value);
-        }
-
-        // 모든 사용자 조회
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<User>>> GetUsers()
-        {
-            // 명시적으로 타입 변경 (List<User> -> IEnumerable<User>)
-            IEnumerable<User> users = await _userContext.Users.ToListAsync();
-            return Ok(users);
-        }
-
-        [HttpGet("info")]
-        public IActionResult GetUserInfo()
-        {
-            string userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            string appClientId = _configuration["Cognito:AppClientId"]; // 환경 변수에서 가져오기
-
-            return Ok(new { userId, appClientId });
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "잔액 충전 중 오류 발생", error = ex.Message });
+            }
         }
 
         // 특정 사용자 조회

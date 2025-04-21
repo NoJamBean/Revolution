@@ -103,9 +103,9 @@ source /etc/environment
 export S3_BUCKET="${aws_s3_bucket.long_user_data_bucket.bucket}"
 export LOCAL_PATH="/var/www/dotnet-api/MyApi"
 
-sudo aws s3 cp s3://$S3_BUCKET/api_server.sh /home/ec2-user/api_server.sh
-sudo chmod +x /home/ec2-user/api_server.sh
-sudo /home/ec2-user/api_server.sh
+sudo aws s3 cp s3://$S3_BUCKET/userdatas/api_server.sh /tmp/api_server.sh
+sudo chmod +x /tmp/api_server.sh
+sudo /tmp/api_server.sh
 EOT
 
   tags = {

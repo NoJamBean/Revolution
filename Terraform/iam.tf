@@ -17,16 +17,16 @@ resource "aws_iam_role" "api_server_role" {
 }
 
 resource "aws_iam_role" "rds_to_cwlogs" {
-  name = "rds-cloudwatch-logs-role"
+  name = "rds-monitoring-role"
 
   assume_role_policy = jsonencode({
-    Version = "2012-10-17"
+    Version = "2012-10-17",
     Statement = [{
-      Effect = "Allow"
+      Action = "sts:AssumeRole",
+      Effect = "Allow",
       Principal = {
-        Service = "rds.amazonaws.com"
+        Service = "monitoring.rds.amazonaws.com"
       }
-      Action = "sts:AssumeRole"
     }]
   })
 }
@@ -431,7 +431,12 @@ resource "aws_iam_role_policy_attachment" "attach_to_api_server_role_s3" {
 
 resource "aws_iam_role_policy_attachment" "rds_logs" {
   role       = aws_iam_role.rds_to_cwlogs.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonRDSFullAccess"
+  policy_arn = "arn:aws:iam::aws:policy/AmazonRDSFullAccess"
+}
+
+resource "aws_iam_role_policy_attachment" "enhanced_monitoring" {
+  role       = aws_iam_role.rds_to_cwlogs.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonRDSEnhancedMonitoringRole"
 }
 
 #Profile
