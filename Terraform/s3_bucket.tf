@@ -77,7 +77,8 @@ resource "random_id" "bucket_suffix" {
 }
 
 resource "aws_s3_bucket" "log_bucket" {
-  bucket        = "logs-${random_id.bucket_suffix.hex}"
+  # bucket        = "logs-${random_id.bucket_suffix.hex}"
+  bucket        = "bet-application-total-logs"
   force_destroy = true
 
   lifecycle {
