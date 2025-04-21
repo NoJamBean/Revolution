@@ -2,7 +2,7 @@ import styled from '@emotion/styled';
 
 export const Wrapper = styled.div`
   height: 100%;
-  overflow: auto;
+  overflow-y: auto;
   background-color: #152230;
   border-right: ${({ isMain }) => (isMain ? '10px solid #152230' : 'none')};
 `;

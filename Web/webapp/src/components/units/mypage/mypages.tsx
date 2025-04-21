@@ -6,11 +6,13 @@ import {
   faUser,
 } from '@fortawesome/free-regular-svg-icons';
 import { faMoneyBill1Wave } from '@fortawesome/free-solid-svg-icons';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Info from './pagesections/info/info';
 import MyBetList from './pagesections/\bbetting/betting';
 import PayPoint from './pagesections/paypoint/paypoint';
 import Notify from './pagesections/notify/notify';
+import { useAuthStore } from '@/src/commons/stores/authstore';
+import { useDecodeToken } from '@/src/commons/utils/decodeusertoken';
 
 const categoryList = [
   { key: 'INFO', icon: faUser, label: '내 정보' },
@@ -21,6 +23,23 @@ const categoryList = [
 
 export default function MypageComponent() {
   const [selectedCategory, setSelectedCategory] = useState('INFO');
+  const [userInfoData, setUserInfoData] = useState({});
+
+  const { getDecodedToken } = useDecodeToken();
+
+  const token = useAuthStore((state) => state.token); // 사용자 토큰
+
+  useEffect(() => {
+    const getUserInfo = async () => {
+      const tokenUserInfo = await getDecodedToken(token ?? '');
+
+      setUserInfoData(tokenUserInfo?.data);
+    };
+
+    getUserInfo();
+  }, [token]);
+
+  console.log(userInfoData, 12312);
 
   const renderMainContents = () => {
     switch (selectedCategory) {
@@ -53,22 +72,6 @@ export default function MypageComponent() {
             <span>manner9945@naver.com</span>
           </S.User_Info>
         </S.Side_User_InfoBox>
-        {/* <S.Side_Section_Category>
-          <FontAwesomeIcon icon={faUser} />
-          <span>내 정보</span>
-        </S.Side_Section_Category>
-        <S.Side_Section_Category>
-          <FontAwesomeIcon icon={faMoneyBill1Wave} />
-          <span>배팅내역</span>
-        </S.Side_Section_Category>
-        <S.Side_Section_Category>
-          <FontAwesomeIcon icon={faCreditCard} />
-          <span>포인트 결제</span>
-        </S.Side_Section_Category>
-        <S.Side_Section_Category>
-          <FontAwesomeIcon icon={faBell} />
-          <span>수신함</span>
-        </S.Side_Section_Category> */}
         {categoryList.map((item) => (
           <S.Side_Section_Category
             isClicked={selectedCategory === item.key}

@@ -1,6 +1,6 @@
+import BlockFallbackLimitAPI from '../blockfallback/blockfallback1';
 import { useMatchInfo } from './widgetprovider';
 import * as S from './widgetstyle';
-import { routeModule } from 'next/dist/build/templates/app-page';
 import { useRouter } from 'next/router';
 
 export default function PlayWidget({ isMain }: { isMain: boolean }) {
@@ -12,7 +12,10 @@ export default function PlayWidget({ isMain }: { isMain: boolean }) {
 
   // 로고 쪽 hover 하면 화면 어두워지면서 해당 팀 승률 표시 (얻어온 data 기반 승률계산)
   return isLimit ? (
-    <div>API LIMITED</div>
+    <BlockFallbackLimitAPI
+      height={450}
+      isMainAndWidget={!router.asPath.includes('/bet')}
+    />
   ) : (
     <S.Wrapper isMain={isMain}>
       <S.Info_Top>

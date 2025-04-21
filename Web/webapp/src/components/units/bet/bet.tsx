@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import PlayListInfo from '../../commons/playinfo/playinfolist';
 import * as S from './betstyle';
 import PlayWidget from '../../commons/oddwidget/widget';
@@ -34,15 +34,6 @@ export default function Betting() {
   const { setBetError, betError, isVariableOdd, oddData } = useOddHooks();
 
   const token = useAuthStore((state) => state.token); // 사용자 토큰
-
-  // const changeCategorySport = (e: React.MouseEvent<HTMLElement>) => {
-  //   const spans = e.currentTarget.querySelectorAll('span');
-  //   const target = spans[0].innerText;
-
-  //   useSportStore.getState().setSource('betpage');
-
-  //   setSelectSport(target);
-  // };
 
   useEffect(() => {
     // 당일 스포츠 종목별 총 경기 수
@@ -132,28 +123,32 @@ export default function Betting() {
 
     const { sport } = router.query;
 
-    // console.log(username, '23123123123');
-
-    const result = await axios.post(
-      `${process.env.NEXT_PUBLIC_BACKEND_API_ENDPOINT}/api/games/update`,
-      {
-        id: userId,
-        type: sport,
-        gameDate: '2025-04-20T19:00:00',
-        home: 'ManCity',
-        away: 'Liverpool',
-        wdl: 'win',
-        odds: 1.85,
-        price: 10000,
-        status: 'PLAYING',
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
+    try {
+      const result = await axios.post(
+        `${process.env.NEXT_PUBLIC_BACKEND_API_ENDPOINT}/api/games/update`,
+        {
+          id: userId,
+          type: sport,
+          gameDate: '2025-04-20T19:00:00',
+          home: 'ManCity',
+          away: 'Liverpool',
+          wdl: 'win',
+          odds: 1.85,
+          price: 10000,
+          status: 'PLAYING',
         },
-      }
-    );
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      router.push('/mypage');
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (

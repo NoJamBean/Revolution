@@ -5,13 +5,23 @@ export function useDecodeToken() {
   const router = useRouter();
 
   const getDecodedToken = async (token: string) => {
-    // const response = await axios.get('process.env.NEXT_PUBLIC_BACKEND_API_ENDPOINT/api/users/me', {
-    //   headers: {
-    //     'Content-Type': 'application/json',
-    //     Authorization: `Bearer ${token}`,
-    //   },
-    // });
-    // return response;
+    console.log('tokentoken', token);
+
+    try {
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_BACKEND_API_ENDPOINT}/api/users/me`,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      return response;
+    } catch (err) {
+      console.log('에러요', err);
+    }
   };
 
   return { getDecodedToken };

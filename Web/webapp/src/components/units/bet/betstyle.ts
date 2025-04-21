@@ -97,12 +97,16 @@ export const Category_Li = styled.div`
 
 export const Section2 = styled.div`
   flex: 1;
+  display: flex;
+  background-image: #2a3f55;
 `;
 
 export const Section3 = styled.div`
   width: 100%;
   flex: 1;
-  background-color: white;
+  display: flex;
+  justify-content: center;
+  background-color: #2a3f55;
 `;
 
 export const Section4 = styled.div`

@@ -71,9 +71,9 @@ export const Chat_Btn = styled.div`
   }
 `;
 
-export const LeftSide_Contents = styled.div`
+export const LeftSide_Contents = styled.div<{ isLimit: boolean }>`
   width: 100%;
-  overflow-y: auto;
+  overflow-y: ${({ isLimit }) => (isLimit ? 'none' : 'auto')};
 `;
 
 export const Screen = styled.div`

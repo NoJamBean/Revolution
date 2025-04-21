@@ -1,6 +1,6 @@
 import styled from '@emotion/styled';
 
-export const Right_Side = styled.aside`
+export const Right_Side = styled.aside<{ isMain: boolean }>`
   /* border: 5px solid purple; */
   width: 100%;
   height: 100%;
@@ -9,6 +9,10 @@ export const Right_Side = styled.aside`
   border-bottom: 10px solid #152230;
   background-color: #152230;
   border-left: 3px solid #152230;
+
+  /* display: ${({ isMain }) => isMain && 'flex'}; */
+  /* flex-direction: ${({ isMain }) => isMain && 'column'}; */
+  /* align-items: ${({ isMain }) => isMain && 'center'}; */
 `;
 
 export const Play_Category_Bar = styled.nav`

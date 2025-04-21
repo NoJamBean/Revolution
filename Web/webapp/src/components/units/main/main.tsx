@@ -19,7 +19,7 @@ const BannerCarousel = dynamic(
 export default function Main() {
   const [clickedTab, setClickedTab] = useState('info');
 
-  const { homeAwayInfo, selectSport, clickedPlay } = useMatchInfo();
+  const { homeAwayInfo, isLimit, clickedPlay } = useMatchInfo();
   const { isLoading } = useModal();
 
   const router = useRouter();
@@ -82,7 +82,7 @@ export default function Main() {
                   채팅하기
                 </S.Chat_Btn>
               </S.TabButton_Wrap>
-              <S.LeftSide_Contents>
+              <S.LeftSide_Contents isLimit={isLimit}>
                 <S.Screen clickedTab={clickedTab}>
                   {clickedTab === 'info' ? (
                     <PlayWidget isMain={true} />

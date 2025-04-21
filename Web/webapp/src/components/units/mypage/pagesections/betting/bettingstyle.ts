@@ -38,6 +38,7 @@ export const Info_Body = styled.div`
 `;
 
 export const Bet_InfoBlock = styled.div`
+  border: 3px solid green;
   width: 100%;
   height: 140px;
   flex-shrink: 0;
@@ -81,6 +82,7 @@ export const Bet_Contents = styled.div`
 export const Match_Detail = styled.div`
   margin-left: 10px;
   margin-top: 15px;
+  border: 3px solid red;
 `;
 
 export const Match_Date = styled.div`
@@ -130,7 +132,7 @@ export const MyBet = styled.div`
   display: flex;
   justify-content: space-between;
   width: 160px;
-  position: absolute;
+  /* position: absolute; */
   top: 87px;
   left: 660px;
   span {
@@ -151,7 +153,7 @@ export const Expected = styled.div`
   display: flex;
   justify-content: space-between;
   width: 160px;
-  position: absolute;
+  /* position: absolute; */
   top: 110px;
   left: 660px;
 

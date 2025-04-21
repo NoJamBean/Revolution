@@ -23,11 +23,6 @@ export default function Login() {
       return;
     }
 
-    // if (!emailRegex.test(userMail)) {
-    //   alert('이메일 형식에 맞게 입력해라');
-    //   return;
-    // }
-
     if (hangelRegex.test(userMail)) {
       alert('아 마 한글말고 영어로 입력해라 마');
       return;
@@ -67,6 +62,7 @@ export default function Login() {
         });
       }
 
+      // 받아온 토큰 전역관리 state 저장
       const tokens = result?.data?.tokens;
       const { idToken } = tokens;
 
@@ -90,7 +86,6 @@ export default function Login() {
         <S.LogoImgBox>
           <S.LogoImg src='/weblogo_v2.png' />
         </S.LogoImgBox>
-        {/* <S.Logo>존나좋은 토토사이트</S.Logo> */}
         <S.Form onSubmit={handleSubmit}>
           <S.UserSection>
             <S.Title>Username</S.Title>

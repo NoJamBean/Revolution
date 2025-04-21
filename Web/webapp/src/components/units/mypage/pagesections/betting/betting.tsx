@@ -11,14 +11,6 @@ export default function MyBetList() {
               <S.Sport_Img src='/baseball_ball.png' />
             </S.SelectSport>
             <S.Bet_Contents>
-              <S.MyBet>
-                <span>MY BETS</span>
-                <span>₩19000</span>
-              </S.MyBet>
-              <S.Expected>
-                <span>EXPECTED</span>
-                <span>₩22500</span>
-              </S.Expected>
               <S.Match_Detail>
                 <S.Match_Date>
                   <span>2024-04-20</span>

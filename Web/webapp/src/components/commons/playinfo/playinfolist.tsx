@@ -21,6 +21,7 @@ import {
 import { useModal } from '../modal/modalprovider';
 import Loading from '../modal/contents/loading';
 import { useGetDateandTime } from '@/src/commons/utils/getdatetime';
+import BlockFallbackLimitAPI from '../blockfallback/blockfallback1';
 
 export default function PlayListInfo(props: any) {
   const router = useRouter();
@@ -211,7 +212,7 @@ export default function PlayListInfo(props: any) {
   //
 
   return (
-    <S.Right_Side>
+    <S.Right_Side isMain={props.widget}>
       <S.Play_Category_Bar>
         <S.Category>
           {sportsList.map(({ sport, label, icon }) => (
@@ -232,7 +233,7 @@ export default function PlayListInfo(props: any) {
         </S.Category>
       </S.Play_Category_Bar>
       {isLimit ? (
-        <div>API LIMITED</div>
+        <BlockFallbackLimitAPI height={600} />
       ) : (
         apiData?.map((el) => (
           <S.PlayInfo
