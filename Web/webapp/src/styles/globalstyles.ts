@@ -9,7 +9,7 @@ const globalStyle = css`
 
   body {
     /* background-color: red; */
-    background-image: url('/noimage.png');
+    background-image: url('/sportsbg.png');
     background-size: cover;
     background-attachment: fixed;
   }

@@ -1,24 +1,100 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import PlayListInfo from '../../commons/playinfo/playinfolist';
 import * as S from './betstyle';
 import PlayWidget from '../../commons/oddwidget/widget';
-// import { useRouter } from 'next/router';
 import { useMatchInfo } from '../../commons/oddwidget/widgetprovider';
+import { useOddHooks } from '@/src/commons/hooks/useodhook';
+import { useModal } from '../../commons/modal/modalprovider';
+import { useAuthStore } from '@/src/commons/stores/authstore';
+import { useDecodeToken } from '@/src/commons/utils/decodeusertoken';
+import axios from 'axios';
+import { useRouter } from 'next/router';
+
+type SportMatchInfo = {
+  sport: string;
+  count: number;
+};
 
 export default function Betting() {
-  const BetAmount = [5000, 10000, 50000, 100000, 300000, 500000];
-  // const router = useRouter();
-
-  const { setSelectSport } = useMatchInfo();
+  const [selectOdd, setSelectOdd] = useState(0);
+  const [selectTeam, setSelectTeam] = useState('');
+  const [expected, setExpected] = useState(0);
+  const [sportsCountList, setSportsCountList] = useState<SportMatchInfo[]>([]);
+  const [noOdds, setNoOdds] = useState('');
 
   const [bet, setBet] = useState(0);
-  const [expected, setExpected] = useState(0);
+  const [betChange, setBetChange] = useState(false);
 
-  const changeCategorySport = (e: React.MouseEvent<HTMLElement>) => {
-    const spans = e.currentTarget.querySelectorAll('span');
-    const target = spans[0].innerText;
+  const router = useRouter();
 
-    setSelectSport(target);
+  const BetAmount = [5000, 10000, 50000, 100000, 300000, 500000];
+
+  const { setSelectSport } = useMatchInfo();
+  const { isLoading } = useModal();
+  const { setBetError, betError, isVariableOdd, oddData } = useOddHooks();
+
+  const token = useAuthStore((state) => state.token); // 사용자 토큰
+
+  useEffect(() => {
+    // 당일 스포츠 종목별 총 경기 수
+    const countresult = localStorage.getItem('sportscount');
+    if (countresult === null) return;
+
+    const sportsList = JSON.parse(countresult ?? '');
+    setSportsCountList(sportsList);
+  }, []);
+
+  useEffect(() => {
+    console.log('매번 트리거된다잉');
+    setBet(0);
+    setExpected(0);
+
+    if (!isLoading && betError) {
+      alert(betError);
+      setBetError(null); // 한 번 alert 띄운 뒤 초기화
+
+      const localData = localStorage.getItem('odds') ?? '{}';
+      const noOdds = JSON.parse(localData);
+
+      setNoOdds(noOdds);
+    }
+  }, [isLoading, betError]);
+
+  // 배당률 선택
+  const clickOdd = (e: any, key) => {
+    const selected = e.currentTarget.getAttribute('data-odd');
+    const selectOdd = Number(selected);
+
+    setSelectOdd(selectOdd);
+    setSelectTeam(key);
+
+    //이전 선택금액 기록 reset
+    resetBet();
+  };
+
+  const multiplieBet = (amount: number) => {
+    // 추후 각 경기별 선택한 배당률로 수정될 부분
+    const totalRaw = (bet + Number(amount)) * Number(selectOdd);
+    const total = Number(totalRaw.toFixed(2));
+
+    setExpected(total);
+  };
+
+  // reset or max
+  const resetBet = () => {
+    setBet(0);
+    setBetChange(true);
+
+    setExpected(0);
+  };
+
+  const maxBet = () => {
+    const total = Number(1000000) * Number(selectOdd);
+
+    setBet(1000000);
+    setBetChange(true);
+
+    setExpected(total);
   };
 
   const payBet = (amount: number) => {
@@ -31,25 +107,48 @@ export default function Betting() {
     setBet((prev) => prev + Number(amount));
   };
 
-  const multiplieBet = (amount: number) => {
-    // 추후 각 경기별 선택한 배당률로 수정될 부분
-    const odd = 1.45;
-    const total = (bet + Number(amount)) * odd;
+  // 실제 배팅 트리거 함수
+  const { getDecodedToken } = useDecodeToken(); // token Decoding Hooks
 
-    setExpected(total);
-  };
+  const doBet = async () => {
+    if (selectOdd === 0) {
+      alert('배당률을 선택하세요');
+      return;
+    }
 
-  const resetBet = () => {
-    setBet(0);
-    setExpected(0);
-  };
+    const decoded = await getDecodedToken(token ?? '');
 
-  const maxBet = () => {
-    const odd = 1.45;
-    const total = Number(1000000) * odd;
+    const obj = decoded?.data;
+    const userId = obj[`cognito:username`];
 
-    setBet(1000000);
-    setExpected(total);
+    const { sport } = router.query;
+
+    try {
+      const result = await axios.post(
+        `${process.env.NEXT_PUBLIC_BACKEND_API_ENDPOINT}/api/games/update`,
+        {
+          id: userId,
+          type: sport,
+          gameDate: '2025-04-20T19:00:00',
+          home: 'ManCity',
+          away: 'Liverpool',
+          wdl: 'win',
+          odds: 1.85,
+          price: 10000,
+          status: 'PLAYING',
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      router.push('/mypage');
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
@@ -62,24 +161,20 @@ export default function Betting() {
           </S.MatchBox_Top>
           <S.Category_Nav>
             <S.Category_Ul>
-              <S.Category_Li onClick={changeCategorySport}>
-                <span>FOOTBALL</span>
-                <span>경기 수 51</span>
-              </S.Category_Li>
-              <S.Category_Li onClick={changeCategorySport}>
-                <span>BASEBALL</span>
-                <span>경기 수 15</span>
-              </S.Category_Li>
-              <S.Category_Li onClick={changeCategorySport}>
-                <span>BASKETBALL</span>
-                <span>경기 수 35</span>
-              </S.Category_Li>
-              <S.Category_Li onClick={changeCategorySport}>
-                <span>ICE HOCKEY</span>
-                <span>경기 수 25</span>
-              </S.Category_Li>
+              {sportsCountList.map((info) => (
+                <S.Category_Li key={info.sport}>
+                  <div className='hover-off'>
+                    <span>{info.sport}</span>
+                    <div>{`(?)`}</div>
+                  </div>
+                  <div className='hover-on'>
+                    <span>{info.sport}</span>
+                    <span className='count'>{info.count} 경기</span>
+                  </div>
+                </S.Category_Li>
+              ))}
               <S.Category_Li>
-                <span>UFC</span>
+                <span>VOLLEYBALL</span>
                 <span>{`예정 (준비중)`}</span>
               </S.Category_Li>
               <S.Category_Li>
@@ -100,13 +195,28 @@ export default function Betting() {
         <S.BettionBox>
           <S.BettingBox_Top>
             <span>BETTING</span>
-            <span>CART</span>{' '}
+            <span>CART</span>
           </S.BettingBox_Top>
           <S.BettingBox_Body>
             <S.BetOdds>
-              <S.OddBtn>WIN</S.OddBtn>
-              <S.OddBtn>VS</S.OddBtn>
-              <S.OddBtn>LOSE</S.OddBtn>
+              {(isVariableOdd
+                ? Object.entries(oddData)
+                : Object.entries(noOdds)
+              ).map(([key, value]) => (
+                <S.OddBtn
+                  key={key}
+                  data-odd={value}
+                  onClick={
+                    isVariableOdd && !Number.isNaN(Number(value))
+                      ? (e) => clickOdd(e, key)
+                      : undefined
+                  }
+                  isClicked={selectOdd === Number(value) && selectTeam === key}
+                >
+                  <span>{key.charAt(0).toUpperCase() + key.slice(1)}</span>
+                  <span>{`(${value})`}</span>
+                </S.OddBtn>
+              ))}
             </S.BetOdds>
             <S.Betting_Total>
               <span>배팅금액</span>
@@ -124,14 +234,16 @@ export default function Betting() {
               </S.BetAdjust>
             </S.Select_Bet_Money>
             <S.OddsResult>
-              <span>배당률 합계</span>
-              <span>x 1.45</span>
+              <span>배당률</span>
+              <span>{`X ${selectOdd}`}</span>
             </S.OddsResult>
             <S.Expected_Payout>
               <span>예상당첨금액</span>
               <span>{`₩${expected}`}</span>
             </S.Expected_Payout>
-            <S.Bet_Btn>BET</S.Bet_Btn>
+            <S.Bet_Btn isVariableOdd={isVariableOdd} onClick={doBet}>
+              BET
+            </S.Bet_Btn>
           </S.BettingBox_Body>
         </S.BettionBox>
       </S.Section4>

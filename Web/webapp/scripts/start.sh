@@ -3,6 +3,7 @@ set -e
 
 echo "[ApplicationStart] PM2로 Next.js 앱 실행 시작"
 
+
 export NODEJS_HOME=/usr/local/lib/node/nodejs
 export PATH=$NODEJS_HOME/bin:$PATH
 

@@ -6,15 +6,26 @@ import {
   getBaseballlMatchList,
   getBasketballMatchList,
   getFootballMatchList,
+  getHandBallMatchList,
+  getIceHockeyMatchList,
 } from '@/src/api/getdefaulmatchlist';
 import { useRouter } from 'next/router';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCircle, faFutbol } from '@fortawesome/free-regular-svg-icons';
+import {
+  faA,
+  faBaseball,
+  faBasketball,
+  faHockeyPuck,
+} from '@fortawesome/free-solid-svg-icons';
+import { useModal } from '../modal/modalprovider';
+import Loading from '../modal/contents/loading';
+import { useGetDateandTime } from '@/src/commons/utils/getdatetime';
+import BlockFallbackLimitAPI from '../blockfallback/blockfallback1';
 
 export default function PlayListInfo(props: any) {
-  const [clickedPlay, setClickedPlay] = useState(0);
-  const [isLoading, setIsLoading] = useState(false);
-
   const router = useRouter();
-  const allMatchRef = useRef();
+  const allMatchRef = useRef<string | string[] | undefined>();
 
   const {
     setDefaultApiData,
@@ -24,75 +35,171 @@ export default function PlayListInfo(props: any) {
     selectSport,
     isLimit,
     setIsLimit,
+    clickedPlay,
+    setClickedPlay,
   } = useMatchInfo();
 
+  const { openModal, closeModal, isLoading } = useModal();
+  const { getDate, getTime } = useGetDateandTime();
+
+  const sportsList = [
+    { sport: 'ALL', label: 'ALL', icon: faA },
+    { sport: 'FOOTBALL', label: 'FOOTBALL', icon: faFutbol },
+    { sport: 'BASEBALL', label: 'BASEBALL', icon: faBaseball },
+    { sport: 'BASKETBALL', label: 'BASKETBALL', icon: faBasketball },
+    { sport: 'ICEHOCKEY', label: 'ICEHOCKEY', icon: faHockeyPuck },
+    { sport: 'HANDBALL', label: 'HANDBALL', icon: faCircle },
+  ];
+
   const getTargetMatch = async (target: any, selectSport: string) => {
-    // if (target === undefined) {
-    //   console.log('API 유료사용 전부 써버림');
-    //   return;
-    // } // API 무료제한 끝났을 경우
+    console.log(target, 'targettete');
 
-    const targetMatchInfo = await getTargetedMatchInfo(target, selectSport);
+    if (!isLoading) {
+      openModal(Loading); // API 응답 때 까지 로딩모달 open
+    }
 
-    setHomeAwayData(targetMatchInfo, selectSport);
-    setClickedPlay(target);
+    try {
+      const targetMatchInfo = await getTargetedMatchInfo(target, selectSport);
+      console.log('매치인포메이12w션', targetMatchInfo);
+
+      setHomeAwayData(targetMatchInfo, selectSport);
+      setClickedPlay(target);
+
+      // 자체적으로 선택된 값 (ex. 초기 페이지 렌더링 시, 그 때의 선택된 값을 그대로 query parms에 추가)
+      const current = new URLSearchParams(window.location.search);
+      current.set('id', target);
+      current.set('sport', selectSport);
+
+      router.push(
+        `${window.location.pathname}?${current.toString()}`,
+        undefined,
+        { shallow: true }
+      );
+    } catch (error) {
+      // setIsLimit(true)
+    } finally {
+      closeModal();
+    }
   };
 
   const clickSport = (e: any) => {
-    const selectedSport = e.target.innerHTML;
+    // const selectedSport = e.currentTarget.innerHTML;
+    const selectedSport = e.currentTarget.getAttribute('data-sport');
     setSelectSport(selectedSport);
+    // deleteParams(); // 일단 여기만 박아봐
+
+    const current = new URLSearchParams(window.location.search);
+
+    // ❗ id 제거
+    current.delete('id');
+
+    // ✅ sport 추가 또는 덮어쓰기
+    current.set('sport', selectedSport);
+
+    router.push(
+      `${window.location.pathname}?${current.toString()}`,
+      undefined,
+      { shallow: true }
+    );
+
+    console.log(selectSport, '경로확인해라', selectedSport);
   };
 
+  // const deleteParams = async () => {
+  //   const url = new URL(window.location.href);
+  //   url.searchParams.delete('id');
+
+  //   const nextPath =
+  //     url.pathname +
+  //     (url.searchParams.toString() ? `?${url.searchParams.toString()}` : '');
+
+  //   await router.replace(nextPath, undefined, { shallow: true });
+  //   await new Promise((r) => setTimeout(r, 0));
+  // };
+
+  //
+  //
+  const getTodayFixtures = async () => {
+    console.log('로딩중인가요??????', isLoading);
+
+    if (!isLoading) {
+      openModal(Loading); // API 응답 때 까지 로딩모달 open
+    }
+
+    try {
+      let playMatchList = [];
+      let sportKey = selectSport;
+
+      if (sportKey === 'FOOTBALL') {
+        playMatchList = await getFootballMatchList();
+        if (playMatchList.length === 0) closeModal();
+      } else if (sportKey === 'BASEBALL') {
+        playMatchList = await getBaseballlMatchList();
+        if (playMatchList.length === 0) closeModal();
+      } else if (sportKey === 'BASKETBALL') {
+        playMatchList = await getBasketballMatchList();
+        if (playMatchList.length === 0) closeModal();
+      } else if (sportKey === 'ICEHOCKEY') {
+        playMatchList = await getIceHockeyMatchList();
+        if (playMatchList.length === 0) closeModal();
+      } else if (sportKey === 'HANDBALL') {
+        playMatchList = await getHandBallMatchList();
+        if (playMatchList.length === 0) closeModal();
+      }
+
+      const modifiedResult = setDefaultApiData(
+        playMatchList,
+        sportKey ?? 'BASEBALL'
+      );
+
+      if (modifiedResult.length === 0) throw Error('API 한도초과');
+
+      // ✅ 공통 처리 구간
+      const currentId = String(router.query.id);
+      const validId = modifiedResult.some(
+        (match: any) => String(match.id) === currentId
+      )
+        ? currentId
+        : modifiedResult[0]?.id;
+
+      // ❗ 유효하지 않은 경우 replace로 URL 정정
+      if (validId !== currentId) {
+        const params = new URLSearchParams(window.location.search);
+        params.set('id', validId);
+        params.set('sport', sportKey ?? 'BASEBALL');
+
+        await router.replace(
+          `${window.location.pathname}?${params.toString()}`,
+          undefined,
+          { shallow: true }
+        );
+      }
+
+      allMatchRef.current = validId;
+      setClickedPlay(validId);
+      getTargetMatch(validId, sportKey ?? 'BASEBALL'); // router.push 안함
+
+      if (isLimit) setIsLimit(false);
+    } catch (error) {
+      if ((error as Error).message === 'API 한도초과') setIsLimit(true);
+    }
+  };
   //
   //
   useEffect(() => {
-    console.log('언제만 useEffect가 트리거 되나요????????', router.asPath);
-
-    const getTodayFixtures = async () => {
-      setIsLoading(true);
-
-      try {
-        // if (selectSport === 'FOOTBALL') {
-        //   // 축구 API (경기 List)
-        //   const playMatchList = await getFootballMatchList();
-        //   const modifiedResult = setDefaultApiData(playMatchList, 'FOOTBALL');
-        //   allMatchRef.current = modifiedResult[0]?.id;
-        //   console.log(modifiedResult.length);
-        //   getTargetMatch(modifiedResult[0]?.id, selectSport);
-        //   return;
-        // }
-        // if (selectSport === 'BASEBALL') {
-        //   const playMatchList = await getBaseballlMatchList();
-        //   const modifiedResult = setDefaultApiData(playMatchList, 'BASEBALL');
-        //   console.log('test', modifiedResult);
-        //   allMatchRef.current = modifiedResult[0]?.id;
-        //   console.log(modifiedResult.length);
-        //   getTargetMatch(modifiedResult[0]?.id, selectSport);
-        // }
-        // if (selectSport === 'BASKETBALL') {
-        //   console.log('여기가 트리거됩니다!');
-        //   const playMatchList = await getBasketballMatchList();
-        //   const modifiedResult = setDefaultApiData(playMatchList, 'BASKETBALL');
-        //   allMatchRef.current = modifiedResult[0]?.id;
-        //   console.log(modifiedResult.length);
-        //   getTargetMatch(modifiedResult[0]?.id, selectSport);
-        //   return;
-        // }
-        // getTargetMatch(modifiedResult[0]?.id); // 초기 렌더링 시 첫번째 값에 대한 상세정보 표시되도록 미리 트리거
-      } catch (error) {
-        console.log((error as Error).message, 123);
-        const message = (error as Error).message;
-
-        if (message.includes('limit')) setIsLimit(true);
-      }
-    };
-
     getTodayFixtures();
   }, [selectSport]);
+
+  useEffect(() => {
+    if (router.asPath === '/') {
+      getTodayFixtures();
+    }
+  }, [router.asPath]);
 
   const handleparms = (id: string) => {
     const current = new URLSearchParams(window.location.search);
     current.set('id', id);
+
     router.push(
       `${window.location.pathname}?${current.toString()}`,
       undefined,
@@ -100,39 +207,33 @@ export default function PlayListInfo(props: any) {
     );
   };
 
-  const getDate = (timezone: string) => {
-    const date = new Date(timezone);
-    const koreaDate = new Date(date.getTime() + 9 * 60 * 60 * 1000);
-
-    const month = String(koreaDate.getMonth() + 1).padStart(2, '0');
-    const day = String(koreaDate.getDate()).padStart(2, '0');
-
-    return `${month}-${day}`;
-  };
-
-  const getTime = (timezone: string) => {
-    const date = new Date(timezone);
-    const koreaDate = new Date(date.getTime() + 9 * 60 * 60 * 1000);
-
-    const hour = String(koreaDate.getHours()).padStart(2, '0');
-    const minute = String(koreaDate.getMinutes()).padStart(2, '0');
-
-    return `${hour}:${minute}`;
-  };
+  //
+  //
+  //
 
   return (
-    <S.Right_Side>
+    <S.Right_Side isMain={props.widget}>
       <S.Play_Category_Bar>
         <S.Category>
-          <S.Category_Li onClick={clickSport}>ALL</S.Category_Li>
-          <S.Category_Li onClick={clickSport}>FOOTBALL</S.Category_Li>
-          <S.Category_Li onClick={clickSport}>BASEBALL</S.Category_Li>
-          <S.Category_Li onClick={clickSport}>BASKETBALL</S.Category_Li>
-          <S.Category_Li onClick={clickSport}>ICE HOCKEY</S.Category_Li>
+          {sportsList.map(({ sport, label, icon }) => (
+            <S.Category_Li
+              key={sport}
+              data-sport={sport}
+              onClick={sport === 'ALL' ? undefined : clickSport}
+              isClicked={selectSport === sport}
+            >
+              <FontAwesomeIcon
+                icon={icon}
+                size='2x'
+                style={{ color: selectSport === sport ? '#94a3b8' : '#fdfcf9' }}
+              />
+              <span>{label}</span>
+            </S.Category_Li>
+          ))}
         </S.Category>
       </S.Play_Category_Bar>
       {isLimit ? (
-        <div>API LIMITED</div>
+        <BlockFallbackLimitAPI height={600} />
       ) : (
         apiData?.map((el) => (
           <S.PlayInfo
@@ -144,7 +245,7 @@ export default function PlayListInfo(props: any) {
             widget={props.widget}
           >
             <S.Blind
-              isClicked={clickedPlay === el.id}
+              isClicked={String(clickedPlay) === String(el.id)}
               widget={props.widget}
             ></S.Blind>
             <S.Info_Top widget={props.widget}>
