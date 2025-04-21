@@ -16,14 +16,15 @@ resource "aws_s3_bucket_policy" "cloudtrail_bucket_policy" {
   policy = data.aws_iam_policy_document.cloudtrail_s3_policy.json
 }
 
-# CloudTrail S3 접근 정책 문서
 data "aws_iam_policy_document" "cloudtrail_s3_policy" {
   # 이전과 동일 ...
   statement {
     sid       = "AWSCloudTrailAclCheck"
     effect    = "Allow"
     actions   = ["s3:GetBucketAcl"]
-    resources = [aws_s3_bucket.cloudtrail_bucket.arn]
+    resources = [
+      aws_s3_bucket.cloudtrail_bucket.arn, # Cloudtrail 버킷
+      ]
     principals {
       type        = "Service"
       identifiers = ["cloudtrail.amazonaws.com"]
@@ -34,7 +35,9 @@ data "aws_iam_policy_document" "cloudtrail_s3_policy" {
     sid       = "AWSCloudTrailWrite"
     effect    = "Allow"
     actions   = ["s3:PutObject"]
-    resources = ["${aws_s3_bucket.cloudtrail_bucket.arn}/AWSLogs/${data.aws_caller_identity.current.account_id}/*"]
+    resources = [
+      "${aws_s3_bucket.cloudtrail_bucket.arn}/AWSLogs/${data.aws_caller_identity.current.account_id}/*",
+      ]
     principals {
       type        = "Service"
       identifiers = ["cloudtrail.amazonaws.com"]
@@ -45,6 +48,29 @@ data "aws_iam_policy_document" "cloudtrail_s3_policy" {
       values   = ["bucket-owner-full-control"]
     }
   }
+}
+
+resource "aws_iam_role_policy" "lambda_s3_getobject_policy" {
+  role = "lambda-s3-opensearch-role"
+
+  name = "S3GetObjectWebAppLogsPolicy" # 원하는 정책 이름으로 변경 가능
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Action = [
+          "s3:GetObject",
+          "s3:ListBucket"
+        ],
+        Resource = [
+          "${data.aws_s3_bucket.web_bucket.arn}",
+          "${data.aws_s3_bucket.web_bucket.arn}/*"
+        ]
+      },
+    ]
+  })
 }
 
 # 2. CloudTrail 추적 생성
