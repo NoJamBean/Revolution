@@ -5,7 +5,7 @@ import { getS3BucketFromEnv } from './gets3bucketname';
 const s3 = new S3Client({ region: 'ap-northeast-2' });
 
 export async function uploadToS3(logObject: object) {
-  const bucketName = getS3BucketFromEnv(); // ❗ runtime에서는 오직 .env 만 사용
+  const bucketName = getS3BucketFromEnv(); // runtime에서는 오직 .env 만 사용
 
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
   const key = `WebApp_logs/${timestamp}-${uuidv4()}.json`;
