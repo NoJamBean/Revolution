@@ -20,3 +20,5 @@ tags = {
   Environment = "Development" # "Production" 또는 "Staging", "Development" 등
   Owner       = "kyu"
 }
+
+web_bucket = "logs-5f367c9283df83fe"

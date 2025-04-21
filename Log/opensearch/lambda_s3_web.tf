@@ -167,16 +167,18 @@ resource "aws_lambda_permission" "allow_s3_invocation_web" {
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.s3_to_web_lambda.function_name
   principal     = "s3.amazonaws.com"
-  source_arn    = aws_s3_bucket.cloudtrail_bucket.arn // 수정 필요----------------------------------------------------------------------------------------
+  source_arn    = data.aws_s3_bucket.web_bucket.arn
+  # source_arn    = aws_s3_bucket.cloudtrail_bucket.arn // 수정 필요----------------------------------------------------------------------------------------
   source_account = data.aws_caller_identity.current.account_id
 }
-resource "aws_s3_bucket_notification" "bucket_notification" {
-  bucket = aws_s3_bucket.cloudtrail_bucket.id
+resource "aws_s3_bucket_notification" "web_bucket_notification" {
+  # bucket = aws_s3_bucket.cloudtrail_bucket.id
+  bucket = data.aws_s3_bucket.web_bucket.id
   lambda_function {
     lambda_function_arn = aws_lambda_function.s3_to_web_lambda.arn
     events              = ["s3:ObjectCreated:*"]
-    filter_suffix       = ".log"
-    filter_prefix     = "AWSLogs/${data.aws_caller_identity.current.account_id}/" // 수정 필요------------------------------------------------------------
+    filter_suffix       = ".json"
+    filter_prefix     = "WebApp_logs/${data.aws_caller_identity.current.account_id}/" // 수정 필요------------------------------------------------------------
   }
   depends_on = [aws_lambda_permission.allow_s3_invocation_web]
 }

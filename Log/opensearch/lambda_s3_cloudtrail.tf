@@ -169,7 +169,7 @@ resource "aws_lambda_permission" "allow_s3_invocation_cloudtrail" {
   source_arn    = aws_s3_bucket.cloudtrail_bucket.arn
   source_account = data.aws_caller_identity.current.account_id
 }
-resource "aws_s3_bucket_notification" "bucket_notification" {
+resource "aws_s3_bucket_notification" "cloudtrail_bucket_notification" {
   bucket = aws_s3_bucket.cloudtrail_bucket.id
   lambda_function {
     lambda_function_arn = aws_lambda_function.s3_to_cloudtrail_lambda.arn

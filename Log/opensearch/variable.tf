@@ -49,3 +49,12 @@ variable "tags" {
     Environment = "Development"
   }
 }
+
+variable "web_bucket" {
+  description = "웹 서버 로그가 쌓이는 버킷"
+  type = string
+}
+
+data "aws_s3_bucket" "web_bucket" {
+  bucket = var.web_bucket
+}
