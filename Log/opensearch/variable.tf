@@ -55,6 +55,6 @@ variable "web_bucket" {
   type = string
 }
 
-data "aws_s3_bucket" "web_bucket" {
-  bucket = var.web_bucket
-}
+# data "aws_s3_bucket" "web_bucket" {
+#   bucket = var.web_bucket
+# }

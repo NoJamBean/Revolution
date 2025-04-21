@@ -21,4 +21,4 @@ tags = {
   Owner       = "kyu"
 }
 
-web_bucket = "logs-5f367c9283df83fe"
+web_bucket = "bet-application-total-logs"
