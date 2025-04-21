@@ -8,11 +8,11 @@ import {
 import { faMoneyBill1Wave } from '@fortawesome/free-solid-svg-icons';
 import { useEffect, useState } from 'react';
 import Info from './pagesections/info/info';
-import MyBetList from './pagesections/\bbetting/betting';
 import PayPoint from './pagesections/paypoint/paypoint';
 import Notify from './pagesections/notify/notify';
 import { useAuthStore } from '@/src/commons/stores/authstore';
 import { useDecodeToken } from '@/src/commons/utils/decodeusertoken';
+import MyBetList from './pagesections/betting/betting';
 
 const categoryList = [
   { key: 'INFO', icon: faUser, label: '내 정보' },

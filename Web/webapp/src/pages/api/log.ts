@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { addLog } from '../../commons/utils/logger';
-import { initLogUploader } from '@/src/commons/utils/\binitLogUploader';
+import { initLogUploader } from '@/src/commons/utils/initLogUploader';
 
 // ✅ 서버 실행 시 1번만 타이머 시작하도록 제어
 let uploaderStarted = false;
