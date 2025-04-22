@@ -3,7 +3,7 @@ resource "aws_cognito_user_pool" "user_pool" {
   # depends_on = [ data.aws_route53_record.ses_verification_record]
   name = "bet-user-pool"
 
-  # auto_verified_attributes = ["email"]
+  auto_verified_attributes = ["email"]
   alias_attributes = ["email"]
 
   email_configuration {
