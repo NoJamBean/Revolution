@@ -35,23 +35,34 @@ namespace MyApi.Controllers
         {
             try
             {
-                // Claims 가져오는 작업 자체는 동기지만, Task.FromResult로 래핑 가능
-                var claims = await Task.FromResult(
-                    User.Claims.ToDictionary(claim => claim.Type, claim => claim.Value)
-                );
+                string userId = User.Claims.FirstOrDefault(c => c.Type == "cognito:username")?.Value;
 
-                if (claims == null || claims.Count == 0)
+                if (string.IsNullOrEmpty(userId))
                 {
-                    return Unauthorized(new { message = "토큰에서 사용자 정보를 찾을 수 없습니다." });
+                    return Unauthorized(new { message = "토큰에서 사용자 ID를 찾을 수 없습니다." });
                 }
 
-                return Ok(claims);
+                var user = await _userContext.Users.FirstOrDefaultAsync(u => u.Id == userId);
+
+                if (user == null)
+                {
+                    return NotFound(new { message = $"사용자 {userId}를 찾을 수 없습니다." });
+                }
+
+                return Ok(new
+                {
+                    user.Id,
+                    user.Email,
+                    user.Nickname,
+                    user.PhoneNumber,
+                    user.Balance
+                });
             }
             catch (Exception ex)
             {
-                return Unauthorized(new
+                return StatusCode(500, new
                 {
-                    message = "토큰 확인 중 오류가 발생했습니다.",
+                    message = "사용자 정보를 조회하는 중 오류가 발생했습니다.",
                     error = ex.Message
                 });
             }
@@ -64,7 +75,7 @@ namespace MyApi.Controllers
             try
             {
                 // 1. 토큰에서 사용자 ID 추출
-                string userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                string userId = User.Claims.FirstOrDefault(c => c.Type == "cognito:username")?.Value;
 
                 if (string.IsNullOrEmpty(userId))
                 {

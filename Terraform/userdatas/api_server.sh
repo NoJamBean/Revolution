@@ -4,6 +4,8 @@ sudo source /etc/environment
 
 sudo yum update -y
 sudo yum install -y amazon-linux-extras mysql
+sudo amazon-linux-extras enable nginx1
+sudo yum install -y nginx
 
 #inotify 설치
 sudo yum groupinstall "Development Tools" -y
@@ -168,8 +170,6 @@ sudo systemctl start dotnet-api
 sudo systemctl start nginx-log-watcher
 
 # Nginx 설치 및 설정
-sudo amazon-linux-extras enable nginx1
-sudo yum install -y nginx
 sudo systemctl enable nginx
 sudo systemctl start nginx
 

@@ -16,6 +16,7 @@ resource "aws_iam_role" "api_server_role" {
   })
 }
 
+
 resource "aws_iam_role" "rds_to_cwlogs" {
   name = "rds-monitoring-role"
 
@@ -110,17 +111,7 @@ resource "aws_iam_role" "codepipeline_role" {
   }
 }
 
-
-
-
-
-# CodeBuild 정책 생성
-# resource "aws_iam_role_policy_attachment" "codebuild_policy_attach" {
-#   role       = aws_iam_role.codebuild_role.name
-#   policy_arn = "arn:aws:iam::aws:policy/AWSCodeBuildAdminAccess"
-# }
-
-
+//Policy
 # CodeBuild S3 접근 허용
 resource "aws_iam_policy" "codebuild_s3_read_policy" {
   name        = "CodeBuildS3ReadAccess"
@@ -144,12 +135,6 @@ resource "aws_iam_policy" "codebuild_s3_read_policy" {
   })
 }
 
-resource "aws_iam_policy_attachment" "attach_codebuild_s3_read_policy" {
-  name       = "attach-codebuild-s3-read"
-  roles      = [aws_iam_role.codebuild_role.name]
-  policy_arn = aws_iam_policy.codebuild_s3_read_policy.arn
-}
-
 resource "aws_iam_policy" "cognito_user_mgmt" {
   name        = "CognitoUserManagementPolicy"
   description = "Allow Cognito user creation"
@@ -166,15 +151,6 @@ resource "aws_iam_policy" "cognito_user_mgmt" {
     ]
   })
 }
-
-
-
-# CodeDeploy 정책 생성
-resource "aws_iam_role_policy_attachment" "codedeploy_policy_attach" {
-  role       = aws_iam_role.codedeploy_role.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSCodeDeployRole"
-}
-
 
 # CodeDeploy 정책 생성 (커스텀)
 resource "aws_iam_policy" "codedeploy_autoscaling_custom" {
@@ -204,28 +180,6 @@ resource "aws_iam_policy" "codedeploy_autoscaling_custom" {
   })
 }
 
-resource "aws_iam_role_policy_attachment" "codedeploy_autoscaling_custom_attach" {
-  role       = aws_iam_role.codedeploy_role.name
-  policy_arn = aws_iam_policy.codedeploy_autoscaling_custom.arn
-}
-
-
-
-
-
-# CodePipeline용 정책 생성 및 부착
-resource "aws_iam_role_policy_attachment" "codepipeline_fullaccess" {
-  role       = aws_iam_role.codepipeline_role.name
-  policy_arn = "arn:aws:iam::aws:policy/AWSCodePipeline_FullAccess"
-}
-
-resource "aws_iam_role_policy_attachment" "codepipeline_codestar_connection" {
-  role       = aws_iam_role.codepipeline_role.name
-  policy_arn = "arn:aws:iam::aws:policy/AWSCodeStarFullAccess"
-}
-
-
-
 # CodePipeline용 정책 생성 및 부착 (커스텀 정책)
 
 # CodePipeline S3 접근 허용
@@ -252,16 +206,6 @@ resource "aws_iam_policy" "codepipeline_s3_policy" {
   })
 }
 
-resource "aws_iam_policy_attachment" "attach_codepipeline_s3_policy" {
-  name       = "attach-codepipeline-s3"
-  roles      = [aws_iam_role.codepipeline_role.name] # 형님의 CodePipeline 실행 역할
-  policy_arn = aws_iam_policy.codepipeline_s3_policy.arn
-}
-
-
-
-
-
 # CodePipeline -> CodeBuild 실행 및 흐름추적 허용
 resource "aws_iam_policy" "codepipeline_codebuild_policy" {
   name        = "CodePipelineCodeBuildAccess"
@@ -281,15 +225,6 @@ resource "aws_iam_policy" "codepipeline_codebuild_policy" {
     ]
   })
 }
-
-
-resource "aws_iam_policy_attachment" "attach_codepipeline_codebuild_policy" {
-  name       = "attach-codepipeline-codebuild"
-  roles      = [aws_iam_role.codepipeline_role.name]
-  policy_arn = aws_iam_policy.codepipeline_codebuild_policy.arn
-}
-
-
 
 
 # CodePipeline -> Cloudwatch 로그 권한 허용
@@ -312,16 +247,6 @@ resource "aws_iam_policy" "codebuild_logs_policy" {
     ]
   })
 }
-
-resource "aws_iam_policy_attachment" "attach_codebuild_logs_policy" {
-  name       = "attach-codebuild-cloudwatch-logs"
-  roles      = [aws_iam_role.codebuild_role.name]
-  policy_arn = aws_iam_policy.codebuild_logs_policy.arn
-}
-
-
-
-
 
 # CodePipeline -> CodeDeploy 배포 생성 권한 
 resource "aws_iam_policy" "codepipeline_codedeploy_policy" {
@@ -347,16 +272,6 @@ resource "aws_iam_policy" "codepipeline_codedeploy_policy" {
   })
 }
 
-resource "aws_iam_role_policy_attachment" "attach_codedeploy_policy" {
-  role       = aws_iam_role.codepipeline_role.name
-  policy_arn = aws_iam_policy.codepipeline_codedeploy_policy.arn
-}
-
-
-
-
-
-
 resource "aws_iam_role_policy" "codepipeline_use_connection" {
   name = "codepipeline-use-connection"
   role = aws_iam_role.codepipeline_role.id
@@ -372,10 +287,6 @@ resource "aws_iam_role_policy" "codepipeline_use_connection" {
     ]
   })
 }
-
-
-
-
 
 # 2. S3 Full Access 정책 생성 - EC2용 
 resource "aws_iam_policy" "s3_full_access_policy" {
@@ -407,17 +318,62 @@ resource "aws_iam_policy_attachment" "s3_full_access" {
   policy_arn = aws_iam_policy.s3_full_access_policy.arn
 }
 
+resource "aws_iam_policy_attachment" "attach_codepipeline_codebuild_policy" {
+  name       = "attach-codepipeline-codebuild"
+  roles      = [aws_iam_role.codepipeline_role.name]
+  policy_arn = aws_iam_policy.codepipeline_codebuild_policy.arn
+}
+
+resource "aws_iam_policy_attachment" "attach_codepipeline_s3_policy" {
+  name       = "attach-codepipeline-s3"
+  roles      = [aws_iam_role.codepipeline_role.name] # 형님의 CodePipeline 실행 역할
+  policy_arn = aws_iam_policy.codepipeline_s3_policy.arn
+}
+
+resource "aws_iam_policy_attachment" "attach_codebuild_s3_read_policy" {
+  name       = "attach-codebuild-s3-read"
+  roles      = [aws_iam_role.codebuild_role.name]
+  policy_arn = aws_iam_policy.codebuild_s3_read_policy.arn
+}
+
+resource "aws_iam_policy_attachment" "attach_codebuild_logs_policy" {
+  name       = "attach-codebuild-cloudwatch-logs"
+  roles      = [aws_iam_role.codebuild_role.name]
+  policy_arn = aws_iam_policy.codebuild_logs_policy.arn
+}
+
+resource "aws_iam_role_policy_attachment" "codedeploy_autoscaling_custom_attach" {
+  role       = aws_iam_role.codedeploy_role.name
+  policy_arn = aws_iam_policy.codedeploy_autoscaling_custom.arn
+}
+
+# CodeDeploy 정책 생성
+resource "aws_iam_role_policy_attachment" "codedeploy_policy_attach" {
+  role       = aws_iam_role.codedeploy_role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSCodeDeployRole"
+}
+
+# CodePipeline용 정책 생성 및 부착
+resource "aws_iam_role_policy_attachment" "codepipeline_fullaccess" {
+  role       = aws_iam_role.codepipeline_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AWSCodePipeline_FullAccess"
+}
+
+resource "aws_iam_role_policy_attachment" "codepipeline_codestar_connection" {
+  role       = aws_iam_role.codepipeline_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AWSCodeStarFullAccess"
+}
+
+resource "aws_iam_role_policy_attachment" "attach_codedeploy_policy" {
+  role       = aws_iam_role.codepipeline_role.name
+  policy_arn = aws_iam_policy.codepipeline_codedeploy_policy.arn
+}
 
 # CodeDeploy용 권한 attach
 resource "aws_iam_role_policy_attachment" "codedeploy_attach" {
   role       = aws_iam_role.ec2_s3_role.name
   policy_arn = "arn:aws:iam::aws:policy/AWSCodeDeployFullAccess"
 }
-
-# resource "aws_iam_role_policy_attachment" "attach_cognito_policy" {
-#   role       = "ec2_s3_fullaccess_role"
-#   policy_arn = aws_iam_policy.cognito_user_mgmt.arn
-# }
 
 resource "aws_iam_role_policy_attachment" "attach_to_api_server_role_cognito" {
   role       = aws_iam_role.api_server_role.name
@@ -445,16 +401,8 @@ resource "aws_iam_instance_profile" "api_server_profile" {
   role = aws_iam_role.api_server_role.name
 }
 
-
 # Web용 EC2 프로파일 생성 (추후 EC2에 부착하기 위함)
 resource "aws_iam_instance_profile" "ec2_instance_profile" {
   name = "EC2InstanceProfile"
   role = aws_iam_role.ec2_s3_role.name
 }
-
-
-
-# resource "aws_iam_role_policy_attachment" "ssm_core_attachment" {
-#   role       = aws_iam_role.ec2_s3_role.name
-#   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
-# }

@@ -32,10 +32,10 @@ data "template_file" "app_server" {
 # }
 
 #Route53
-# data "aws_route53_zone" "public" {
-#   name         = var.public_domain_name
-#   private_zone = false
-# }
+data "aws_route53_zone" "public" {
+  name         = var.public_domain_name
+  private_zone = false
+}
 
 data "aws_route53_zone" "private" {
   name         = var.private_domain_name
@@ -43,6 +43,3 @@ data "aws_route53_zone" "private" {
 }
 
 data "aws_caller_identity" "current" {}
-
-
-

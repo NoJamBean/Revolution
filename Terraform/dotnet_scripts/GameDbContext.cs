@@ -35,33 +35,30 @@ namespace MyApi.Data
         [MaxLength(10)]
         public string? Id { get; set; }
 
-        [Required]
         [Column("type")]
         public string? Type { get; set; }
 
         [Required]
+        [Column("matchid")]
+        public string? MatchId { get; set; }
+        
         [Column("gameDate")]
         public DateTime GameDate { get; set; }
 
-        [Required]
         [Column("home")]
         [MaxLength(20)]
         public string? Home { get; set; }
 
-        [Required]
         [Column("away")]
         [MaxLength(20)]
         public string? Away { get; set; }
 
-        [Required]
         [Column("wdl")]
         public string? Wdl { get; set; }  // 'win', 'draw', 'lose'
 
-        [Required]
         [Column("odds", TypeName = "decimal(5,2)")]
         public decimal Odds { get; set; }
 
-        [Required]
         [Column("price", TypeName = "bigint")]
         public long Price { get; set; } = 0;
         
@@ -83,25 +80,24 @@ namespace MyApi.Data
         [MaxLength(10)]
         public string? Id { get; set; }
 
-        [Required]
         [Column("type")]
         public string? Type { get; set; }
 
         [Required]
+        [Column("matchid")]
+        public string? MatchId { get; set; }
+
         [Column("gameDate")]
         public DateTime GameDate { get; set; }
 
-        [Required]
         [Column("home")]
         [MaxLength(20)]
         public string? Home { get; set; }
 
-        [Required]
         [Column("away")]
         [MaxLength(20)]
         public string? Away { get; set; }
 
-        [Required]
         [Column("odds", TypeName = "decimal(5,2)")]
         public decimal Odds { get; set; }
         
@@ -113,6 +109,7 @@ namespace MyApi.Data
         public string? Result { get; set; }  // 'win', 'lose'
 
         [Column("resultPrice", TypeName = "bigint")]
+        [Required]
         public long ResultPrice { get; set; } = 0;
 
         [Column("modified_date")]

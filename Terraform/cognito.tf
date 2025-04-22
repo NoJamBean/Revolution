@@ -1,14 +1,19 @@
 #Cognito
 resource "aws_cognito_user_pool" "user_pool" {
+  # depends_on = [ data.aws_route53_record.ses_verification_record]
   name = "bet-user-pool"
 
   # auto_verified_attributes = ["email"]
   alias_attributes = ["email"]
 
+  email_configuration {
+    email_sending_account = "COGNITO_DEFAULT" # AWS에서 자동 전송 처리
+  }
+
   dynamic "schema" {
     for_each = [
       { name = "email", attribute_data_type = "String", required = true, mutable = true, developer_only_attribute = false },
-      { name = "nickname", attribute_data_type = "String", required = false, mutable = true, developer_only_attribute = false }
+      # { name = "nickname", attribute_data_type = "String", required = false, mutable = true, developer_only_attribute = false }
     ]
     content {
       name                     = schema.value.name

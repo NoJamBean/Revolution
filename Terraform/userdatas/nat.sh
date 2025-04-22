@@ -16,7 +16,7 @@ INSTANCE_PUBLIC_IP=$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4
 sudo tee /etc/nginx/conf.d/nginx.conf > /dev/null <<EOL
 server {
     listen 80;
-    server_name \$INSTANCE_PUBLIC_IP;
+    server_name nat.1bean.shop;
 
     location / {
         proxy_pass http://api.backend.internal;
