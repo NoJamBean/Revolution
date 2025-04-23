@@ -1,34 +1,41 @@
+import { userDataProps } from '../../mypages';
 import * as S from './infostyle';
 
-export default function Info() {
+interface InfoProps {
+  userData?: userDataProps;
+}
+
+export default function Info({ userData }: InfoProps) {
+  console.log(userData, 33333);
+
   return (
     <S.InfoWrapper>
       <S.Info_Top>내 정보</S.Info_Top>
       <S.Info_Body>
         <S.Info_Section_Line>
           <S.Info>
-            <span>이름</span>
-            <span>송현섭</span>
+            <span>ID</span>
+            <span>{userData?.id}</span>
           </S.Info>
           <S.Info>
             <span>닉네임</span>
-            <span>Songseop</span>
+            <span>{userData?.nickname}</span>
           </S.Info>
         </S.Info_Section_Line>
         <S.Info_Section_Line>
           <S.Info>
             <span>E-MAIL</span>
-            <span>manner9945@naver.com</span>
+            <span>{userData?.email}</span>
           </S.Info>
           <S.Info>
             <span>연락처</span>
-            <span>010-9945-5352</span>
+            <span>{userData?.phoneNumber}</span>
           </S.Info>
         </S.Info_Section_Line>
         <S.Info_Section_Line>
           <S.Info>
             <span>보유 포인트</span>
-            <span>10000</span>
+            <span>{userData?.balance}</span>
           </S.Info>
           <S.Info></S.Info>
         </S.Info_Section_Line>

@@ -9,6 +9,12 @@ import { useAuthStore } from '@/src/commons/stores/authstore';
 import { useDecodeToken } from '@/src/commons/utils/decodeusertoken';
 import axios from 'axios';
 import { useRouter } from 'next/router';
+import {
+  getBettedMatchInfo,
+  getTargetedMatchInfo,
+} from '@/src/api/gettargetmatch';
+import { getCaluclateUTCToKST } from '@/src/commons/utils/getcalculateDateKST';
+import { normalizeQueryParam } from '@/src/commons/utils/getmatchIdfromquery';
 
 type SportMatchInfo = {
   sport: string;
@@ -17,13 +23,15 @@ type SportMatchInfo = {
 
 export default function Betting() {
   const [selectOdd, setSelectOdd] = useState(0);
-  const [selectTeam, setSelectTeam] = useState('');
+  const [selectOddType, setSelectOddType] = useState('');
   const [expected, setExpected] = useState(0);
   const [sportsCountList, setSportsCountList] = useState<SportMatchInfo[]>([]);
   const [noOdds, setNoOdds] = useState('');
 
   const [bet, setBet] = useState(0);
   const [betChange, setBetChange] = useState(false);
+
+  const [matchId, setMatchId] = useState('');
 
   const router = useRouter();
 
@@ -42,7 +50,9 @@ export default function Betting() {
 
     const sportsList = JSON.parse(countresult ?? '');
     setSportsCountList(sportsList);
-  }, []);
+
+    setMatchId(normalizeQueryParam(router.query.id));
+  }, [router.query]);
 
   useEffect(() => {
     console.log('매번 트리거된다잉');
@@ -61,12 +71,14 @@ export default function Betting() {
   }, [isLoading, betError]);
 
   // 배당률 선택
-  const clickOdd = (e: any, key) => {
+  const clickOdd = (e: any, key: any) => {
+    console.log('배당률선택', e, key);
+
     const selected = e.currentTarget.getAttribute('data-odd');
     const selectOdd = Number(selected);
 
     setSelectOdd(selectOdd);
-    setSelectTeam(key);
+    setSelectOddType(key);
 
     //이전 선택금액 기록 reset
     resetBet();
@@ -116,26 +128,74 @@ export default function Betting() {
       return;
     }
 
-    const decoded = await getDecodedToken(token ?? '');
-
-    const obj = decoded?.data;
-    const userId = obj[`cognito:username`];
-
-    const { sport } = router.query;
+    // const decoded = await getDecodedToken(token ?? '');
+    let matchData;
+    const { sport, id } = router.query;
 
     try {
+      if (typeof sport === 'string' && typeof id === 'string') {
+        // matchData = await getTargetedMatchInfo(id, sport);
+        matchData = await getBettedMatchInfo(id);
+
+        const gameStatus = matchData?.data?.response[0]?.status?.long;
+        if (gameStatus !== 'Not Started') {
+          alert('이미 진행중이거나 종료된 게임입니다');
+          return;
+        }
+      }
+
+      const BettedMatchInfo = matchData?.data?.response[0];
+
+      // 시간대 값 한국 시간대 설정
+      const utcTime = BettedMatchInfo?.date;
+      const utcDate = new Date(utcTime);
+
+      const timestamp = getCaluclateUTCToKST(utcDate);
+
+      //home 팀 이름
+      const home = BettedMatchInfo?.teams?.home?.name;
+
+      //away 팀 이름
+      const away = BettedMatchInfo?.teams?.away?.name;
+
+      //odd type
+      const oddType = selectOddType;
+
+      //odd (선택한 배당률)
+      const odd = selectOdd;
+
+      // (선택한 배당금)
+      const price = bet;
+
+      // 게임상태
+      const state =
+        BettedMatchInfo?.status?.long === 'Not Started'
+          ? 'BEFORE'
+          : BettedMatchInfo?.status?.long;
+
+      console.log(
+        '최종체크',
+        timestamp,
+        home,
+        away,
+        oddType,
+        odd,
+        price,
+        state
+      );
+
       const result = await axios.post(
-        `${process.env.NEXT_PUBLIC_BACKEND_API_ENDPOINT}/api/games/update`,
+        `${process.env.NEXT_PUBLIC_BACKEND_API_ENDPOINT}/api/games/bet`,
         {
-          id: userId,
           type: sport,
-          gameDate: '2025-04-20T19:00:00',
-          home: 'ManCity',
-          away: 'Liverpool',
-          wdl: 'win',
-          odds: 1.85,
-          price: 10000,
-          status: 'PLAYING',
+          matchid: matchId,
+          gameDate: timestamp,
+          home: home,
+          away: away,
+          wdl: oddType,
+          odds: odd,
+          price: price,
+          status: state,
         },
         {
           headers: {
@@ -145,7 +205,12 @@ export default function Betting() {
         }
       );
 
-      router.push('/mypage');
+      router.push({
+        pathname: '/mypage',
+        query: {
+          isBet: true,
+        },
+      });
     } catch (error) {
       console.log(error);
     }
@@ -211,7 +276,9 @@ export default function Betting() {
                       ? (e) => clickOdd(e, key)
                       : undefined
                   }
-                  isClicked={selectOdd === Number(value) && selectTeam === key}
+                  isClicked={
+                    selectOdd === Number(value) && selectOddType === key
+                  }
                 >
                   <span>{key.charAt(0).toUpperCase() + key.slice(1)}</span>
                   <span>{`(${value})`}</span>

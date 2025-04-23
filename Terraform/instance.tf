@@ -27,6 +27,9 @@
 
 
 
+
+
+
 resource "aws_instance" "nat_instance1" {
   ami               = data.aws_ami.amazon_linux.id
   instance_type     = "t3.micro"
@@ -131,3 +134,23 @@ EOT
 
 #   user_data = data.template_file.rds_user_data.rendered
 # }
+
+
+
+
+# WebSocket용 인스턴스 
+# 송현섭
+resource "aws_instance" "websocket_server" {
+  ami                    = data.aws_ami.amazon_linux.id
+  instance_type          = "t3.micro"
+  subnet_id              = aws_subnet.subnet["app1"].id # 퍼블릭 서브넷
+  vpc_security_group_ids = [aws_security_group.default_sg.id]
+  key_name               = var.seoul_key_name # SSH용 키 페어
+
+  user_data = data.template_file.websocket_user_data.rendered
+
+  tags = {
+    Name = "WebSocketServer"
+  }
+}
+

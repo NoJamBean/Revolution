@@ -110,6 +110,33 @@ resource "aws_security_group" "rds_sg" {
   tags = { Name = "RDS Security Group" }
 }
 
+
+
+
+
+# Redis 용 보안그룹
+resource "aws_security_group" "redis_sg" {
+  name        = "redis-sg"
+  description = "Allow access from WebSocket EC2"
+  vpc_id      = aws_vpc.vpc.id
+
+  ingress {
+    from_port       = 6379
+    to_port         = 6379
+    protocol        = "tcp"
+    security_groups = [aws_security_group.default_sg.id] # EC2에서만 접근 허용
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+
+
 #VPC Endpoit SG
 # resource "aws_security_group" "vpc_endpoint_sg" {
 #   name        = "vpc-endpoint-sg"

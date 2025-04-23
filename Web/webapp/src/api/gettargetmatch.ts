@@ -286,3 +286,14 @@ export const getTargetedMatchInfo = async (
     console.error('축구 데이터 요청 에러:', error);
   }
 };
+
+export const getBettedMatchInfo = async (id: string) => {
+  const result = await axios.get('https://v1.baseball.api-sports.io/games', {
+    params: { id: id },
+    headers: {
+      'x-apisports-key': process.env.NEXT_PUBLIC_SPORTS_API_KEY,
+    },
+  });
+
+  return result;
+};

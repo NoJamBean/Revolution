@@ -25,3 +25,15 @@ export const useGetDateandTime = () => {
 
   return { getDate, getTime };
 };
+
+export const transISOToHumanTime = (timestr: string) => {
+  const formatted = timestr.replace('T', ' ').slice(0, 16);
+
+  return formatted;
+};
+
+export const getExpectedOddPrice = (odd: number, bet: number) => {
+  const calculated = odd * bet;
+
+  return calculated;
+};

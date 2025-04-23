@@ -79,7 +79,14 @@ export const LeftSide_Contents = styled.div<{ isLimit: boolean }>`
 export const Screen = styled.div`
   /* overflow: auto; */
   height: ${({ clickedTab }: { clickedTab: string }) =>
-    clickedTab === 'info' && 'calc(100%  + 440px)'};
+    clickedTab === 'info' ? 'calc(100%  + 440px)' : '415px'};
+
+  background-color: #152230;
+`;
+
+export const ChatEnter = styled.div`
+  border: 2px solid green;
+  height: 100px;
 `;
 
 export const Betting_Cart = styled.div`

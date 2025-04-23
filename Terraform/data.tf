@@ -31,6 +31,19 @@ data "template_file" "app_server" {
 #   }
 # }
 
+
+# websocket 서버용 TemplateFile
+# 송현섭 수정
+data "template_file" "websocket_user_data" {
+  template = file("${path.module}/userdatas/websocket_server.sh")
+
+  vars = {
+    redis_host = aws_elasticache_replication_group.redis.primary_endpoint_address
+  }
+}
+
+
+
 #Route53
 # data "aws_route53_zone" "public" {
 #   name         = var.public_domain_name

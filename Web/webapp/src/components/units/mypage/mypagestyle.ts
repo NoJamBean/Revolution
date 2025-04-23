@@ -1,9 +1,9 @@
 import styled from '@emotion/styled';
 
 export const Wrapper = styled.div`
-  height: 700px;
-  background-color: #192736;
+  height: 100vh;
   display: flex;
+  background-color: #192736;
 `;
 
 export const SideBar_Left = styled.div`
