@@ -5,8 +5,6 @@ export function useDecodeToken() {
   const router = useRouter();
 
   const getDecodedToken = async (token: string) => {
-    console.log('tokentoken', token);
-
     try {
       const response = await axios.get(
         `${process.env.NEXT_PUBLIC_BACKEND_API_ENDPOINT}/api/users/me`,

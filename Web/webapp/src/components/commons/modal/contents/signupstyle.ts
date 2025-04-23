@@ -1,9 +1,9 @@
 import styled from '@emotion/styled';
 
 export const Wrapper = styled.div`
+  position: relative;
   height: 550px;
   overflow-y: auto;
-  position: relative;
   width: 100%;
   border-radius: 10px;
 `;
