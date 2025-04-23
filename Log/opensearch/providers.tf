@@ -15,3 +15,4 @@ provider "aws" {
 
 # 현재 AWS 계정 ID 가져오기 (리소스 ARN 등에 사용)
 data "aws_caller_identity" "current" {}
+data "aws_region" "current" {}

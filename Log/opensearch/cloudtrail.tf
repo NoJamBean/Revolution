@@ -60,11 +60,14 @@ resource "aws_iam_role_policy" "lambda_s3_getobject_policy" {
         ],
         Resource = [
           "${data.aws_s3_bucket.web_bucket.arn}",
-          "${data.aws_s3_bucket.web_bucket.arn}/*"
+          "${data.aws_s3_bucket.web_bucket.arn}/*",
+          "arn:aws:s3:::tfstate-bucket-revolution112233",
+          "arn:aws:s3:::tfstate-bucket-revolution112233/mmdb/GeoLite2-City.mmdb"
         ]
       },
     ]
   })
+  depends_on = [ aws_iam_role.lambda_s3_opensearch_role ]
 }
 
 resource "aws_cloudtrail" "main_trail" {

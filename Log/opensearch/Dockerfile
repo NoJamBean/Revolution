@@ -14,8 +14,8 @@ WORKDIR /layer
 RUN mkdir -p python
 
 # Install dependencies into the target directory
-RUN pip install requests aws-requests-auth -t python/ --no-cache-dir
-
+RUN pip install requests aws-requests-auth -t python/ --no-cache-dir 
+RUN pip install geoip2 -t python/ --no-cache-dir
 # --- 추가된 부분: Lambda 런타임에 포함된 라이브러리 제거 ---
 # Remove boto3 and botocore directories as they are provided by the Lambda runtime
 RUN rm -rf python/boto3 python/botocore

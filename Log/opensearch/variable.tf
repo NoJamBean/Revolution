@@ -50,7 +50,12 @@ variable "tags" {
   }
 }
 
-
 data "aws_s3_bucket" "web_bucket" {
   bucket =  "bet-application-total-logs"
+}
+
+variable "source_log_group_name" {
+  description = "로그 데이터를 가져올 CloudWatch Logs 그룹 이름"
+  type        = string
+  default     = "/aws/rds/instance/mysql-multi-az-rds-instance/general"
 }
