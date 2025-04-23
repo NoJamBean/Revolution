@@ -30,6 +30,22 @@ resource "aws_s3_bucket" "long_user_data_bucket" {
   }
 }
 
+resource "aws_s3_bucket" "log_bucket" {
+  # bucket        = "logs-${random_id.bucket_suffix.hex}"
+  bucket        = "bet-application-total-logs"
+  force_destroy = true
+
+  lifecycle {
+    prevent_destroy = false # S3 버킷 삭제가 가능하도록 설정
+  }
+
+
+  tags = {
+    Name        = "LOG BUCKET"
+    Environment = "Dev"
+  }
+}
+
 
 # Build 파일 저장용 버킷 생성
 resource "aws_s3_bucket" "my_pipelines_first_artifact_bucket" {
@@ -67,93 +83,18 @@ resource "aws_s3_bucket_public_access_block" "block_public" {
 }
 
 
-
-
-
-
-
 resource "random_id" "bucket_suffix" {
   byte_length = 8
 }
 
-resource "aws_s3_bucket" "log_bucket" {
-  # bucket        = "logs-${random_id.bucket_suffix.hex}"
-  bucket        = "bet-application-total-logs"
-  force_destroy = true
-
-  lifecycle {
-    prevent_destroy = false # S3 버킷 삭제가 가능하도록 설정
-  }
 
 
-  tags = {
-    Name        = "LOG BUCKET"
-    Environment = "Dev"
-  }
-}
-
-resource "aws_s3_object" "api_server_script" {
+resource "aws_s3_object" "api_server_userdata" {
   bucket = aws_s3_bucket.long_user_data_bucket.id
   key    = "userdatas/api_server.sh"
   source = "${path.module}/userdatas/api_server.sh"
   acl    = "private"
   source_hash = filemd5("${path.module}/userdatas/api_server.sh")
-}
-
-resource "aws_s3_object" "rds_userdata" {
-  bucket      = aws_s3_bucket.long_user_data_bucket.id
-  key         = "userdatas/rds_userdata.sh"
-  source      = "${path.module}/userdatas/rds_userdata.sh"
-  acl         = "private"
-  source_hash = filemd5("${path.module}/userdatas/rds_userdata.sh")
-}
-
-resource "aws_s3_object" "users_controller" {
-  bucket      = aws_s3_bucket.long_user_data_bucket.id
-  key         = "dotnet_scripts/UsersController.cs"
-  source      = "${path.module}/dotnet_scripts/UsersController.cs"
-  acl         = "private"
-  source_hash = filemd5("${path.module}/dotnet_scripts/UsersController.cs")
-}
-
-resource "aws_s3_object" "games_controller" {
-  bucket      = aws_s3_bucket.long_user_data_bucket.id
-  key         = "dotnet_scripts/GamesController.cs"
-  source      = "${path.module}/dotnet_scripts/GamesController.cs"
-  acl         = "private"
-  source_hash = filemd5("${path.module}/dotnet_scripts/GamesController.cs")
-}
-
-resource "aws_s3_object" "program_cs" {
-  bucket      = aws_s3_bucket.long_user_data_bucket.id
-  key         = "dotnet_scripts/Program.cs"
-  source      = "${path.module}/dotnet_scripts/Program.cs"
-  acl         = "private"
-  source_hash = filemd5("${path.module}/dotnet_scripts/Program.cs")
-}
-
-resource "aws_s3_object" "user_db_context" {
-  bucket      = aws_s3_bucket.long_user_data_bucket.id
-  key         = "dotnet_scripts/UserDbContext.cs"
-  source      = "${path.module}/dotnet_scripts/UserDbContext.cs"
-  acl         = "private"
-  source_hash = filemd5("${path.module}/dotnet_scripts/UserDbContext.cs")
-}
-
-resource "aws_s3_object" "game_db_context" {
-  bucket      = aws_s3_bucket.long_user_data_bucket.id
-  key         = "dotnet_scripts/GameDbContext.cs"
-  source      = "${path.module}/dotnet_scripts/GameDbContext.cs"
-  acl         = "private"
-  source_hash = filemd5("${path.module}/dotnet_scripts/GameDbContext.cs")
-}
-
-resource "aws_s3_object" "cognito_service" {
-  bucket      = aws_s3_bucket.long_user_data_bucket.id
-  key         = "dotnet_scripts/CognitoService.cs"
-  source      = "${path.module}/dotnet_scripts/CognitoService.cs"
-  acl         = "private"
-  source_hash = filemd5("${path.module}/dotnet_scripts/CognitoService.cs")
 }
 
 resource "aws_s3_object" "dotnet_run_script" {
@@ -164,36 +105,108 @@ resource "aws_s3_object" "dotnet_run_script" {
   source_hash = filemd5("${path.module}/dotnet_scripts/dotnet_run.sh")
 }
 
-# resource "aws_s3_object" "appsettings_json" {
-#   bucket      = aws_s3_bucket.long_user_data_bucket.id
-#   key         = "dotnet_scripts/appsettings.json"
-#   source      = "${path.module}/dotnet_scripts/appsettings.json"
-#   acl         = "private"
-#   source_hash = filemd5("${path.module}/dotnet_scripts/appsettings.json")
-# }
+resource "aws_s3_object" "rds_userdata" {
+  bucket      = aws_s3_bucket.long_user_data_bucket.id
+  key         = "userdatas/rds_userdata.sh"
+  source      = "${path.module}/userdatas/rds_userdata.sh"
+  acl         = "private"
+  source_hash = filemd5("${path.module}/userdatas/rds_userdata.sh")
+}
+
+resource "aws_s3_object" "program_cs" {
+  bucket      = aws_s3_bucket.long_user_data_bucket.id
+  key         = "dotnet_scripts/Program.cs"
+  source      = "${path.module}/dotnet_scripts/Program.cs"
+  acl         = "private"
+  source_hash = filemd5("${path.module}/dotnet_scripts/Program.cs")
+}
+
+resource "aws_s3_object" "health_controller" {
+  bucket      = aws_s3_bucket.long_user_data_bucket.id
+  key         = "dotnet_scripts/Controllers/HealthController.cs"
+  source      = "${path.module}/dotnet_scripts/Controllers/HealthController.cs"
+  acl         = "private"
+  source_hash = filemd5("${path.module}/dotnet_scripts/Controllers/HealthController.cs")
+}
+
+resource "aws_s3_object" "games_controller" {
+  bucket      = aws_s3_bucket.long_user_data_bucket.id
+  key         = "dotnet_scripts/Controllers/GamesController.cs"
+  source      = "${path.module}/dotnet_scripts/Controllers/GamesController.cs"
+  acl         = "private"
+  source_hash = filemd5("${path.module}/dotnet_scripts/Controllers/GamesController.cs")
+}
+
+resource "aws_s3_object" "users_controller" {
+  bucket      = aws_s3_bucket.long_user_data_bucket.id
+  key         = "dotnet_scripts/Controllers/UsersController.cs"
+  source      = "${path.module}/dotnet_scripts/Controllers/UsersController.cs"
+  acl         = "private"
+  source_hash = filemd5("${path.module}/dotnet_scripts/Controllers/UsersController.cs")
+}
+
+resource "aws_s3_object" "chat_controller" {
+  bucket      = aws_s3_bucket.long_user_data_bucket.id
+  key         = "dotnet_scripts/Controllers/ChatController.cs"
+  source      = "${path.module}/dotnet_scripts/Controllers/ChatController.cs"
+  acl         = "private"
+  source_hash = filemd5("${path.module}/dotnet_scripts/Controllers/ChatController.cs")
+}
+
+resource "aws_s3_object" "user_db_context" {
+  bucket      = aws_s3_bucket.long_user_data_bucket.id
+  key         = "dotnet_scripts/DBContext/UserDbContext.cs"
+  source      = "${path.module}/dotnet_scripts/DBContext/UserDbContext.cs"
+  acl         = "private"
+  source_hash = filemd5("${path.module}/dotnet_scripts/DBContext/UserDbContext.cs")
+}
+
+resource "aws_s3_object" "game_db_context" {
+  bucket      = aws_s3_bucket.long_user_data_bucket.id
+  key         = "dotnet_scripts/DBContext/GameDbContext.cs"
+  source      = "${path.module}/dotnet_scripts/DBContext/GameDbContext.cs"
+  acl         = "private"
+  source_hash = filemd5("${path.module}/dotnet_scripts/DBContext/GameDbContext.cs")
+}
+
+resource "aws_s3_object" "chat_db_context" {
+  bucket      = aws_s3_bucket.long_user_data_bucket.id
+  key         = "dotnet_scripts/DBContext/ChatDbContext.cs"
+  source      = "${path.module}/dotnet_scripts/DBContext/ChatDbContext.cs"
+  acl         = "private"
+  source_hash = filemd5("${path.module}/dotnet_scripts/DBContext/ChatDbContext.cs")
+}
+
+resource "aws_s3_object" "cognito_service" {
+  bucket      = aws_s3_bucket.long_user_data_bucket.id
+  key         = "dotnet_scripts/Services/CognitoService.cs"
+  source      = "${path.module}/dotnet_scripts/Services/CognitoService.cs"
+  acl         = "private"
+  source_hash = filemd5("${path.module}/dotnet_scripts/Services/CognitoService.cs")
+}
 
 resource "aws_s3_object" "BcryptPasswordHasher" {
   bucket      = aws_s3_bucket.long_user_data_bucket.id
-  key         = "dotnet_scripts/BcryptPasswordHasher.cs"
-  source      = "${path.module}/dotnet_scripts/BcryptPasswordHasher.cs"
+  key         = "dotnet_scripts/Services/BcryptPasswordHasher.cs"
+  source      = "${path.module}/dotnet_scripts/Services/BcryptPasswordHasher.cs"
   acl         = "private"
-  source_hash = filemd5("${path.module}/dotnet_scripts/BcryptPasswordHasher.cs")
+  source_hash = filemd5("${path.module}/dotnet_scripts/Services/BcryptPasswordHasher.cs")
 }
 
 resource "aws_s3_object" "IPasswordHasher" {
   bucket      = aws_s3_bucket.long_user_data_bucket.id
-  key         = "dotnet_scripts/IPasswordHasher.cs"
-  source      = "${path.module}/dotnet_scripts/IPasswordHasher.cs"
+  key         = "dotnet_scripts/Services/IPasswordHasher.cs"
+  source      = "${path.module}/dotnet_scripts/Services/IPasswordHasher.cs"
   acl         = "private"
-  source_hash = filemd5("${path.module}/dotnet_scripts/IPasswordHasher.cs")
+  source_hash = filemd5("${path.module}/dotnet_scripts/Services/IPasswordHasher.cs")
 }
 
 resource "aws_s3_object" "LoggingMidleWare" {
   bucket      = aws_s3_bucket.long_user_data_bucket.id
-  key         = "dotnet_scripts/RequestLoggingMiddleware.cs"
-  source      = "${path.module}/dotnet_scripts/RequestLoggingMiddleware.cs"
+  key         = "dotnet_scripts/Services/RequestLoggingMiddleware.cs"
+  source      = "${path.module}/dotnet_scripts/Services/RequestLoggingMiddleware.cs"
   acl         = "private"
-  source_hash = filemd5("${path.module}/dotnet_scripts/RequestLoggingMiddleware.cs")
+  source_hash = filemd5("${path.module}/dotnet_scripts/Services/RequestLoggingMiddleware.cs")
 }
 
 

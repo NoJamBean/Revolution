@@ -22,7 +22,8 @@ resource "aws_elasticache_replication_group" "redis" {
   port                 = 6379
 
   num_node_groups         = 1
-  replicas_per_node_group = 0
+  replicas_per_node_group = 1
+  automatic_failover_enabled = true       
 
   subnet_group_name  = aws_elasticache_subnet_group.redis_subnet_group.name
   security_group_ids = [aws_security_group.redis_sg.id]

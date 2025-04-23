@@ -29,6 +29,8 @@ resource "aws_subnet" "subnet" {
   for_each = {
     app1   = { cidr_block = "10.0.10.0/24", availability_zone = var.zone["a"], map_public_ip_on_launch = true }   #앱 서버 1
     app2   = { cidr_block = "10.0.11.0/24", availability_zone = var.zone["c"], map_public_ip_on_launch = true }   #앱 서버 2
+    ws1    = { cidr_block = "10.0.15.0/24", availability_zone = var.zone["a"], map_public_ip_on_launch = true }   #앱 서버 1
+    ws2    = { cidr_block = "10.0.16.0/24", availability_zone = var.zone["c"], map_public_ip_on_launch = true }   #앱 서버 2
     nat1   = { cidr_block = "10.0.20.0/24", availability_zone = var.zone["a"], map_public_ip_on_launch = true }   #NAT1
     nat2   = { cidr_block = "10.0.21.0/24", availability_zone = var.zone["c"], map_public_ip_on_launch = true }   #NAT2
     api1   = { cidr_block = "10.0.100.0/24", availability_zone = var.zone["a"], map_public_ip_on_launch = false } #백 서버 1

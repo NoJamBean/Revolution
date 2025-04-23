@@ -49,7 +49,15 @@ resource "aws_route53_record" "nat" {
   name    = "nat"
   type    = "A"
   ttl     = "300"
-  records = [aws_instance.nat_instance1.public_ip] # API 서버의 프라이빗 IP 주소 입력
+  records = [aws_instance.nat_instance1.public_ip]
+}
+
+resource "aws_route53_record" "websocket" {
+  zone_id = data.aws_route53_zone.public.zone_id
+  name    = "ws"
+  type    = "A"
+  ttl     = "300"
+  records = [aws_instance.websocket_1.public_ip]
 }
 
 #Private Records
@@ -58,7 +66,7 @@ resource "aws_route53_record" "api" {
   name    = "api"
   type    = "A"
   ttl     = "300"
-  records = [aws_instance.api_server_1.private_ip] # API 서버의 프라이빗 IP 주소 입력
+  records = [aws_instance.api_server_1.private_ip]
 }
 
 resource "aws_route53_record" "db" {

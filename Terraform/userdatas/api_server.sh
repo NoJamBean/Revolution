@@ -72,14 +72,18 @@ sudo /home/ec2-user/rdsuserdata.sh
 
 # S3에서 주요 프로젝트 파일 다운로드
 sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/Program.cs $LOCAL_PATH/Program.cs
-sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/UserDbContext.cs $LOCAL_PATH/Data/UserDbContext.cs
-sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/GameDbContext.cs $LOCAL_PATH/Data/GameDbContext.cs
-sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/UsersController.cs $LOCAL_PATH/Controllers/UsersController.cs
-sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/GamesController.cs $LOCAL_PATH/Controllers/GamesController.cs
-sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/CognitoService.cs $LOCAL_PATH/Service/CognitoService.cs
-sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/BcryptPasswordHasher.cs $LOCAL_PATH/Service/BcryptPasswordHasher.cs
-sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/IPasswordHasher.cs $LOCAL_PATH/Service/IPasswordHasher.cs
-sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/RequestLoggingMiddleware.cs $LOCAL_PATH/Service/RequestLoggingMiddleware.cs
+
+sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/Controllers/ChatController.cs $LOCAL_PATH/Controllers/ChatController.cs
+sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/Controllers/GamesController.cs $LOCAL_PATH/Controllers/GamesController.cs
+sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/Controllers/HealthController.cs $LOCAL_PATH/HealthController.cs
+sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/Controllers/UsersController.cs $LOCAL_PATH/Controllers/UsersController.cs
+sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/DBContext/ChatDbContext.cs $LOCAL_PATH/Data/ChatDbContext.cs
+sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/DBContext/GameDbContext.cs $LOCAL_PATH/Data/GameDbContext.cs
+sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/DBContext/UserDbContext.cs $LOCAL_PATH/Data/UserDbContext.cs
+sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/Services/BcryptPasswordHasher.cs $LOCAL_PATH/Service/BcryptPasswordHasher.cs
+sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/Services/CognitoService.cs $LOCAL_PATH/Service/CognitoService.cs
+sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/Services/IPasswordHasher.cs $LOCAL_PATH/Service/IPasswordHasher.cs
+sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/Services/RequestLoggingMiddleware.cs $LOCAL_PATH/Service/RequestLoggingMiddleware.cs
 
 sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/dotnet_run.sh ~/run.sh
 
