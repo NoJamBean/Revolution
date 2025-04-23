@@ -41,11 +41,7 @@ namespace MyApi.Controllers
                                             .OrderByDescending(g => g.GameDate)
                                             .ToListAsync();
 
-                if (games == null || games.Count == 0)
-                {
-                    return NotFound(new { message = $"{userId}의 게임 기록이 없습니다." });
-                }
-
+                // 등록된 게임이 없어도 200 OK + 빈 배열 반환
                 return Ok(games);
             }
             catch (Exception ex)
@@ -113,111 +109,133 @@ namespace MyApi.Controllers
         }
 
         [HttpPost("update")]
-        public async Task<IActionResult> UpdateGame([FromBody] GameInfo game)
+        public async Task<IActionResult> UpdateGame([FromBody] Dictionary<string, object> body)
         {
-            if (game == null)
-            {
-                return BadRequest("유효하지 않은 게임 정보입니다.");
-            }
-
             try
             {
+                if (body == null)
+                    return BadRequest("요청 본문이 비어 있습니다.");
+
+                if (!body.TryGetValue("matchid", out var matchIdObj) || string.IsNullOrEmpty(matchIdObj?.ToString()))
+                    return BadRequest("matchid가 필요합니다.");
+                string matchId = matchIdObj.ToString();
+
+                if (!body.TryGetValue("status", out var statusObj) || string.IsNullOrEmpty(statusObj?.ToString()))
+                    return BadRequest("status가 필요합니다.");
+                string status = statusObj.ToString();
+
                 string userId = User.Claims.FirstOrDefault(c => c.Type == "cognito:username")?.Value;
                 if (string.IsNullOrEmpty(userId))
-                {
                     return Unauthorized(new { message = "사용자 ID를 확인할 수 없습니다." });
-                }
-
-                game.Id = userId;
 
                 var existingGame = await _gameContext.GameInfos
-                    .FirstOrDefaultAsync(g => g.Id == game.Id && g.MatchId == game.MatchId);
+                    .FirstOrDefaultAsync(g => g.Id == userId && g.MatchId == matchId);
 
                 if (existingGame == null)
-                {
                     return NotFound(new { message = "해당 경기 정보를 찾을 수 없습니다." });
-                }
 
-                // 경기 상태와 수정일 갱신
-                existingGame.Status = game.Status;
-                existingGame.ModifiedDate = DateTime.UtcNow;
+                DateTime koreaTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("Asia/Seoul"));
+                existingGame.Status = status;
+                existingGame.ModifiedDate = koreaTime;
 
-                // 상태가 FINISHED일 경우 결과 저장 및 balance 지급
-                if (game.Status == "FINISHED")
+                // FINISHED 상태시 결과처리
+                if (status == "FINISHED")
                 {
-                    using var transaction = await _gameContext.Database.BeginTransactionAsync();
-
-                    try
+                    // ExecutionStrategy을 통한 재시도 패턴
+                    var strategy = _gameContext.Database.CreateExecutionStrategy();
+                    await strategy.ExecuteAsync(async () =>
                     {
-                        bool resultExists = await _gameContext.GameResults
-                            .AnyAsync(r => r.Id == game.Id && r.MatchId == game.MatchId);
-
-                        if (!resultExists)
+                        using var transaction = await _gameContext.Database.BeginTransactionAsync();
+                        try
                         {
-                            string resultStatus = game.Wdl == "HOME" ? "WIN" : "LOSE";
-                            long resultPrice = resultStatus == "WIN" ? (long)(existingGame.Price * (double)existingGame.Odds) : 0;
+                            bool resultExists = await _gameContext.GameResults
+                                .AnyAsync(r => r.Id == userId && r.MatchId == matchId);
 
-                            var result = new GameResult
+                            if (!resultExists)
                             {
-                                Id = existingGame.Id,
-                                MatchId = existingGame.MatchId,
-                                Type = existingGame.Type,
-                                GameDate = existingGame.GameDate,
-                                Home = existingGame.Home,
-                                Away = existingGame.Away,
-                                Odds = existingGame.Odds,
-                                Price = existingGame.Price,
-                                Result = resultStatus,
-                                ResultPrice = resultPrice,
-                                ModifiedDate = DateTime.UtcNow
-                            };
+                                string winner = body.ContainsKey("winner") ? body["winner"]?.ToString() : null;
+                                string resultStatus = (winner != null && winner == existingGame.Wdl) ? "WIN" : "LOSE";
+                                long resultPrice = resultStatus == "WIN" ? (long)(existingGame.Price * (double)existingGame.Odds) : 0;
 
-                            _gameContext.GameResults.Add(result);
-
-                            if (resultPrice > 0)
-                            {
-                                var user = await _userContext.Users.FirstOrDefaultAsync(u => u.Id == game.Id);
-                                if (user != null)
+                                var result = new GameResult
                                 {
-                                    user.Balance += resultPrice;
-                                    user.ModifiedDate = DateTime.UtcNow;
-                                    await _userContext.SaveChangesAsync(); // 💡 UserDbContext는 별도로 저장
+                                    Id = existingGame.Id,
+                                    MatchId = existingGame.MatchId,
+                                    Type = existingGame.Type,
+                                    GameDate = existingGame.GameDate,
+                                    Home = existingGame.Home,
+                                    Away = existingGame.Away,
+                                    Odds = existingGame.Odds,
+                                    Price = existingGame.Price,
+                                    Winner = winner,
+                                    Result = resultStatus,
+                                    ResultPrice = resultPrice,
+                                    ModifiedDate = koreaTime
+                                };
+
+                                _gameContext.GameResults.Add(result);
+
+                                // 🎯 SaveChangesAsync: 반드시 트랜잭션 내에서 한 번만
+                                await _gameContext.SaveChangesAsync();
+
+                                // Balance 갱신은 트랜잭션 밖에서 별도 처리
+                                if (resultPrice > 0)
+                                {
+                                    // 트랜잭션 종료 후 별도 처리
                                 }
+
+                                Console.WriteLine($"[처리] 결과 저장 완료: {matchId}");
+                            }
+                            else
+                            {
+                                Console.WriteLine($"[무시] 결과 이미 존재함: {matchId}");
                             }
 
-                            Console.WriteLine($"[처리] 결과 저장 및 포인트 지급 완료: {game.MatchId}");
+                            await transaction.CommitAsync();
                         }
-                        else
+                        catch (Exception ex)
                         {
-                            Console.WriteLine($"[무시] 결과 이미 존재함: {game.MatchId}");
+                            await transaction.RollbackAsync();
+                            Console.WriteLine("[트랜잭션 오류] " + ex.Message);
+                            throw;
                         }
+                    });
 
-                        await _gameContext.SaveChangesAsync(); // 게임 결과 저장
-                        await transaction.CommitAsync();
-                    }
-                    catch (Exception ex)
+                    // Balance 지급은 트랜잭션 밖에서 따로 처리 (동시성 충돌 피하기)
+                    var resultEntity = await _gameContext.GameResults
+                        .FirstOrDefaultAsync(r => r.Id == userId && r.MatchId == matchId);
+                    if (resultEntity?.ResultPrice > 0)
                     {
-                        await transaction.RollbackAsync();
-                        Console.WriteLine("[트랜잭션 오류] " + ex.Message);
-                        throw;
+                        var user = await _userContext.Users.FirstOrDefaultAsync(u => u.Id == userId);
+                        if (user != null)
+                        {
+                            user.Balance += resultEntity.ResultPrice;
+                            user.ModifiedDate = koreaTime;
+                            await _userContext.SaveChangesAsync();
+                        }
                     }
                 }
                 else
                 {
-                    await _gameContext.SaveChangesAsync(); // FINISHED가 아닐 때는 여기서만 저장
+                    await _gameContext.SaveChangesAsync();
                 }
 
                 return Ok(new
                 {
                     message = "경기 상태가 업데이트되었습니다.",
-                    status = game.Status
+                    status
                 });
             }
             catch (DbUpdateException dbEx)
             {
                 Console.WriteLine("[DB 오류] 게임 저장 중 DB 예외 발생: " + dbEx.Message);
-                Console.WriteLine(dbEx.InnerException?.Message ?? "");
-                return StatusCode(500, new { message = "DB 저장 중 오류가 발생했습니다.", error = dbEx.Message });
+                if (dbEx.InnerException != null)
+                    Console.WriteLine("[DB Inner Exception] " + dbEx.InnerException.Message);
+                return StatusCode(500, new
+                {
+                    message = "DB 저장 중 오류가 발생했습니다.",
+                    error = dbEx.InnerException?.Message ?? dbEx.Message
+                });
             }
             catch (Exception ex)
             {

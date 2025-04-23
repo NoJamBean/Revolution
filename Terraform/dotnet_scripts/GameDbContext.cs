@@ -14,15 +14,16 @@ namespace MyApi.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<GameInfo>()
-                .HasKey(g => new { g.Id, g.GameDate });
+                .HasKey(g => new { g.Id, g.MatchId });
 
             modelBuilder.Entity<GameResult>()
-                .HasKey(g => new { g.Id, g.GameDate });
+                .HasKey(gr => new { gr.Id, gr.MatchId });
 
             modelBuilder.Entity<GameResult>()
                 .HasOne(gr => gr.GameInfo)
                 .WithMany()
-                .HasForeignKey(gr => new { gr.Id, gr.GameDate })
+                .HasForeignKey(gr => new { gr.Id, gr.MatchId })
+                .HasPrincipalKey(g => new { g.Id, g.MatchId }) // 꼭 추가!
                 .OnDelete(DeleteBehavior.Cascade);
         }
     }
@@ -31,6 +32,10 @@ namespace MyApi.Data
     public class GameInfo
     {
         [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)] // AUTO_INCREMENT임을 명시!
+        [Column("seq")]
+        public int Seq { get; set; }
+
         [Column("id")]
         [MaxLength(10)]
         public string? Id { get; set; }
@@ -54,7 +59,7 @@ namespace MyApi.Data
         public string? Away { get; set; }
 
         [Column("wdl")]
-        public string? Wdl { get; set; }  // 'win', 'draw', 'lose'
+        public string? Wdl { get; set; }  // 'HOME', 'DRAW', 'AWAY'
 
         [Column("odds", TypeName = "decimal(5,2)")]
         public decimal Odds { get; set; }
@@ -64,7 +69,7 @@ namespace MyApi.Data
         
         [Required]
         [Column("status")]
-        public string? Status { get; set; }
+        public string? Status { get; set; } = "BEFORE";
 
         [Column("modified_date")]
         public DateTime ModifiedDate { get; set; } = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("Asia/Seoul"));
@@ -76,6 +81,10 @@ namespace MyApi.Data
     public class GameResult
     {
         [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)] // AUTO_INCREMENT임을 명시!
+        [Column("seq")]
+        public int Seq { get; set; }
+        
         [Column("id")]
         [MaxLength(10)]
         public string? Id { get; set; }
@@ -104,6 +113,10 @@ namespace MyApi.Data
         [Column("price", TypeName = "bigint")]
         public long Price { get; set; } = 0;
         
+        [Column("winner")]
+        [Required]
+        public string? Winner { get; set; } 
+
         [Column("result")]
         [Required]
         public string? Result { get; set; }  // 'win', 'lose'
@@ -115,8 +128,6 @@ namespace MyApi.Data
         [Column("modified_date")]
         public DateTime ModifiedDate { get; set; } = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("Asia/Seoul"));
 
-        // 외래 키 관계 설정
-        [ForeignKey("Id, GameDate")]
         public virtual GameInfo GameInfo { get; set; }
 
         public GameResult() {}

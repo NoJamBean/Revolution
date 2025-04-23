@@ -108,22 +108,6 @@ namespace MyApi.Controllers
             }
         }
 
-        // 특정 사용자 조회
-        [HttpGet("{id}")]
-        public async Task<ActionResult<User>> GetUser(string id)
-        {
-            User user = await _userContext.Users
-                                          .Where(u => u.Id == id)
-                                          .FirstOrDefaultAsync();
-
-            if (user == null)
-            {
-                return NotFound(new { message = $"사용자 {id}를 찾을 수 없습니다." });
-            }
-
-            return Ok(user);
-        }
-
         [HttpGet("delete/{id}")]
         public async Task<IActionResult> DeleteUser(string id)
         {
@@ -296,7 +280,7 @@ namespace MyApi.Controllers
 
             try
             {
-                // 1. DB에서 사용자 조회
+                // 1. DB에서 사용자 조회c
                 var user = await _userContext.Users.SingleOrDefaultAsync(u => u.Id == request.Id);
 
                 if (user == null)
