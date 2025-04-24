@@ -1,135 +1,185 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import * as S from './chatstyle';
 import { faPaperPlane } from '@fortawesome/free-regular-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { useRouter } from 'next/router';
+import { io, Socket } from 'socket.io-client';
+import { useAuthStore } from '@/src/commons/stores/authstore';
+import { useDecodeToken } from '@/src/commons/utils/decodeusertoken';
+import { userDataProps } from '../../units/mypage/mypages';
+import { transISOToHumanTime } from '@/src/commons/utils/getdatetime';
+import axios from 'axios';
+
+let socket: Socket;
+
+type ChatMessage = {
+  senderId: string;
+  senderName: string;
+  content: string;
+  timestamp: string;
+};
 
 export default function Chat() {
-  const dummyMessages = [
-    {
-      id: '1',
-      senderId: 'user_123',
-      senderName: '현섭',
-      content: '안녕하세요! 경기 기대되네요 🔥',
-      timestamp: '10:32',
-    },
-    {
-      id: '2',
-      senderId: 'user_456',
-      senderName: 'Alice',
-      content: '저도요! 어느 팀 응원하세요?',
-      timestamp: '10:33',
-    },
-    {
-      id: '3',
-      senderId: 'user_789',
-      senderName: 'Bob',
-      content: '우리 팀 이겨야죠!!',
-      timestamp: '10:33',
-    },
-    {
-      id: '4',
-      senderId: 'user_123',
-      senderName: '현섭',
-      content: '전 홈팀 응원 중이에요 ㅎㅎ',
-      timestamp: '10:34',
-    },
-    {
-      id: '5',
-      senderId: 'user_321',
-      senderName: 'Jessica',
-      content: '방금 골 장면 봤어요?! 대박!',
-      timestamp: '10:35',
-    },
-    {
-      id: '6',
-      senderId: 'user_123',
-      senderName: '현섭',
-      content: '봤어요!! 진짜 미쳤음 ㄷㄷ',
-      timestamp: '10:36',
-    },
-    {
-      id: '7',
-      senderId: 'user_321',
-      senderName: 'Jessica',
-      content: '방금 골 장면 봤어요?! 대박!',
-      timestamp: '10:35',
-    },
-    {
-      id: '8',
-      senderId: 'user_123',
-      senderName: '현섭',
-      content: '봤어요!! 진짜 미쳤음 ㄷㄷ',
-      timestamp: '10:36',
-    },
-    {
-      id: '9',
-      senderId: 'user_321',
-      senderName: 'Jessica',
-      content: '방금 골 장면 봤어요?! 대박!',
-      timestamp: '10:35',
-    },
-    {
-      id: '10',
-      senderId: 'user_123',
-      senderName: '현섭',
-      content: '봤어요!! 진짜 미쳤음 ㄷㄷ',
-      timestamp: '10:36',
-    },
-    {
-      id: '11',
-      senderId: 'user_321',
-      senderName: 'Jessica',
-      content: '방금 골 장면 봤어요?! 대박!',
-      timestamp: '10:35',
-    },
-    {
-      id: '12',
-      senderId: 'user_123',
-      senderName: '현섭',
-      content: '봤어요!! 진짜 미쳤음 ㄷㄷ',
-      timestamp: '10:36',
-    },
-    {
-      id: '13',
-      senderId: 'user_321',
-      senderName: 'Jessica',
-      content: '방금 골 장면 봤어요?! 대박!',
-      timestamp: '10:35',
-    },
-    {
-      id: '14',
-      senderId: 'user_123',
-      senderName: '현섭',
-      content: '봤어요!! 진짜 미쳤음 ㄷㄷ',
-      timestamp: '10:36',
-    },
-  ];
+  const [isChatConnected, setIsChatConnected] = useState(false);
+  const [message, setMessage] = useState('');
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
 
-  const me = 'user_123';
+  const [userInfoData, setUserInfoData] = useState<userDataProps | undefined>();
+
+  const { getDecodedToken } = useDecodeToken();
+  const setToken = useAuthStore((state) => state.setToken);
+
+  const router = useRouter();
+
+  // 스크롤링용 ref
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const rawToken = localStorage.getItem('auth_token');
+
+    const roomId = router.query.id as string;
+    const userName = userInfoData?.nickname;
+
+    if (!roomId || !userName || isChatConnected) return;
+
+    // socket 연결 시작
+    if (!isChatConnected) {
+      socket = io(process.env.NEXT_PUBLIC_SOCKET_SERVER_ENDPOINT!, {
+        path: '/socket',
+        transports: ['websocket'],
+      });
+
+      socket.on('connect', () => {
+        console.log('🟢 WebSocket 연결됨:', socket.id);
+
+        socket.emit('joinRoom', {
+          roomId,
+          userName,
+          token: rawToken,
+        });
+
+        setIsChatConnected(true);
+        console.log(`➡️ ${userName}님이 ${roomId} 방에 입장`);
+      });
+
+      socket.on('chatMessage', (msg) => {
+        console.log('📨 수신:', msg);
+        setMessages((prev) => [...prev, msg]); // 객체 그대로 저장
+      });
+    }
+
+    // 기존의 채팅 데이터 내역 불러오기
+    const loadMessages = async () => {
+      try {
+        const messagesResult = await axios.get(
+          `${process.env.NEXT_PUBLIC_BACKEND_API_ENDPOINT}/api/chat/message/list/${roomId}`,
+          {
+            headers: {
+              'Content-type': 'application/json',
+            },
+          }
+        );
+
+        // 이거 리턴하지말고 걍 여기서 저장하셈 ㅇㅋ?
+        //
+        console.log(messagesResult?.data, 'dataatatataat');
+        const prevMessages = messagesResult?.data;
+        setMessages(prevMessages);
+      } catch (error) {
+        console.log(error, '에러!');
+      }
+    };
+
+    loadMessages();
+
+    return () => {
+      if (socket) {
+        setIsChatConnected(false);
+        socket.disconnect();
+      }
+    };
+  }, [router.query.id, userInfoData]);
+
+  useEffect(() => {
+    const initToken = async () => {
+      const rawToken = localStorage.getItem('auth_token');
+      if (!rawToken) return;
+
+      // 토큰 전역으로 먼저 저장 (상태 초기화)
+      setToken(rawToken);
+
+      try {
+        const tokenUserInfo = await getDecodedToken(rawToken);
+        setUserInfoData(tokenUserInfo?.data);
+
+        console.log('token 값 체크합니다', tokenUserInfo);
+      } catch (e) {
+        console.error('토큰 디코딩 실패:', e);
+      }
+    };
+
+    initToken();
+  }, []);
+
+  // 스크롤링 이벤트 감지용 useEffcet
+  useEffect(() => {
+    const scrollEl = messagesEndRef.current;
+
+    if (scrollEl) {
+      scrollEl.scrollTop = scrollEl.scrollHeight;
+    }
+  }, [messages]);
+
+  // 메시지 전송
+  const handleSendMessage = () => {
+    const roomId = router.query.id as string;
+    // const userName = userInfoData?.nickname;
+
+    if (socket && message.trim()) {
+      socket.emit('chatMessage', {
+        roomId,
+        userId: userInfoData?.nickname,
+        // userName,
+        content: message,
+      });
+      setMessage('');
+    }
+  };
+
+  console.log('사용자정보들 다 조회하기', messages, userInfoData);
 
   return (
     <S.Wrapper>
-      <S.Chat_Contents>
-        {dummyMessages?.map((message) => (
-          <S.Chat isMine={message.senderId === me}>
-            <S.UserImg_Box isMine={message.senderId === me}>
+      <S.Chat_Contents ref={messagesEndRef}>
+        {messages.map((msg: any, idx) => (
+          <S.Chat key={idx} isMine={msg.id === userInfoData?.nickname}>
+            <S.UserImg_Box isMine={msg.id === userInfoData?.nickname}>
               <S.User_Img_Icon src='/chatuser1.png' />
-              <S.User_Name>{message.senderName}</S.User_Name>
+              <S.User_Name>{msg.senderName}</S.User_Name>
             </S.UserImg_Box>
-            <S.Chat_Info_Box>
-              <S.Chat_Message isMine={message.senderId === me}>
-                {message.content}
+            <S.Chat_Info_Box isMine={msg.id === userInfoData?.nickname}>
+              <S.Chat_Message isMine={msg.id === userInfoData?.nickname}>
+                {msg.content}
               </S.Chat_Message>
-              <S.Send_Time isMine={message.senderId === me}>
-                {message.timestamp}
+              <S.Send_Time isMine={msg.id === userInfoData?.nickname}>
+                {messages && transISOToHumanTime(msg.time)?.slice(10)}
               </S.Send_Time>
             </S.Chat_Info_Box>
           </S.Chat>
         ))}
       </S.Chat_Contents>
       <S.ChatEnter>
-        <S.Message_Input></S.Message_Input>
-        <S.Send_Btn>
+        <S.Message_Input
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+              e.preventDefault();
+              handleSendMessage();
+            }
+          }}
+        />
+        <S.Send_Btn onClick={handleSendMessage}>
           <FontAwesomeIcon icon={faPaperPlane} size='lg' />
         </S.Send_Btn>
       </S.ChatEnter>

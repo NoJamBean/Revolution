@@ -9,14 +9,12 @@ import { useModal } from '../../commons/modal/modalprovider';
 import { useOddHooks } from '@/src/commons/hooks/useodhook';
 import dynamic from 'next/dynamic';
 
-const BannerCarousel = dynamic(
-  () => import('../../commons/carousel/carousel'),
-  {
-    ssr: false,
-  }
-);
-
 export default function Main() {
+  // Carousel dynamic import 처리
+  const BannerCarousel = dynamic(
+    () => import('../../commons/carousel/carousel')
+  );
+
   const [clickedTab, setClickedTab] = useState('info');
 
   const { homeAwayInfo, isLimit, clickedPlay } = useMatchInfo();
@@ -25,8 +23,18 @@ export default function Main() {
   const router = useRouter();
   const { setBetError, betError, isVariableOdd, oddData } = useOddHooks();
 
+  // Bet Error로 정보값 없고, 로딩 시 트리거되는 useEffect
+  useEffect(() => {
+    setClickedTab('info');
+    if (!isLoading && betError) {
+      setBetError(null); // 한 번 alert 띄운 뒤 초기화
+    }
+  }, [isLoading, betError]);
+
+  // 경기 widget or chat 컴포넌트 렌더링 트리거 함수
   const clickToggle = (e: any) => {
     if (e.target.id === clickedTab) return;
+
     setClickedTab(e.target.id);
   };
 
@@ -46,15 +54,6 @@ export default function Main() {
       },
     });
   };
-
-  // Bet Error로 정보값 없고, 로딩 시 트리거되는 useEffect
-  useEffect(() => {
-    setClickedTab('info');
-    if (!isLoading && betError) {
-      alert(betError);
-      setBetError(null); // 한 번 alert 띄운 뒤 초기화
-    }
-  }, [isLoading, betError]);
 
   return (
     <>

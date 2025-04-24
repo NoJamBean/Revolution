@@ -42,6 +42,9 @@ export default function Login() {
 
       //
       //
+
+      console.log(result, '로그인 성공 결과');
+
       const loginBody = { id: userMail, password: password }; // 로그인 로그 기록 body data
 
       // 로그인 성공 시 로그기록
@@ -72,6 +75,23 @@ export default function Login() {
       alert('환영합니다! 토토로 토토로');
       closeModal();
     } catch (error) {
+      const loginBody = { id: userMail, password: password };
+
+      // await sendLog({
+      //   eventSource: 'webapp.example.com',
+      //   awsRegion: 'ap-northeast-2',
+      //   eventTime: new Date().toISOString(),
+      //   eventName: 'LoginSuccess',
+      //   requestParameters: {
+      //     httpMethod: 'POST',
+      //     requestPath: '/api/users/login',
+      //     queryString: JSON.stringify(loginBody),
+      //     statusCode: result.status,
+      //   },
+      //   sourceIPAddress: '', // 서버에서 채움
+      //   userAgent: '', // 서버에서 채움
+      // });
+
       console.log(error);
       alert('로그인 실패!! 에러!!');
 

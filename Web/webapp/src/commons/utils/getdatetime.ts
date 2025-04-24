@@ -27,9 +27,13 @@ export const useGetDateandTime = () => {
 };
 
 export const transISOToHumanTime = (timestr: string) => {
-  const formatted = timestr.replace('T', ' ').slice(0, 16);
+  console.log(123123213213, '예?', timestr);
 
-  return formatted;
+  if (timestr) {
+    const formatted = timestr?.replace('T', ' ').slice(0, 16);
+
+    return formatted;
+  }
 };
 
 export const getExpectedOddPrice = (odd: number, bet: number) => {

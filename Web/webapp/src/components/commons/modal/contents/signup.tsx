@@ -125,8 +125,6 @@ export default function SignUp() {
         });
       }
 
-      console.log(result, '회원가입 성공');
-
       closeModal();
       router.push('/');
     } catch (error) {

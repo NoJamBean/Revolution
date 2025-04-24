@@ -28,6 +28,7 @@ export const useOddHooks = () => {
         const bookmakers = response.data?.response[0]?.bookmakers;
         if (!bookmakers) {
           throw Error(alertWarnText);
+          return;
         }
 
         // ✅ 여기서 Home/Away 또는 Match Winner 찾아서 추출
@@ -48,10 +49,6 @@ export const useOddHooks = () => {
             }
           }
           if (matchValues) break;
-        }
-
-        if (!matchValues) {
-          throw Error(alertWarnText);
         }
 
         const selectedMatchOddRaw = matchValues.reduce(
@@ -78,8 +75,6 @@ export const useOddHooks = () => {
         localStorage.setItem('odds', JSON.stringify(selectedMatchOdd));
         setOddData(selectedMatchOdd);
         setIsVariableOdd(true);
-
-        console.log('odd', selectedMatchOdd);
       } catch (error) {
         const noOdds = { home: 'X', draw: 'X', away: 'X' };
         localStorage.setItem('odds', JSON.stringify(noOdds));

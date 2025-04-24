@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { addLog } from '../../commons/utils/logger';
 import { initLogUploader } from '@/src/commons/utils/initLogUploader';
+import { random } from '@/src/commons/utils/temporaryIp';
 
 // ✅ 서버 실행 시 1번만 타이머 시작하도록 제어
 let uploaderStarted = false;
@@ -22,9 +23,16 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
 
   const userAgent = req.headers['user-agent'] || '';
 
+  //random ip 할당함수 (임시용)
+  const getRandomIp = (arr) => {
+    const randomIdx = Math.floor(Math.random() * arr.length);
+
+    return arr[randomIdx];
+  };
+
   const completeLog = {
     ...rawLog,
-    sourceIPAddress,
+    sourceIPAddress: getRandomIp(random),
     userAgent,
   };
 

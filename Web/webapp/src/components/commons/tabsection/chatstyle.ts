@@ -6,20 +6,25 @@ export const Wrapper = styled.div`
   padding: 10px 15px;
   display: flex;
   flex-direction: column;
+  /* overflow: hidden; */
 `;
 
 export const Chat_Contents = styled.div`
   flex-grow: 1;
   overflow-y: auto;
   padding: 0 10px;
-  /* border: 2px solid red; */
 `;
 
 export const Chat = styled.div<{ isMine: boolean }>`
-  height: 50px;
+  height: 60px;
   display: flex;
   flex-direction: ${({ isMine }) => (isMine ? 'row-reverse' : 'row')};
   margin-bottom: 10px;
+`;
+
+export const DummyForScroll = styled.div`
+  height: 1px;
+  width: 100%;
 `;
 
 export const UserImg_Box = styled.div<{ isMine: boolean }>`
@@ -41,7 +46,6 @@ export const User_Img_Icon = styled.img`
 export const User_Name = styled.div`
   /* width: 80px; */
   display: flex;
-  /* padding-left: 10px; */
   color: #e2e8f0;
 `;
 
@@ -60,6 +64,7 @@ export const Chat_Message = styled.div<{ isMine: boolean }>`
   display: flex;
   align-items: center;
   font-size: 15px;
+  word-break: break-word;
   color: #e2e8f0;
   background-color: ${(props) => (props.isMine ? '#3C5C76' : '#2b3e52;')};
   width: fit-content; /* 텍스트 길이에 맞게 줄어들도록 */
@@ -73,15 +78,15 @@ export const Send_Time = styled.div<{ isMine: boolean }>`
   height: 23px;
   font-size: 14px;
   margin-left: 3px;
-  margin-top: 3px;
+  margin-top: 5px;
   color: #e2e8f0;
   margin-left: ${(props) => (props.isMine ? 'auto' : '0')};
   margin-right: ${(props) => (props.isMine ? '0' : 'auto')};
 `;
 
 export const ChatEnter = styled.div`
-  /* border: 2px solid green; */
-  height: 200px;
+  flex-shrink: 0;
+  height: 60px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -97,6 +102,7 @@ export const Message_Input = styled.input`
   background-color: #1d2a38;
   border-radius: 10px;
   padding-left: 15px;
+  color: #a0aec0;
 `;
 
 export const Send_Btn = styled.div`

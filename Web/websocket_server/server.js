@@ -3,7 +3,9 @@ const { createServer } = require('http');
 const { Server } = require('socket.io');
 const { createAdapter } = require('@socket.io/redis-adapter');
 const { createClient } = require('redis');
-const fetch = require('node-fetch'); // fetch 사용을 위한 모듈 (node18 이하일 경우 설치 필요)
+const axios = require('axios');
+
+// const fetch = require('node-fetch'); // fetch 사용을 위한 모듈 (node18 이하일 경우 설치 필요)
 
 //healthCheck 처리 응답
 const httpServer = createServer((req, res) => {
@@ -31,11 +33,14 @@ const subClient = pubClient.duplicate();
 Promise.all([pubClient.connect(), subClient.connect()]).then(() => {
   io.adapter(createAdapter(pubClient, subClient));
 
+  // 채팅방 접속자 수 체크용
+  const roomUserMap = new Map(); // ✅ 방 별로 소켓ID Set 저장
+
   io.on('connection', (socket) => {
     console.log(`🟢 연결됨: ${socket.id}`);
 
     // 방 입장
-    socket.on('joinRoom', async ({ roomId, userName }) => {
+    socket.on('joinRoom', async ({ roomId, userName, token }) => {
       // ✅ 방 존재 여부 API 요청
 
       // 방 생성 or 해당 방에 user 등록
@@ -45,17 +50,30 @@ Promise.all([pubClient.connect(), subClient.connect()]).then(() => {
       socket.data.roomId = roomId;
       socket.data.userName = userName;
 
+      // 방에 처음 들어온 사용자일 경우 Set 생성
+      if (!roomUserMap.has(roomId)) {
+        roomUserMap.set(roomId, new Set());
+      }
+
+      // 사용자 저장
+      roomUserMap.get(roomId).add(socket.id);
+
       try {
-        const res = await fetch(`http://api.internal.local/rooms/${roomId}`);
-        if (res.status === 404) {
-          // 방 생성
-          await fetch('http://api.internal.local/rooms', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id: roomId, createdBy: userId }),
-          });
-        }
+        const result = await axios.get(
+          `${process.env.BACKEND_API_ENDPOINT}/api/chat/room/join/${roomId}`,
+          {
+            headers: {
+              'Content-type': 'application/json',
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        // console.log(result, '방 join 체크');
+
+        socket.emit('success', { message: '방 생성 되었음!!!' });
       } catch (err) {
+        console.error('❌ 방 join 요청 실패:', err);
         socket.emit('error', { message: '방 처리 실패' });
       }
 
@@ -69,26 +87,37 @@ Promise.all([pubClient.connect(), subClient.connect()]).then(() => {
     });
 
     // 메시지 전송
-    socket.on('chatMessage', async ({ roomId, userName, content }) => {
+    socket.on('chatMessage', async ({ roomId, userId, content }) => {
       const payload = {
-        senderId: socket.id,
-        senderName: userName,
+        id: userId, // <-- 유저 닉네임
+        // senderName: userName, // <-- 닉네임
         content,
-        timestamp: new Date().toISOString(),
+        time: new Date().toISOString(),
       };
+
+      console.log(roomId, userId, '12321312312');
+
+      io.to(roomId).emit('chatMessage', payload);
 
       // ✅ API 서버에 메시지 저장 요청
       try {
-        await fetch('http://api.internal.local/messages', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ roomId, ...payload }),
-        });
+        const result = await axios.post(
+          `${process.env.BACKEND_API_ENDPOINT}/api/chat/message/put`,
+          {
+            roomid: roomId,
+            id: userId,
+            content: content,
+          },
+          {
+            headers: {
+              'Content-type': 'application/json',
+            },
+          }
+        );
+        console.log('message api 요청 성공');
       } catch (err) {
         console.error('❌ 메시지 저장 실패:', err);
       }
-
-      io.to(roomId).emit('chatMessage', payload);
     });
 
     // 명시적 방 나가기
@@ -103,15 +132,12 @@ Promise.all([pubClient.connect(), subClient.connect()]).then(() => {
       //     timestamp: new Date().toISOString(),
       //   });
 
-      // ✅ 방에 아무도 없으면 방 삭제
-      if (!roomId) return;
+      const userSet = roomUserMap.get(roomId);
+      userSet?.delete(socket.id);
 
-      const sockets = await io.in(roomId).fetchSockets();
-      if (sockets.length === 0) {
-        await fetch(`http://api.internal.local/rooms/${roomId}`, {
-          method: 'DELETE',
-        });
-        console.log(`🗑️ 방 ${roomId} 삭제 요청 보냄`);
+      // 아무도 없으면 방 삭제
+      if (userSet && userSet.size === 0) {
+        roomUserMap.delete(roomId);
       }
 
       socket.data.roomId = null;
@@ -123,7 +149,6 @@ Promise.all([pubClient.connect(), subClient.connect()]).then(() => {
       const userName = socket.data.userName || 'Unknown';
 
       console.log(`🔴 연결 종료됨: ${socket.id}`);
-
       // 채팅 방 나간 이벤트를 모든 소켓 연결 이용자에게 broadcast
       //   if (roomId) {
       //     socket.to(roomId).emit('userLeft', {
@@ -134,21 +159,32 @@ Promise.all([pubClient.connect(), subClient.connect()]).then(() => {
       //   }
 
       // ✅ 방에 아무도 없으면 방 삭제
-      if (!roomId) return;
+      const userSet = roomUserMap.get(roomId);
+      userSet?.delete(socket.id);
 
-      const sockets = await io.in(roomId).fetchSockets();
-      if (sockets.length === 0) {
-        await fetch(`http://api.internal.local/rooms/${roomId}`, {
-          method: 'DELETE',
-        });
-        console.log(`🗑️ 방 ${roomId} 삭제 요청 보냄`);
+      if (userSet && userSet.size === 0) {
+        roomUserMap.delete(roomId);
 
+        try {
+          const result = await axios.get(
+            `${process.env.BACKEND_API_ENDPOINT}/api/chat/room/delete/${roomId}`,
+            {
+              headers: {
+                'Content-type': 'application/json',
+              },
+            }
+          );
+
+          socket.emit('success', { message: '방 삭제 되었음!!!' });
+        } catch (err) {
+          socket.emit('error', { message: '방 삭제처리 실패' });
+        }
         socket.data.roomId = null;
       }
     });
   });
 
-  httpServer.listen(3000, () => {
-    console.log('🚀 WebSocket 서버가 3000번 포트에서 실행됨');
+  httpServer.listen(3001, () => {
+    console.log('🚀 WebSocket 서버가 3001번 포트에서 실행됨');
   });
 });
