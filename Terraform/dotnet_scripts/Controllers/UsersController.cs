@@ -166,14 +166,12 @@ namespace MyApi.Controllers
 
             try
             {
-                Console.WriteLine("RegisterUser 호출됨");
                 await _cognitoService.SignUpAsync(user.Id, user.Password, user.Email); // 이메일 인증 메일 발송
 
                 return Ok(new { message = "회원가입 성공, 이메일 인증을 완료해주세요." });
             }
             catch (Exception ex)
             {
-                Console.WriteLine("[에러] 사용자 등록 실패: " + ex.Message);
                 return StatusCode(500, new { message = "회원가입 실패", error = ex.Message });
             }
         }
@@ -234,7 +232,6 @@ namespace MyApi.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine("[에러] 인증 메일 재발송 실패: " + ex.Message);
                 return StatusCode(500, new { message = "인증 메일 재발송 실패", error = ex.Message });
             }
         }
@@ -255,7 +252,6 @@ namespace MyApi.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine("[에러] 인증 확인 실패: " + ex.Message);
                 return StatusCode(500, new { message = "이메일 인증 실패", error = ex.Message });
             }
         }
@@ -305,7 +301,6 @@ namespace MyApi.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine("[에러] 사용자 등록 실패: " + ex.Message);
                 return StatusCode(500, new { message = "사용자 등록 실패", error = ex.Message });
             }
         }
@@ -352,7 +347,6 @@ namespace MyApi.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine("[에러] 로그인 실패: " + ex.Message);
                 return StatusCode(401, new { message = "로그인 실패", error = ex.Message });
             }
         }

@@ -29,28 +29,23 @@ namespace MyApi.Controllers
                 var room = await _context.Rooms.FirstOrDefaultAsync(r => r.RoomId == roomid);
                 if (room == null)
                 {
-                    room = new Room { RoomId = roomid };
+                    room = new Room {
+                        RoomId = roomid,
+                        modified_date = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("Asia/Seoul"))
+                    };
                     _context.Rooms.Add(room);
                     await _context.SaveChangesAsync();
-                    Console.WriteLine("[새로운 방] ");
                     return Ok(new { created = true, room });
                 }
 
-                Console.WriteLine("[기존 방] ");
                 return Ok(new { created = false, room });
             }
             catch (DbUpdateException dbEx)
             {
-                // DB 관련 예외 상세 출력
-                Console.WriteLine("[DB 오류] " + dbEx.Message);
-                Console.WriteLine(dbEx.InnerException?.Message ?? "");
                 return StatusCode(500, new { message = "DB 오류 발생", error = dbEx.Message });
             }
             catch (Exception ex)
             {
-                // 기타 예외
-                Console.WriteLine("[서버 오류] " + ex.Message);
-                Console.WriteLine(ex.StackTrace);
                 return StatusCode(500, new { message = "서버 오류 발생", error = ex.Message });
             }
         }
@@ -84,7 +79,7 @@ namespace MyApi.Controllers
             }
 
             // 메시지 전송 시간 기록 (서버 기준)
-            req.Time = DateTime.UtcNow;
+            req.Time = DateTime.TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("Asia/Seoul"));;
 
             // 메시지 DB 저장
             _context.Messages.Add(req);
@@ -115,14 +110,10 @@ namespace MyApi.Controllers
             }
             catch (DbUpdateException dbEx)
             {
-                Console.WriteLine("[DB 오류] " + dbEx.Message);
-                Console.WriteLine(dbEx.InnerException?.Message ?? "");
                 return StatusCode(500, new { message = "DB 오류 발생", error = dbEx.Message });
             }
             catch (Exception ex)
             {
-                Console.WriteLine("[서버 오류] " + ex.Message);
-                Console.WriteLine(ex.StackTrace);
                 return StatusCode(500, new { message = "서버 오류 발생", error = ex.Message });
             }
         }

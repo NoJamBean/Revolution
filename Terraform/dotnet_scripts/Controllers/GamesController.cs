@@ -56,7 +56,6 @@ namespace MyApi.Controllers
         {
             if (newGame == null)
             {
-                Console.WriteLine("[오류] 전달된 게임 정보가 null입니다.");
                 return BadRequest("유효하지 않은 게임 정보입니다.");
             }
 
@@ -65,7 +64,6 @@ namespace MyApi.Controllers
                 string userId = User.Claims.FirstOrDefault(c => c.Type == "cognito:username")?.Value;
                 if (string.IsNullOrEmpty(userId))
                 {
-                    Console.WriteLine("[오류] JWT 토큰에 cognito:username 클레임이 없습니다.");
                     return Unauthorized(new { message = "사용자 ID를 확인할 수 없습니다." });
                 }
 
@@ -76,7 +74,6 @@ namespace MyApi.Controllers
 
                 if (exists)
                 {
-                    Console.WriteLine($"[중복] 동일한 경기 ({newGame.Id}, {newGame.MatchId}) 가 이미 존재합니다.");
                     return Conflict(new
                     {
                         code = "GAME_ALREADY_EXISTS",
@@ -87,7 +84,6 @@ namespace MyApi.Controllers
                 _gameContext.GameInfos.Add(newGame);
                 await _gameContext.SaveChangesAsync();
 
-                Console.WriteLine("[성공] 게임 정보 저장 완료.");
                 return Ok(new
                 {
                     message = "게임 정보가 성공적으로 저장되었습니다.",
@@ -96,14 +92,10 @@ namespace MyApi.Controllers
             }
             catch (DbUpdateException dbEx)
             {
-                Console.WriteLine("[DB 오류] 게임 저장 중 DB 예외 발생: " + dbEx.Message);
-                Console.WriteLine(dbEx.InnerException?.Message ?? "");
                 return StatusCode(500, new { message = "DB 저장 중 오류가 발생했습니다.", error = dbEx.Message });
             }
             catch (Exception ex)
             {
-                Console.WriteLine("[오류] 게임 정보 저장 중 예외 발생: " + ex.Message);
-                Console.WriteLine(ex.StackTrace);
                 return StatusCode(500, new { message = "게임 정보 저장 중 서버 오류가 발생했습니다.", error = ex.Message });
             }
         }
@@ -175,20 +167,7 @@ namespace MyApi.Controllers
 
                                 _gameContext.GameResults.Add(result);
 
-                                // 🎯 SaveChangesAsync: 반드시 트랜잭션 내에서 한 번만
                                 await _gameContext.SaveChangesAsync();
-
-                                // Balance 갱신은 트랜잭션 밖에서 별도 처리
-                                if (resultPrice > 0)
-                                {
-                                    // 트랜잭션 종료 후 별도 처리
-                                }
-
-                                Console.WriteLine($"[처리] 결과 저장 완료: {matchId}");
-                            }
-                            else
-                            {
-                                Console.WriteLine($"[무시] 결과 이미 존재함: {matchId}");
                             }
 
                             await transaction.CommitAsync();
@@ -196,7 +175,6 @@ namespace MyApi.Controllers
                         catch (Exception ex)
                         {
                             await transaction.RollbackAsync();
-                            Console.WriteLine("[트랜잭션 오류] " + ex.Message);
                             throw;
                         }
                     });
@@ -228,19 +206,14 @@ namespace MyApi.Controllers
             }
             catch (DbUpdateException dbEx)
             {
-                Console.WriteLine("[DB 오류] 게임 저장 중 DB 예외 발생: " + dbEx.Message);
-                if (dbEx.InnerException != null)
-                    Console.WriteLine("[DB Inner Exception] " + dbEx.InnerException.Message);
                 return StatusCode(500, new
                 {
                     message = "DB 저장 중 오류가 발생했습니다.",
-                    error = dbEx.InnerException?.Message ?? dbEx.Message
+                    error = dbEx.Message
                 });
             }
             catch (Exception ex)
             {
-                Console.WriteLine("[오류] 게임 정보 저장 중 예외 발생: " + ex.Message);
-                Console.WriteLine(ex.StackTrace);
                 return StatusCode(500, new { message = "게임 정보 저장 중 서버 오류가 발생했습니다.", error = ex.Message });
             }
         }
