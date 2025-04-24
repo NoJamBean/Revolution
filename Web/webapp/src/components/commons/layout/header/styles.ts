@@ -86,7 +86,7 @@ export const Sign_Container = styled.div`
 
 export const LogIn_User_Container = styled.div`
   /* order: 2; */
-  width: 190px;
+  width: 170px;
   display: flex;
   justify-content: space-between;
   align-items: center;

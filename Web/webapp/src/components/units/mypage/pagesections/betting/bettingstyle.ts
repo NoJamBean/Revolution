@@ -46,7 +46,7 @@ export const InfoWrapper = styled.div`
   background-color: #1e2f3f;
   box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.4);
   width: 90%;
-  height: 70vh;
+  height: 600px;
   border-radius: 20px;
   display: flex;
   flex-direction: column;

@@ -42,6 +42,7 @@ export default function Chat() {
 
     if (!roomId || !userName || isChatConnected) return;
 
+    console.log('일로넘어가냐?', userName);
     // socket 연결 시작
     if (!isChatConnected) {
       socket = io(process.env.NEXT_PUBLIC_SOCKET_SERVER_ENDPOINT!, {
@@ -155,7 +156,7 @@ export default function Chat() {
           <S.Chat key={idx} isMine={msg.id === userInfoData?.nickname}>
             <S.UserImg_Box isMine={msg.id === userInfoData?.nickname}>
               <S.User_Img_Icon src='/chatuser1.png' />
-              <S.User_Name>{msg.senderName}</S.User_Name>
+              <S.User_Name>{msg.id}</S.User_Name>
             </S.UserImg_Box>
             <S.Chat_Info_Box isMine={msg.id === userInfoData?.nickname}>
               <S.Chat_Message isMine={msg.id === userInfoData?.nickname}>

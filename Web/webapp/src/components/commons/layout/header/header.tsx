@@ -6,14 +6,32 @@ import { useMatchInfo } from '../../oddwidget/widgetprovider';
 import { useAuthStore } from '@/src/commons/stores/authstore';
 import { sendLog } from '@/src/commons/utils/sendlogs';
 import { useRouter } from 'next/router';
+import { useEffect, useState } from 'react';
+import { useDecodeToken } from '@/src/commons/utils/decodeusertoken';
 
 export default function Header() {
+  const [userId, setUserId] = useState('');
+
   const router = useRouter();
 
   const { openModal } = useModal();
   const { selectSport } = useMatchInfo();
 
   const token = useAuthStore((state) => state.token);
+  const { getDecodedToken } = useDecodeToken();
+
+  useEffect(() => {
+    const getUserData = async () => {
+      if (token) {
+        const userInfo = await getDecodedToken(token);
+        const userId = userInfo?.data?.id;
+
+        setUserId(userId);
+      }
+    };
+
+    getUserData();
+  }, [token]);
 
   const logout = async () => {
     if (token) {
@@ -112,7 +130,7 @@ export default function Header() {
           <S.LogIn_User_Container>
             <S.UserInfo onClick={clickMyPageInfo}>
               <S.Profile_Img src='/user_profile.png' />
-              <S.Profile_Name>Songseop</S.Profile_Name>
+              <S.Profile_Name>{userId}</S.Profile_Name>
             </S.UserInfo>
             <S.LogOut onClick={logout}>LOGOUT</S.LogOut>
           </S.LogIn_User_Container>

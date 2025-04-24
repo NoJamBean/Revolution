@@ -33,7 +33,7 @@ const categoryList = [
 export default function MypageComponent() {
   const [selectedCategory, setSelectedCategory] = useState('INFO');
   const [userInfoData, setUserInfoData] = useState<userDataProps | undefined>();
-  const [isComeFromBet, setIsComeFromBet] = useState(false);
+  //   const [isComeFromBet, setIsComeFromBet] = useState(false);
 
   const router = useRouter();
 
