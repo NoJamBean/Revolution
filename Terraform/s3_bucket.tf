@@ -88,7 +88,7 @@ resource "random_id" "bucket_suffix" {
 }
 
 
-
+#UserData
 resource "aws_s3_object" "api_server_userdata" {
   bucket = aws_s3_bucket.long_user_data_bucket.id
   key    = "userdatas/api_server.sh"
@@ -113,6 +113,7 @@ resource "aws_s3_object" "rds_userdata" {
   source_hash = filemd5("${path.module}/userdatas/rds_userdata.sh")
 }
 
+#API_SERVER_FILES
 resource "aws_s3_object" "program_cs" {
   bucket      = aws_s3_bucket.long_user_data_bucket.id
   key         = "dotnet_scripts/Program.cs"
@@ -209,4 +210,27 @@ resource "aws_s3_object" "LoggingMidleWare" {
   source_hash = filemd5("${path.module}/dotnet_scripts/Services/RequestLoggingMiddleware.cs")
 }
 
+#WEB_SOCKET_FILES
+resource "aws_s3_object" "ws_package_json" {
+  bucket      = aws_s3_bucket.long_user_data_bucket.id
+  key         = "websocket_files/package.json"
+  source      = "${path.module}/../Web/websocket_server/package.json"
+  acl         = "private"
+  source_hash = filemd5("${path.module}/../Web/websocket_server/package.json")
+}
 
+resource "aws_s3_object" "ws_serverjs" {
+  bucket      = aws_s3_bucket.long_user_data_bucket.id
+  key         = "websocket_files/server.js"
+  source      = "${path.module}/../Web/websocket_server/server.js"
+  acl         = "private"
+  source_hash = filemd5("${path.module}/../Web/websocket_server/server.js")
+}
+
+resource "aws_s3_object" "ws_yarn_lock" {
+  bucket      = aws_s3_bucket.long_user_data_bucket.id
+  key         = "websocket_files/yarn.lock"
+  source      = "${path.module}/../Web/websocket_server/yarn.lock"
+  acl         = "private"
+  source_hash = filemd5("${path.module}/../Web/websocket_server/yarn.lock")
+}

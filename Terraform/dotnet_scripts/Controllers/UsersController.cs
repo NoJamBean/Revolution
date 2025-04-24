@@ -136,46 +136,6 @@ namespace MyApi.Controllers
             }
         }
 
-         // 기본적인 값을 반환하는 예시
-        [HttpGet("test")]
-        public ActionResult<IEnumerable<string>> Test()
-        {
-            IEnumerable<string> testValues = new string[] { "송현섭", "바보아니다", "일한다" };
-            return Ok(testValues);
-        }
-
-        //POST
-        // 새로운 사용자 추가
-        [HttpPost("register")]
-        public async Task<IActionResult> RegisterUser([FromBody] User user)
-        {
-            if (user == null || string.IsNullOrEmpty(user.Id) || string.IsNullOrEmpty(user.Password) || string.IsNullOrEmpty(user.Email))
-            {
-                return BadRequest("아이디와 비밀번호와 이메일은 필수입니다.");
-            }
-
-            if (await _userContext.Users.AnyAsync(u => u.Id == user.Id))
-            {
-                return BadRequest(new { message = "이미 존재하는 아이디입니다." });
-            }
-
-            if (await _userContext.Users.AnyAsync(u => u.Email == user.Email))
-            {
-                return BadRequest(new { message = "이미 사용 중인 이메일입니다." });
-            }
-
-            try
-            {
-                await _cognitoService.SignUpAsync(user.Id, user.Password, user.Email); // 이메일 인증 메일 발송
-
-                return Ok(new { message = "회원가입 성공, 이메일 인증을 완료해주세요." });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = "회원가입 실패", error = ex.Message });
-            }
-        }
-
         [HttpGet("register/idcheck/{id}")]
         public async Task<IActionResult> IdCheck(string id)
         {
@@ -214,6 +174,46 @@ namespace MyApi.Controllers
 
             // 사용 가능한 닉네임
             return Ok(new { message = "사용 가능한 닉네임입니다." });
+        }
+
+         // 기본적인 값을 반환하는 예시
+        [HttpGet("test")]
+        public ActionResult<IEnumerable<string>> Test()
+        {
+            IEnumerable<string> testValues = new string[] { "송현섭", "바보아니다", "일한다" };
+            return Ok(testValues);
+        }
+
+        //POST
+        // 새로운 사용자 추가
+        [HttpPost("register")]
+        public async Task<IActionResult> RegisterUser([FromBody] User user)
+        {
+            if (user == null || string.IsNullOrEmpty(user.Id) || string.IsNullOrEmpty(user.Password) || string.IsNullOrEmpty(user.Email))
+            {
+                return BadRequest("아이디와 비밀번호와 이메일은 필수입니다.");
+            }
+
+            if (await _userContext.Users.AnyAsync(u => u.Id == user.Id))
+            {
+                return BadRequest(new { message = "이미 존재하는 아이디입니다." });
+            }
+
+            if (await _userContext.Users.AnyAsync(u => u.Email == user.Email))
+            {
+                return BadRequest(new { message = "이미 사용 중인 이메일입니다." });
+            }
+
+            try
+            {
+                await _cognitoService.SignUpAsync(user.Id, user.Password, user.Email); // 이메일 인증 메일 발송
+
+                return Ok(new { message = "회원가입 성공, 이메일 인증을 완료해주세요." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "회원가입 실패", error = ex.Message });
+            }
         }
 
         //인증이메일 재전송

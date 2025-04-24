@@ -20,22 +20,15 @@ npm install -g yarn pm2
 
 # [3] 리포 클론 후 경로 이동
 cd /home/ec2-user
-git clone --filter=blob:none --no-checkout --branch web https://github.com/NoJamBean/Revolution.git Revolution
+mkdir websocket
+cd websocket
 
-cd Revolution
-
-# Sparse checkout 초기화
-git sparse-checkout init --cone
-
-# Web/websocket-server 폴더만 가져오기
-git sparse-checkout set Web/websocket-server
-
-# 선택된 경로만 checkout
-git checkout
+sudo aws s3 cp s3://${aws_s3_bucket.long_user_data_bucket.bucket}/websocket_files/package.json websocket/package.json
+sudo aws s3 cp s3://${aws_s3_bucket.long_user_data_bucket.bucket}/websocket_files/server.js websocket/server.js
+sudo aws s3 cp s3://${aws_s3_bucket.long_user_data_bucket.bucket}/websocket_files/yarn.lock websocket/yarn.lock
 
 # 이후 Web/websocket-server 진입해서 작업
-cd Web/websocket-server
-echo "REDIS_URL=redis://${redis_host}:6379" > .env
+echo "REDIS_URL=redis://${aws_elasticache_replication_group.redis.primary_endpoint_address}:6379" > .env
 yarn install
 pm2 start server.js --name websocket-server
 pm2 save

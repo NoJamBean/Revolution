@@ -20,30 +20,6 @@ data "template_file" "app_server" {
   }
 }
 
-# data "template_file" "rds_user_data" {
-#   template = file("userdatas/rds_userdata.sh")
-
-#   vars = {
-#     db_endpoint     = var.rds_dns
-#     db_username     = var.db_username
-#     db_password     = var.db_password
-#     cognito_user_id = aws_cognito_user.dummy_user.id
-#   }
-# }
-
-
-# websocket 서버용 TemplateFile
-# 송현섭 수정
-data "template_file" "websocket_user_data" {
-  template = file("${path.module}/userdatas/websocket_server.sh")
-
-  vars = {
-    redis_host = aws_elasticache_replication_group.redis.primary_endpoint_address
-  }
-}
-
-
-
 #Route53
 data "aws_route53_zone" "public" {
   name         = var.public_domain_name

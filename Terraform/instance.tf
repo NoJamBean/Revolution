@@ -72,15 +72,15 @@ resource "aws_instance" "nat_instance1" {
 # 송현섭
 resource "aws_instance" "websocket_1" {
   ami                    = data.aws_ami.amazon_linux.id
-  instance_type          = "t2.micro"
+  instance_type          = "t3.micro"
   subnet_id              = aws_subnet.subnet["ws1"].id # 퍼블릭 서브넷
   vpc_security_group_ids = [aws_security_group.websocket_sg.id]
   key_name               = var.seoul_key_name # SSH용 키 페어
 
-  user_data = data.template_file.websocket_user_data.rendered
+  user_data = file("userdatas/websocket_server.sh")
 
   tags = {
-    Name = "WebSocketServer"
+    Name = "WebSocketServer1"
   }
 }
 
@@ -100,7 +100,6 @@ resource "aws_instance" "api_server_1" {
     cpu_credits = "standard"
   }
 
-  #user_data = data.template_file.api_server.rendered
   user_data = <<-EOT
 #!/bin/bash
     
@@ -133,22 +132,3 @@ EOT
     Name = "DotNet-API-SERVER"
   }
 }
-# AGW_URL="https://${aws_api_gateway_rest_api.rest_api.id}.execute-api.ap-northeast-2.amazonaws.com"
-
-
-
-#DB접근용 인스턴스
-#정원빈
-# resource "aws_instance" "rds_access_instance" {
-#   depends_on                  = [aws_instance.nat_instance1]
-#   provider                    = aws
-#   ami                         = data.aws_ami.amazon_linux.id
-#   instance_type               = var.instance_type
-#   key_name                    = var.seoul_key_name
-#   subnet_id                   = aws_subnet.subnet["rds1"].id
-#   security_groups             = [aws_security_group.default_sg.id]
-
-#   tags = { Name = "RDS-ACCESS-Instance" }
-
-#   user_data = data.template_file.rds_user_data.rendered
-# }
