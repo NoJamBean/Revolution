@@ -184,7 +184,7 @@ Promise.all([pubClient.connect(), subClient.connect()]).then(() => {
     });
   });
 
-  httpServer.listen(3001, () => {
+  httpServer.listen(3001, '0.0.0.0',() => {
     console.log('🚀 WebSocket 서버가 3001번 포트에서 실행됨');
   });
 });

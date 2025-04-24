@@ -30,6 +30,15 @@ data "template_file" "app_server" {
   }
 }
 
+data "template_file" "websocket_server" {
+  template = file("userdatas/websocket_server.sh")
+
+  vars = {
+    bucket_name = aws_s3_bucket.long_user_data_bucket.bucket
+    redis_endpoint = aws_elasticache_replication_group.redis.primary_endpoint_address
+  }
+}
+
 #Route53
 data "aws_route53_zone" "public" {
   name         = var.public_domain_name

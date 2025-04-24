@@ -1,4 +1,6 @@
 #!/bin/bash
+sudo yum clean all
+sudo yum update -y
 
 # [1] Node.js 18.17.1 수동 설치
 sudo wget -nv https://d3rnber7ry90et.cloudfront.net/linux-x86_64/node-v18.17.1.tar.gz
@@ -14,20 +16,28 @@ source /etc/profile.d/node.sh
 
 sudo env "PATH=$PATH" npm install -g yarn pm2
 
-cd /home/ec2-user
-mkdir websocket
-cd websocket
+# ec2-user 홈 디렉토리에 websocket 디렉토리 생성
+sudo -u ec2-user mkdir -p /home/ec2-user/websocket
 
-sudo aws s3 cp s3://${aws_s3_bucket.long_user_data_bucket.bucket}/websocket_files/package.json /home/ec2-user/websocket/package.json
-sudo aws s3 cp s3://${aws_s3_bucket.long_user_data_bucket.bucket}/websocket_files/server.js /home/ec2-user/websocket/server.js
-sudo aws s3 cp s3://${aws_s3_bucket.long_user_data_bucket.bucket}/websocket_files/yarn.lock /home/ec2-user/websocket/yarn.lock
+# S3에서 파일 복사
+sudo aws s3 cp s3://${bucket_name}/websocket_files/package.json /home/ec2-user/websocket/package.json
+sudo aws s3 cp s3://${bucket_name}/websocket_files/server.js /home/ec2-user/websocket/server.js
+sudo aws s3 cp s3://${bucket_name}/websocket_files/yarn.lock /home/ec2-user/websocket/yarn.lock
 
-# 이후 Web/websocket-server 진입해서 작업
-cat <<EOF > /home/ec2-user/websocket/.env
-REDIS_URL=redis://${aws_elasticache_replication_group.redis.primary_endpoint_address}:6379
+# 디렉토리 권한 ec2-user로 재설정 (중요)
+sudo chown -R ec2-user:ec2-user /home/ec2-user/websocket
+
+# .env 파일을 ec2-user 권한으로 생성
+sudo -u ec2-user bash -c "cat <<EOF > /home/ec2-user/websocket/.env
+REDIS_URL=redis://${redis_endpoint}:6379
 BACKEND_API_ENDPOINT=http://api.backend.internal
 EOF
+"
 
-yarn install
-pm2 start server.js --name websocket-server
-pm2 save
+# yarn install을 ec2-user로 실행
+cd /home/ec2-user/websocket
+sudo -u ec2-user env "PATH=$PATH" yarn install
+
+# pm2를 ec2-user로 실행
+sudo -u ec2-user env "PATH=$PATH" pm2 start server.js --name websocket-server
+sudo -u ec2-user env "PATH=$PATH" pm2 save
