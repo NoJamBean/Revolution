@@ -13,11 +13,11 @@ export default function Header() {
   const { openModal } = useModal();
   const { selectSport } = useMatchInfo();
 
-  const userToken = useAuthStore((state) => state.token);
+  const token = useAuthStore((state) => state.token);
 
   const logout = async () => {
-    if (userToken) {
-      await setLogOUtLog(userToken);
+    if (token) {
+      await setLogOUtLog(token);
 
       localStorage.removeItem('auth_token');
       useAuthStore.getState().clearToken();
@@ -108,7 +108,7 @@ export default function Header() {
             <S.MenuLink href={'/mypage'}>MY PAGE</S.MenuLink>
           </S.Menu>
         </S.Menu_Bar>
-        {userToken ? (
+        {token ? (
           <S.LogIn_User_Container>
             <S.UserInfo onClick={clickMyPageInfo}>
               <S.Profile_Img src='/user_profile.png' />

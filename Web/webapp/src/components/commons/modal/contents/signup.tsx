@@ -45,6 +45,10 @@ export default function SignUp() {
   ];
 
   const [signUpVal, setSignUpVal] = useState(defaultVal);
+  const [doublechk, setDoublechk] = useState({
+    idchk: false,
+    nicknamechk: false,
+  });
 
   const changeInputValue = (e: any) => {
     const { name, value } = e.target;
@@ -79,6 +83,11 @@ export default function SignUp() {
   const handleSubmit = async (e: any) => {
     e.preventDefault();
 
+    if (doublechk['idchk'] === false || doublechk['nicknamechk'] === false) {
+      alert('중복확인을 해주세요');
+      return;
+    }
+
     for (const key of checkValList as SignUpKey[]) {
       const validatorFunc = validators[key];
       const validateResult = validatorFunc(signUpVal[key], signUpVal);
@@ -89,6 +98,7 @@ export default function SignUp() {
       }
     }
 
+    //최종 입력된 값
     const { id, password, email, nickname, phoneNum } = signUpVal;
 
     try {
@@ -133,6 +143,82 @@ export default function SignUp() {
 
     // 모든 검증을 통과하였을 경우 이쪽으로
     // signUp(email, password, nickname);
+  };
+
+  const signUpIdDoublechk = async () => {
+    const { id } = signUpVal;
+
+    const validatorFunc = validators['id'];
+    const validateResult = validatorFunc(id);
+
+    if (validateResult !== 'SUCCESS') {
+      alert(validateResult);
+      return;
+    }
+
+    try {
+      const result = await axios.get(
+        `${process.env.NEXT_PUBLIC_BACKEND_API_ENDPOINT}/api/users/register/idcheck/${id}`,
+        {
+          headers: { 'Content-type': 'application/json' },
+        }
+      );
+
+      if (result?.status === 200) {
+        setDoublechk((prev) => ({ ...prev, idchk: true }));
+
+        const alertMessage = result?.data?.message;
+        alert(alertMessage);
+
+        return;
+      }
+
+      // console.log('중복체크', result);
+    } catch (error) {
+      if (error.response.status === 409) {
+        alert('이미 존재하는 ID 입니다');
+        return;
+      }
+    }
+  };
+
+  const signUpNicknameDoublechk = async () => {
+    const { nickname } = signUpVal;
+
+    const validatorFunc = validators['nickname'];
+    const validateResult = validatorFunc(nickname);
+
+    if (validateResult !== 'SUCCESS') {
+      alert(validateResult);
+      return;
+    }
+
+    try {
+      const result = await axios.get(
+        `${process.env.NEXT_PUBLIC_BACKEND_API_ENDPOINT}/api/users/register/nicknamecheck/${nickname}`,
+        {
+          headers: { 'Content-type': 'application/json' },
+        }
+      );
+
+      if (result?.status === 200) {
+        setDoublechk((prev) => ({ ...prev, nicknamechk: true }));
+
+        const alertMessage = result?.data?.message;
+        alert(alertMessage);
+
+        return;
+      }
+
+      console.log('중복체크', result);
+
+      setDoublechk((prev) => ({ ...prev, idchk: true }));
+    } catch (error) {
+      if (error.response.status === 409) {
+        alert('이미 존재하는 닉네임 입니다');
+        return;
+      }
+    }
   };
 
   const requestEmailCode = async () => {
@@ -265,7 +351,9 @@ export default function SignUp() {
           <S.SubTitle>아이디</S.SubTitle>
           <S.Input_Wrapper>
             <S.Input isReq={false} name='id' onChange={changeInputValue} />
-            <S.DoubleCheck type='button'>중복확인</S.DoubleCheck>
+            <S.DoubleCheck type='button' onClick={signUpIdDoublechk}>
+              중복확인
+            </S.DoubleCheck>
           </S.Input_Wrapper>
         </S.UserName>
         <S.NickName>
@@ -276,7 +364,9 @@ export default function SignUp() {
               name='nickname'
               onChange={changeInputValue}
             />
-            <S.DoubleCheck type='button'>중복확인</S.DoubleCheck>
+            <S.DoubleCheck type='button' onClick={signUpNicknameDoublechk}>
+              중복확인
+            </S.DoubleCheck>
           </S.Input_Wrapper>
         </S.NickName>
         <S.Email>

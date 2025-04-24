@@ -28,7 +28,15 @@ sudo aws s3 cp s3://${aws_s3_bucket.long_user_data_bucket.bucket}/websocket_file
 sudo aws s3 cp s3://${aws_s3_bucket.long_user_data_bucket.bucket}/websocket_files/yarn.lock websocket/yarn.lock
 
 # 이후 Web/websocket-server 진입해서 작업
-echo "REDIS_URL=redis://${aws_elasticache_replication_group.redis.primary_endpoint_address}:6379" > .env
+cat <<EOF > /home/ec2-user/websocket/.env
+REDIS_URL=redis://${aws_elasticache_replication_group.redis.primary_endpoint_address}:6379
+BACKEND_API_ENDPOINT=http://nat.1bean.shop
+EOF
+
 yarn install
 pm2 start server.js --name websocket-server
 pm2 save
+
+
+
+
