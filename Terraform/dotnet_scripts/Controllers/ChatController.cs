@@ -21,19 +21,38 @@ namespace MyApi.Controllers
         [HttpGet("room/join/{roomid}")]
         public async Task<IActionResult> JoinRoom(string roomid)
         {
-            if (string.IsNullOrEmpty(roomid))
-                return BadRequest("roomid가 필요합니다.");
-
-            var room = await _context.Rooms.FirstOrDefaultAsync(r => r.RoomId == roomid);
-            if (room == null)
+            try
             {
-                room = new Room { RoomId = roomid };
-                _context.Rooms.Add(room);
-                await _context.SaveChangesAsync();
-                return Ok(new { created = true, room });
-            }
+                if (string.IsNullOrEmpty(roomid))
+                    return BadRequest("roomid가 필요합니다.");
 
-            return Ok(new { created = false, room });
+                var room = await _context.Rooms.FirstOrDefaultAsync(r => r.RoomId == roomid);
+                if (room == null)
+                {
+                    room = new Room { RoomId = roomid };
+                    _context.Rooms.Add(room);
+                    await _context.SaveChangesAsync();
+                    Console.WriteLine("[새로운 방] ");
+                    return Ok(new { created = true, room });
+                }
+
+                Console.WriteLine("[기존 방] ");
+                return Ok(new { created = false, room });
+            }
+            catch (DbUpdateException dbEx)
+            {
+                // DB 관련 예외 상세 출력
+                Console.WriteLine("[DB 오류] " + dbEx.Message);
+                Console.WriteLine(dbEx.InnerException?.Message ?? "");
+                return StatusCode(500, new { message = "DB 오류 발생", error = dbEx.Message });
+            }
+            catch (Exception ex)
+            {
+                // 기타 예외
+                Console.WriteLine("[서버 오류] " + ex.Message);
+                Console.WriteLine(ex.StackTrace);
+                return StatusCode(500, new { message = "서버 오류 발생", error = ex.Message });
+            }
         }
 
         [HttpGet("room/delete/{roomid}")]
@@ -77,17 +96,35 @@ namespace MyApi.Controllers
         [HttpGet("message/list/{roomid}")]
         public async Task<IActionResult> GetMessageList(string roomid)
         {
-            if (string.IsNullOrEmpty(roomid))
-                return BadRequest("roomid가 필요합니다.");
+            try
+            {
+                if (string.IsNullOrEmpty(roomid))
+                    return BadRequest("roomid가 필요합니다.");
 
-            // 해당 방의 메시지 로그를 시간 순으로 모두 조회
-            var messages = await _context.Messages
-                .Where(m => m.RoomId == roomid)
-                .OrderBy(m => m.Time)
-                .ToListAsync();
+                // 해당 방의 메시지 로그를 시간 순으로 모두 조회
+                var messages = await _context.Messages
+                    .Where(m => m.RoomId == roomid)
+                    .OrderBy(m => m.Time)
+                    .ToListAsync();
 
-            // 결과가 없을 때도 200 OK와 빈 배열 반환
-            return Ok(messages);
+                // messages가 null인 경우 빈 배열로 변환
+                if (messages == null)
+                    messages = new List<Message>();
+
+                return Ok(messages); // 항상 200 OK와 배열 반환
+            }
+            catch (DbUpdateException dbEx)
+            {
+                Console.WriteLine("[DB 오류] " + dbEx.Message);
+                Console.WriteLine(dbEx.InnerException?.Message ?? "");
+                return StatusCode(500, new { message = "DB 오류 발생", error = dbEx.Message });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("[서버 오류] " + ex.Message);
+                Console.WriteLine(ex.StackTrace);
+                return StatusCode(500, new { message = "서버 오류 발생", error = ex.Message });
+            }
         }
     }
 }

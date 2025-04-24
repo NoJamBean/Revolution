@@ -178,6 +178,46 @@ namespace MyApi.Controllers
             }
         }
 
+        [HttpGet("register/idcheck/{id}")]
+        public async Task<IActionResult> IdCheck(string id)
+        {
+            // id가 없는 경우
+            if (string.IsNullOrEmpty(id))
+            {
+                return BadRequest(new { message = "id 파라미터가 필요합니다." });
+            }
+
+            // DB에 해당 id가 이미 존재하면
+            bool exists = await _userContext.Users.AnyAsync(u => u.Id == id);
+            if (exists)
+            {
+                return Conflict(new { message = "이미 존재하는 아이디입니다." });
+            }
+
+            // 사용 가능한 id
+            return Ok(new { message = "사용 가능한 아이디입니다." });
+        }
+
+        [HttpGet("register/nicknamecheck/{nickname}")]
+        public async Task<IActionResult> NicknameCheck(string nickname)
+        {
+            // 닉네임이 없는 경우
+            if (string.IsNullOrEmpty(nickname))
+            {
+                return BadRequest(new { message = "nickname 파라미터가 필요합니다." });
+            }
+
+            // DB에 해당 닉네임이 이미 존재하면
+            bool exists = await _userContext.Users.AnyAsync(u => u.Nickname == nickname);
+            if (exists)
+            {
+                return Conflict(new { message = "이미 존재하는 닉네임입니다." });
+            }
+
+            // 사용 가능한 닉네임
+            return Ok(new { message = "사용 가능한 닉네임입니다." });
+        }
+
         //인증이메일 재전송
         [HttpPost("register/resend")]
         public async Task<IActionResult> ResendConfirmation([FromBody] ResendRequest request)

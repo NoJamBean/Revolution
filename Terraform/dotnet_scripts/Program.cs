@@ -5,6 +5,7 @@ using Amazon.S3.Transfer;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -64,6 +65,7 @@ if (string.IsNullOrEmpty(bucketName))
 builder.Configuration["Kestrel:Endpoints:Http:Url"] = "http://127.0.0.1:5000";
 builder.Configuration["ConnectionStrings:UserDbConnection"] = $"Server={dbEndpoint};Database=userDB;User={dbUsername};Password={dbPassword};SslMode=Preferred;";
 builder.Configuration["ConnectionStrings:GameDbConnection"] = $"Server={dbEndpoint};Database=gameDB;User={dbUsername};Password={dbPassword};SslMode=Preferred;";
+builder.Configuration["ConnectionStrings:ChatDbConnection"] = $"Server={dbEndpoint};Database=chatDB;User={dbUsername};Password={dbPassword};SslMode=Preferred;";
 builder.Configuration["Cognito:UserPoolId"] = cognitoUserPoolId;
 builder.Configuration["Cognito:AppClientId"] = cognitoAppClientId;
 
@@ -92,15 +94,25 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 //CORS 정책 설정
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll",
-        policy =>
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.SetIsOriginAllowed(origin =>
         {
-            // policy.WithOrigins($"{agw_url}") // 모든 도메인 허용 (Nginx의 `Access-Control-Allow-Origin: *` 과 동일)
-                policy.WithOrigins("http://localhost:3000")//AllowAnyOrigin()
-                  .WithMethods("GET", "POST") // GET, POST 메서드만 허용
-                  .AllowAnyHeader() // 특정 헤더만 허용
-                  .AllowCredentials(); // 인증 정보 포함 허용
-        });
+            if (origin.StartsWith("http://192.168.0.")) return true;
+            if (origin == "http://localhost:3000") return true;
+            if (origin == "http://nat.1bean.shop") return true;
+            if (origin == "http://121.160.41.207") return true;
+            if (origin == "http://58.120.222.122") return true;
+            if (origin == "http://59.9.132.74") return true;
+            if (origin == "http://118.37.11.111") return true;
+            if (origin == "http://211.104.182.166") return true;
+            // 필요하다면 더 추가
+            return false;
+        })
+        .WithMethods("GET", "POST")
+        .AllowAnyHeader()
+        .AllowCredentials();
+    });
 });
 
 builder.Services.AddDbContext<UserDbContext>(options =>
@@ -114,6 +126,13 @@ builder.Services.AddDbContext<UserDbContext>(options =>
 builder.Services.AddDbContext<GameDbContext>(options =>
 options.UseMySql(
         builder.Configuration.GetConnectionString("GameDbConnection"),
+        new MySqlServerVersion(new Version(8, 0, 40)),
+        mySqlOptions => mySqlOptions.EnableRetryOnFailure(5)
+));
+
+builder.Services.AddDbContext<ChatDbContext>(options =>
+options.UseMySql(
+        builder.Configuration.GetConnectionString("ChatDbConnection"),
         new MySqlServerVersion(new Version(8, 0, 40)),
         mySqlOptions => mySqlOptions.EnableRetryOnFailure(5)
 ));

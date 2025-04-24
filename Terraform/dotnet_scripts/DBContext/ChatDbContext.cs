@@ -42,17 +42,14 @@ namespace MyApi.Data
     [Table("messageTBL")]
     public class Message
     {
-        [Key]
         [Column("roomid")]
         [MaxLength(8)]
         public string RoomId { get; set; }
 
-        [Key]
         [Column("id")]
         [MaxLength(10)]
         public string Id { get; set; } // 유저 ID
 
-        [Key]
         [Column("time")]
         public DateTime Time { get; set; }
 
