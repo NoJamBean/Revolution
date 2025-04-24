@@ -178,7 +178,7 @@ resource "aws_security_group" "websocket_sg" {
       ssh    = { from_port = 22, to_port = 22, protocol = "tcp", cidr_blocks = ["0.0.0.0/0"] }
       http   = { from_port = 80, to_port = 80, protocol = "tcp", cidr_blocks = ["0.0.0.0/0"] }
       https  = { from_port = 443, to_port = 443, protocol = "tcp", cidr_blocks = ["0.0.0.0/0"] }
-      ws     = { from_port = 3001, to_port = 3001, protocol = "tcp", cidr_blocks = ["10.0.0.0/16"] }
+      ws     = { from_port = 3001, to_port = 3001, protocol = "tcp", cidr_blocks = ["0.0.0.0/0"] }
       redis = { from_port = 6379, to_port = 6379, protocol = "tcp", cidr_blocks = ["0.0.0.0/0"] }
       icmp   = { from_port = -1, to_port = -1, protocol = "icmp", cidr_blocks = ["10.0.0.0/16"] }
     }

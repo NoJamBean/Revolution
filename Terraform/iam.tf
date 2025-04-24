@@ -49,6 +49,23 @@ resource "aws_iam_role" "ec2_s3_role" {
   })
 }
 
+resource "aws_iam_role" "websocket_role" {
+  name = "websocket_role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = {
+          Service = "ec2.amazonaws.com"
+        }
+        Action = "sts:AssumeRole"
+      }
+    ]
+  })
+}
+
 # IAM 역할 생성 - CodeBuild의 권한
 resource "aws_iam_role" "codebuild_role" {
   name = "CodeBuildServiceRole"
@@ -395,10 +412,20 @@ resource "aws_iam_role_policy_attachment" "enhanced_monitoring" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonRDSEnhancedMonitoringRole"
 }
 
+resource "aws_iam_role_policy_attachment" "websocket_s3" {
+  role       = aws_iam_role.websocket_role.name
+  policy_arn = aws_iam_policy.s3_full_access_policy.arn
+}
+
 #Profile
 resource "aws_iam_instance_profile" "api_server_profile" {
   name = "api_server_profile"
   role = aws_iam_role.api_server_role.name
+}
+
+resource "aws_iam_instance_profile" "websocket_profile" {
+  name = "websocket_profile"
+  role = aws_iam_role.websocket_role.name
 }
 
 # Web용 EC2 프로파일 생성 (추후 EC2에 부착하기 위함)

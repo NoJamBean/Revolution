@@ -81,6 +81,7 @@ resource "aws_route_table" "routetable" {
   for_each = {
     app   = {}
     nat   = {}
+    ws    = {}
     back1 = {}
     back2 = {}
     log1  = {}
@@ -97,6 +98,7 @@ resource "aws_route" "internet_access" {
   for_each = {
     rt1 = aws_route_table.routetable["app"].id
     rt2 = aws_route_table.routetable["nat"].id
+    rt3 = aws_route_table.routetable["ws"].id
   }
   route_table_id         = each.value
   destination_cidr_block = "0.0.0.0/0" # 모든 트래픽
@@ -123,6 +125,8 @@ resource "aws_route_table_association" "routetable_association" {
     app2 = { route_table_id = aws_route_table.routetable["app"].id, subnet_id = aws_subnet.subnet["app2"].id }
     nat1 = { route_table_id = aws_route_table.routetable["nat"].id, subnet_id = aws_subnet.subnet["nat1"].id }
     nat2 = { route_table_id = aws_route_table.routetable["nat"].id, subnet_id = aws_subnet.subnet["nat2"].id }
+    ws1  = { route_table_id = aws_route_table.routetable["ws"].id, subnet_id = aws_subnet.subnet["ws1"].id }
+    ws2  = { route_table_id = aws_route_table.routetable["ws"].id, subnet_id = aws_subnet.subnet["ws2"].id }
     api1 = { route_table_id = aws_route_table.routetable["back1"].id, subnet_id = aws_subnet.subnet["api1"].id }
     api2 = { route_table_id = aws_route_table.routetable["back2"].id, subnet_id = aws_subnet.subnet["api2"].id }
     rds1 = { route_table_id = aws_route_table.routetable["back1"].id, subnet_id = aws_subnet.subnet["rds1"].id }

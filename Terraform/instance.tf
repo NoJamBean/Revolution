@@ -6,7 +6,7 @@
 #   ami                  = data.aws_ami.amazon_linux.id
 #   instance_type        = "t3.micro"
 #   subnet_id            = aws_subnet.subnet["app1"].id
-#   security_groups      = [aws_security_group.default_sg.id]
+#   vpc_security_group_ids= [aws_security_group.default_sg.id]
 #   key_name             = var.seoul_key_name
 #   source_dest_check    = false
 #   iam_instance_profile = aws_iam_instance_profile.ec2_ssm_profile.name
@@ -31,12 +31,12 @@
 
 
 resource "aws_instance" "nat_instance1" {
-  ami               = data.aws_ami.amazon_linux.id
-  instance_type     = "t3.micro"
-  subnet_id         = aws_subnet.subnet["nat1"].id
-  security_groups   = [aws_security_group.default_sg.id]
-  key_name          = var.seoul_key_name
-  source_dest_check = false
+  ami                    = data.aws_ami.amazon_linux.id
+  instance_type          = "t3.micro"
+  subnet_id              = aws_subnet.subnet["nat1"].id
+  vpc_security_group_ids = [aws_security_group.default_sg.id]
+  key_name               = var.seoul_key_name
+  source_dest_check      = false
 
   credit_specification {
     cpu_credits = "standard"
@@ -53,7 +53,7 @@ resource "aws_instance" "nat_instance1" {
 #   ami             = data.aws_ami.amazon_linux.id
 #   instance_type   = "t3.micro"
 #   subnet_id       = aws_subnet.subnet["nat2"].id
-#   security_groups = [aws_security_group.default_sg.id]
+#   vpc_security_group_ids = [aws_security_group.default_sg.id]
 #   key_name        = var.seoul_key_name
 #   source_dest_check = false
 
@@ -76,7 +76,7 @@ resource "aws_instance" "websocket_1" {
   subnet_id              = aws_subnet.subnet["ws1"].id # 퍼블릭 서브넷
   vpc_security_group_ids = [aws_security_group.websocket_sg.id]
   key_name               = var.seoul_key_name # SSH용 키 페어
-
+  iam_instance_profile = aws_iam_instance_profile.api_server_profile.name
   user_data = file("userdatas/websocket_server.sh")
 
   tags = {
@@ -87,14 +87,14 @@ resource "aws_instance" "websocket_1" {
 
 
 resource "aws_instance" "api_server_1" {
-  depends_on           = [aws_instance.nat_instance1]
-  ami                  = data.aws_ami.amazon_linux.id
-  instance_type        = "t3.medium" //var.instance_type
-  subnet_id            = aws_subnet.subnet["api1"].id
-  security_groups      = [aws_security_group.dotnet_sg.id]
-  key_name             = var.seoul_key_name
-  iam_instance_profile = aws_iam_instance_profile.api_server_profile.name
-  private_ip           = "10.0.100.100"
+  depends_on             = [aws_instance.nat_instance1]
+  ami                    = data.aws_ami.amazon_linux.id
+  instance_type          = "t3.medium" //var.instance_type
+  subnet_id              = aws_subnet.subnet["api1"].id
+  vpc_security_group_ids = [aws_security_group.dotnet_sg]
+  key_name               = var.seoul_key_name
+  iam_instance_profile   = aws_iam_instance_profile.api_server_profile.name
+  private_ip             = "10.0.100.100"
 
   credit_specification {
     cpu_credits = "standard"

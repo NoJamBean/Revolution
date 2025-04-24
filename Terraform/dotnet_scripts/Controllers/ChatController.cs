@@ -1,8 +1,8 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
 using MyApi.Data;
-using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace MyApi.Controllers
 {
@@ -31,7 +31,7 @@ namespace MyApi.Controllers
                 {
                     room = new Room {
                         RoomId = roomid,
-                        modified_date = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("Asia/Seoul"))
+                        ModifiedDate = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("Asia/Seoul"))
                     };
                     _context.Rooms.Add(room);
                     await _context.SaveChangesAsync();
@@ -79,7 +79,7 @@ namespace MyApi.Controllers
             }
 
             // 메시지 전송 시간 기록 (서버 기준)
-            req.Time = DateTime.TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("Asia/Seoul"));;
+            req.Time = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("Asia/Seoul"));;
 
             // 메시지 DB 저장
             _context.Messages.Add(req);
