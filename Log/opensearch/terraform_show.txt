@@ -1,0 +1,1209 @@
+# data.archive_file.lambda_s3_cloudtrail_zip:
+data "archive_file" "lambda_s3_cloudtrail_zip" {
+    id                  = "2754d7f8368096cc15238e25ba3ddc835d7448c1"
+    output_base64sha256 = "kwVRH3misCbWem6GLlQiFHmiRgPidyLUHpfgUjEvRqc="
+    output_base64sha512 = "/CQ8WWTbhLCMiDbSlY9WQA8kxx9JMbI+UDObGhGD1UGHTjaQD4NhIqPAI7A/e79qX9tq5gmMHKRDsvJnfN5Bhg=="
+    output_md5          = "26ed78c0c309930c26ea6b6b9e15a734"
+    output_path         = "./lambda_s3_cloudtrail.zip"
+    output_sha          = "2754d7f8368096cc15238e25ba3ddc835d7448c1"
+    output_sha256       = "9305511f79a2b026d67a6e862e54221479a24603e27722d41e97e052312f46a7"
+    output_sha512       = "fc243c5964db84b08c8836d2958f56400f24c71f4931b23e50339b1a1183d541874e36900f836122a3c023b03f7bbf6a5fdb6ae6098c1ca443b2f2677cde4186"
+    output_size         = 2426
+    type                = "zip"
+
+    source {
+        content  = <<-EOT
+            import json
+            import boto3
+            import gzip
+            import os
+            import requests
+            from aws_requests_auth.aws_auth import AWSRequestsAuth 
+            from datetime import datetime
+            import logging
+            
+            logger = logging.getLogger()
+            logger.setLevel(logging.INFO)
+            s3 = boto3.client('s3')
+            opensearch_endpoint = os.environ['OPENSEARCH_ENDPOINT']
+            aws_region = os.environ.get('AWS_REGION', 'ap-northeast-2')
+            
+            # SigV4 인증 설정
+            credentials = boto3.Session().get_credentials()
+            aws_auth = AWSRequestsAuth(aws_access_key=credentials.access_key,
+                                       aws_secret_access_key=credentials.secret_key,
+                                       aws_token=credentials.token,
+                                       aws_host=opensearch_endpoint,
+                                       aws_region=aws_region,
+                                       aws_service='es')
+            
+            def lambda_handler(event, context):
+                logger.info("Received event: " + json.dumps(event, indent=2))
+            
+                try:
+                    bucket = event['Records'][0]['s3']['bucket']['name']
+                    key = event['Records'][0]['s3']['object']['key']
+                    key = key.replace('+', ' ')
+                except (KeyError, IndexError) as e:
+                    logger.error(f"Could not extract bucket/key from event: {e}")
+                    return {'statusCode': 400, 'body': json.dumps('Invalid S3 event format')}
+            
+                try:
+                    response = s3.get_object(Bucket=bucket, Key=key)
+                    content = response['Body'].read()
+                    log_data_raw = gzip.decompress(content).decode('utf-8')
+                    log_data = json.loads(log_data_raw)
+                    records = log_data.get('Records', [])
+                    logger.info(f"Processing {len(records)} records from {key}")
+            
+                    if not records:
+                        logger.info("No records to send.")
+                        return {'statusCode': 200, 'body': json.dumps('No records found in the file.')}
+            
+                    # --- 수정된 부분: Bulk 데이터 생성 방식 변경 ---
+                    bulk_payload_lines = [] # 각 라인을 저장할 리스트 생성
+                    for record in records:
+                        try:
+                            event_time_str = record.get('eventTime')
+                            if event_time_str:
+                                try:
+                                    dt_obj = datetime.fromisoformat(event_time_str.replace('Z', '+00:00'))
+                                    index_date_str = dt_obj.strftime('%Y-%m-%d')
+                                except ValueError:
+                                    logger.warning(f"Could not parse eventTime '{event_time_str}', using current date.")
+                                    index_date_str = datetime.utcnow().strftime('%Y-%m-%d')
+                            else:
+                                index_date_str = datetime.utcnow().strftime('%Y-%m-%d')
+                            index_name = f"cloudtrail-{index_date_str}"
+            
+                            # Bulk API 메타데이터 라인 추가
+                            bulk_payload_lines.append(json.dumps({"index": {"_index": index_name}}))
+                            # 실제 로그 레코드 라인 추가
+                            bulk_payload_lines.append(json.dumps(record))
+                        except Exception as e:
+                            logger.error(f"Error processing individual record: {e}. Record: {json.dumps(record)}")
+            
+                    # 리스트의 모든 라인을 개행문자(\n)로 합치고, 맨 마지막에 개행문자 추가
+                    final_bulk_data = '\n'.join(bulk_payload_lines) + '\n'
+                    # --- 여기까지 수정 ---
+            
+                    # OpenSearch로 데이터 전송 (requests 및 SigV4 사용)
+                    url = f"https://{opensearch_endpoint}/_bulk"
+                    headers = {"Content-Type": "application/x-ndjson"}
+            
+                    # 수정된 final_bulk_data 사용
+                    r = requests.post(url, auth=aws_auth, data=final_bulk_data.encode('utf-8'), headers=headers)
+            
+                    logger.info(f"OpenSearch response status: {r.status_code}")
+            
+                    if r.status_code >= 300:
+                         logger.error(f"OpenSearch request failed with status {r.status_code}: {r.text}")
+                         # 오류 발생 시에도 응답 본문 로깅 시도 (오류 상세 확인용)
+                         try:
+                             logger.error(f"Failed response body: {r.json()}")
+                         except json.JSONDecodeError:
+                             logger.error(f"Failed response body (non-JSON): {r.text}")
+            
+            
+                    # 성공/실패 여부와 관계없이 응답 본문 처리 시도
+                    try:
+                        response_json = r.json()
+                        if response_json.get('errors'):
+                            error_count = 0
+                            logger.warning("Errors reported by OpenSearch Bulk API:")
+                            for item in response_json.get('items', []):
+                                if 'error' in item.get('index', {}):
+                                     error_count += 1
+                                     if error_count < 10:
+                                        logger.warning(f"  Item Error: {item['index']['error']}")
+                            if error_count >= 10:
+                                logger.warning(f"  ... and {error_count - 9} more errors.")
+                    except json.JSONDecodeError:
+                        # 400 Bad Request 등 에러 시 응답 본문이 JSON이 아닐 수 있음
+                         if r.status_code < 300 : # 성공 응답인데 JSON 파싱 실패한 경우만 로깅
+                             logger.error(f"Could not decode JSON from successful response: {r.text}")
+            
+            
+                    # 함수 종료 로그는 요청 시도 후 상태와 관계없이 기록될 수 있음
+                    logger.info(f"Successfully processed {key} and attempted to send {len(records)} records. Final status: {r.status_code}")
+                    # 실제 성공 여부는 status_code 로 판단하는 것이 더 정확
+                    if r.status_code < 300:
+                         return {'statusCode': 200, 'body': json.dumps('Successfully processed logs.')}
+                    else:
+                         # 실패 시 오류 상태 코드 반환 고려
+                         return {'statusCode': 500, 'body': json.dumps(f'Failed to send logs to OpenSearch. Status: {r.status_code}')}
+            
+            
+                except json.JSONDecodeError as e:
+                    logger.error(f"Error decoding JSON from file {key}: {e}")
+                    return {'statusCode': 400, 'body': json.dumps('Invalid JSON format in log file.')}
+                except Exception as e:
+                    logger.error(f"Error processing file {key} from bucket {bucket}: {e}", exc_info=True)
+                    raise e
+        EOT
+        filename = "index.py"
+    }
+}
+
+# data.archive_file.lambda_s3_web_zip:
+data "archive_file" "lambda_s3_web_zip" {
+    id                  = "41fc754eea20c76f6ff1d765fd1919b6f6e8df7e"
+    output_base64sha256 = "GTFi4+TQPqxrerXa4dCUS60XdTMc7AQNoxbGe9TW1aM="
+    output_base64sha512 = "LVHV3JqYd3io+07jA7jiDrKXp9RkF6LVZNvvgfawt4ay22UsJs/GcNwf5g0SnCzYkNXBfv6+Cq/ZM+LClGGp0w=="
+    output_md5          = "79e84bf6bcbc5ee5fd1a27c3d99661d7"
+    output_path         = "./lambda_s3_web.zip"
+    output_sha          = "41fc754eea20c76f6ff1d765fd1919b6f6e8df7e"
+    output_sha256       = "193162e3e4d03eac6b7ab5dae1d0944bad1775331cec040da316c67bd4d6d5a3"
+    output_sha512       = "2d51d5dc9a987778a8fb4ee303b8e20eb297a7d46417a2d564dbef81f6b0b786b2db652c26cfc670dc1fe60d129c2cd890d5c17efebe0aafd933e2c29461a9d3"
+    output_size         = 3502
+    type                = "zip"
+
+    source {
+        content  = <<-EOT
+            import json
+            import boto3
+            import os
+            import requests
+            from aws_requests_auth.aws_auth import AWSRequestsAuth 
+            from datetime import datetime
+            import logging
+            import geoip2.database 
+            
+            logger = logging.getLogger()
+            logger.setLevel(logging.INFO)
+            
+            s3 = boto3.client('s3')
+            
+            opensearch_endpoint = os.environ['OPENSEARCH_ENDPOINT']
+            aws_region = os.environ.get('AWS_REGION', 'ap-northeast-2') # 기본값 설정
+            
+            credentials = boto3.Session().get_credentials()
+            aws_auth = AWSRequestsAuth(aws_access_key=credentials.access_key,
+                                       aws_secret_access_key=credentials.secret_key,
+                                       aws_token=credentials.token,
+                                       aws_host=opensearch_endpoint.replace('https://',''), # 호스트명만 전달
+                                       aws_region=aws_region,
+                                       aws_service='es') # OpenSearch Service의 서비스 이름은 'es'
+            
+            db_path = os.environ.get('GEOIP_DB_PATH', 'GeoLite2-City.mmdb')
+            reader = None
+            try:
+                logger.info(f"Attempting to load GeoIP database from: {db_path}")
+                reader = geoip2.database.Reader(db_path)
+                logger.info("GeoIP database loaded successfully.")
+            except FileNotFoundError:
+                logger.error(f"CRITICAL: GeoIP Database not found at {db_path}. GeoIP enrichment will be disabled.")
+            except Exception as e:
+                logger.error(f"CRITICAL: Failed to load GeoIP database from {db_path}: {e}. GeoIP enrichment will be disabled.")
+            
+            def lambda_handler(event, context):
+                global reader # 전역 변수 reader 사용 명시
+            
+                logger.info("Received event: " + json.dumps(event, indent=2))
+            
+                try:
+                    bucket = event['Records'][0]['s3']['bucket']['name']
+                    key = event['Records'][0]['s3']['object']['key'].replace('+', ' ')
+                    logger.info(f"Processing object {key} from bucket {bucket}")
+            
+                except (KeyError, IndexError, TypeError) as e:
+                    logger.error(f"Could not extract bucket/key from event: {e}. Event structure might be incorrect.")
+                    return {'statusCode': 400, 'body': json.dumps('Invalid S3 event format')}
+            
+                try:
+                    response = s3.get_object(Bucket=bucket, Key=key)
+                    content = response['Body'].read()
+                    log_data_raw = content.decode('utf-8')
+            
+                    log_data = json.loads(log_data_raw)
+                    records = log_data.get('Records', []) # 제공된 예시 형식이므로 'Records' 키 사용
+                    logger.info(f"Processing {len(records)} records from {key}")
+            
+                    if not records:
+                        logger.info("No records to send.")
+                        return {'statusCode': 200, 'body': json.dumps('No records found in the file.')}
+            
+                    bulk_payload_lines = [] # 벌크 요청 본문을 위한 라인 리스트
+                    processed_count = 0
+                    for record in records:
+                        try:
+                            ip_address = record.get('sourceIPAddress')
+                            if ip_address and reader: # IP 주소가 있고, DB 로더가 성공적으로 초기화되었을 때만 시도
+                                try:
+                                    geo_response = reader.city(ip_address) # IP 조회
+                                    geo_info = {}
+            
+                                    if geo_response.country.iso_code:
+                                        geo_info['country_iso_code'] = geo_response.country.iso_code
+                                    if geo_response.country.name:
+                                        geo_info['country_name'] = geo_response.country.name
+                                    if geo_response.subdivisions.most_specific.name:
+                                         geo_info['subdivision_name'] = geo_response.subdivisions.most_specific.name
+                                    if geo_response.city.name:
+                                        geo_info['city_name'] = geo_response.city.name
+                                    if geo_response.postal.code:
+                                         geo_info['postal_code'] = geo_response.postal.code
+                                    if geo_response.location.latitude and geo_response.location.longitude:
+                                        # OpenSearch geo_point 형식
+                                        geo_info['location'] = {
+                                            'lat': geo_response.location.latitude,
+                                            'lon': geo_response.location.longitude
+                                        }
+            
+                                    if geo_info:
+                                        record['geoip'] = geo_info
+                                        # logger.debug(f"Added GeoIP for {ip_address}: {json.dumps(geo_info)}") # 디버깅 시 유용
+            
+                                except geoip2.errors.AddressNotFoundError:
+                                    logger.debug(f"IP address not found in GeoIP database: {ip_address}")
+                                except ValueError:
+                                    logger.warning(f"Invalid IP address format for GeoIP lookup: {ip_address}")
+                                except Exception as geo_e:
+                                    logger.error(f"Error during GeoIP lookup for {ip_address}: {geo_e}")
+                            elif not reader and ip_address:
+                                logger.warning(f"GeoIP reader not available, skipping enrichment for IP: {ip_address}")
+            
+                            event_time_str = record.get('eventTime')
+                            index_date_str = datetime.utcnow().strftime('%Y-%m-%d') # 기본값: 현재 날짜
+                            if event_time_str:
+                                try:
+                                    dt_obj = datetime.fromisoformat(event_time_str.replace('Z', '+00:00'))
+                                    index_date_str = dt_obj.strftime('%Y-%m-%d') # 날짜 부분만 사용
+                                except ValueError:
+                                    logger.warning(f"Could not parse eventTime '{event_time_str}', using current date for index.")
+                            index_name = f"web-{index_date_str}" # 인덱스 이름 형식 (예: web-YYYY-MM-DD)
+            
+                            bulk_payload_lines.append(json.dumps({"index": {"_index": index_name}}))
+                            bulk_payload_lines.append(json.dumps(record))
+                            processed_count += 1
+            
+                        except Exception as e:
+                            logger.error(f"Error processing individual record: {e}. Record (partial): {json.dumps(record, default=str)}")
+            
+            
+                    if bulk_payload_lines:
+                        final_bulk_data = '\n'.join(bulk_payload_lines) + '\n'
+                        url = f"https://{opensearch_endpoint}/_bulk" # 엔드포인트 URL 확인 (https:// 포함)
+                        headers = {"Content-Type": "application/x-ndjson"}
+            
+                        logger.info(f"Sending {processed_count} records ({len(bulk_payload_lines)//2} actions) to OpenSearch index pattern 'web-*'...")
+            
+                        # --- OpenSearch로 벌크 요청 전송 (기존 로직 유지) ---
+                        r = requests.post(url, auth=aws_auth, data=final_bulk_data.encode('utf-8'), headers=headers, timeout=30) # 타임아웃 추가 권장
+            
+                        logger.info(f"OpenSearch response status: {r.status_code}")
+            
+                        # --- 응답 처리 (기존 로직 유지, 일부 로깅 개선) ---
+                        response_json = None
+                        try:
+                            response_json = r.json()
+                        except json.JSONDecodeError:
+                             logger.error(f"Could not decode JSON response from OpenSearch. Status: {r.status_code}, Response text: {r.text[:500]}") # 응답 일부 로깅
+            
+                        if r.status_code >= 300:
+                            logger.error(f"OpenSearch bulk request failed. Status: {r.status_code}, Response: {r.text[:1000]}") # 응답 본문 일부 로깅
+                            # 실패 시 반환 상태 코드 설정
+                            return {'statusCode': 500, 'body': json.dumps(f'Failed to send logs to OpenSearch. Status: {r.status_code}')}
+            
+                        # 성공했더라도 개별 항목 오류 확인 (기존 로직 유지)
+                        if response_json and response_json.get('errors'):
+                            error_count = 0
+                            items_with_errors = []
+                            for item in response_json.get('items', []):
+                                action_result = item.get('index', {}) # 'index' 액션 결과 확인
+                                if action_result.get('error'):
+                                    error_count += 1
+                                    if error_count <= 10: # 너무 많은 오류 로그 방지
+                                         items_with_errors.append(action_result)
+                            logger.warning(f"OpenSearch reported {error_count} errors in the bulk response. First {len(items_with_errors)} errors: {json.dumps(items_with_errors)}")
+                            # 부분 성공/실패 시 상태 코드 207 반환
+                            return {'statusCode': 207, 'body': json.dumps('Processed logs with some errors reported by OpenSearch.')}
+                        elif r.status_code < 300:
+                             # 전체 성공 시
+                             logger.info(f"Successfully sent {processed_count} records to OpenSearch.")
+                             return {'statusCode': 200, 'body': json.dumps('Successfully processed logs.')}
+            
+                    else:
+                        logger.info("No valid records were processed to be sent.")
+                        return {'statusCode': 200, 'body': json.dumps('No records were sent to OpenSearch.')}
+            
+                except json.JSONDecodeError as e:
+                    logger.error(f"Error decoding JSON from file {key}: {e}")
+                    return {'statusCode': 400, 'body': json.dumps('Invalid JSON format in log file.')}
+                except ClientError as e: # Boto3 관련 오류 명시적 처리
+                    if e.response['Error']['Code'] == 'NoSuchKey':
+                         logger.error(f"S3 object {key} not found in bucket {bucket}. It might have been deleted before processing.")
+                         return {'statusCode': 404, 'body': json.dumps('S3 object not found.')}
+                    else:
+                         logger.error(f"Boto3 client error processing file {key}: {e}", exc_info=True)
+                         return {'statusCode': 500, 'body': json.dumps(f'AWS service error: {e}')}
+                except Exception as e:
+                    logger.error(f"Unexpected error processing file {key} from bucket {bucket}: {e}", exc_info=True) # 스택 트레이스 포함 로깅
+                    # 예기치 않은 오류 시 500 반환 또는 raise e로 Lambda 재시도 유도 가능
+                    return {'statusCode': 500, 'body': json.dumps(f'An unexpected error occurred: {e}')}
+        EOT
+        filename = "index.py"
+    }
+}
+
+# data.aws_caller_identity.current:
+data "aws_caller_identity" "current" {
+    account_id = "248189921892"
+    arn        = "arn:aws:iam::248189921892:user/kyu"
+    id         = "248189921892"
+    user_id    = "AIDATTSKFVJSOGP4NNI4B"
+}
+
+# data.aws_iam_policy_document.cloudtrail_s3_policy:
+data "aws_iam_policy_document" "cloudtrail_s3_policy" {
+    id            = "3419185684"
+    json          = jsonencode(
+        {
+            Statement = [
+                {
+                    Action    = "s3:GetBucketAcl"
+                    Effect    = "Allow"
+                    Principal = {
+                        Service = "cloudtrail.amazonaws.com"
+                    }
+                    Resource  = "arn:aws:s3:::log-opensearch-538ca6c17258cc4d"
+                    Sid       = "AWSCloudTrailAclCheck"
+                },
+                {
+                    Action    = "s3:PutObject"
+                    Condition = {
+                        StringEquals = {
+                            "s3:x-amz-acl" = "bucket-owner-full-control"
+                        }
+                    }
+                    Effect    = "Allow"
+                    Principal = {
+                        Service = "cloudtrail.amazonaws.com"
+                    }
+                    Resource  = "arn:aws:s3:::log-opensearch-538ca6c17258cc4d/AWSLogs/248189921892/*"
+                    Sid       = "AWSCloudTrailWrite"
+                },
+            ]
+            Version   = "2012-10-17"
+        }
+    )
+    minified_json = jsonencode(
+        {
+            Statement = [
+                {
+                    Action    = "s3:GetBucketAcl"
+                    Effect    = "Allow"
+                    Principal = {
+                        Service = "cloudtrail.amazonaws.com"
+                    }
+                    Resource  = "arn:aws:s3:::log-opensearch-538ca6c17258cc4d"
+                    Sid       = "AWSCloudTrailAclCheck"
+                },
+                {
+                    Action    = "s3:PutObject"
+                    Condition = {
+                        StringEquals = {
+                            "s3:x-amz-acl" = "bucket-owner-full-control"
+                        }
+                    }
+                    Effect    = "Allow"
+                    Principal = {
+                        Service = "cloudtrail.amazonaws.com"
+                    }
+                    Resource  = "arn:aws:s3:::log-opensearch-538ca6c17258cc4d/AWSLogs/248189921892/*"
+                    Sid       = "AWSCloudTrailWrite"
+                },
+            ]
+            Version   = "2012-10-17"
+        }
+    )
+    version       = "2012-10-17"
+
+    statement {
+        actions       = [
+            "s3:GetBucketAcl",
+        ]
+        effect        = "Allow"
+        not_actions   = []
+        not_resources = []
+        resources     = [
+            "arn:aws:s3:::log-opensearch-538ca6c17258cc4d",
+        ]
+        sid           = "AWSCloudTrailAclCheck"
+
+        principals {
+            identifiers = [
+                "cloudtrail.amazonaws.com",
+            ]
+            type        = "Service"
+        }
+    }
+    statement {
+        actions       = [
+            "s3:PutObject",
+        ]
+        effect        = "Allow"
+        not_actions   = []
+        not_resources = []
+        resources     = [
+            "arn:aws:s3:::log-opensearch-538ca6c17258cc4d/AWSLogs/248189921892/*",
+        ]
+        sid           = "AWSCloudTrailWrite"
+
+        condition {
+            test     = "StringEquals"
+            values   = [
+                "bucket-owner-full-control",
+            ]
+            variable = "s3:x-amz-acl"
+        }
+
+        principals {
+            identifiers = [
+                "cloudtrail.amazonaws.com",
+            ]
+            type        = "Service"
+        }
+    }
+}
+
+# data.aws_region.current:
+data "aws_region" "current" {
+    description = "Asia Pacific (Seoul)"
+    endpoint    = "ec2.ap-northeast-2.amazonaws.com"
+    id          = "ap-northeast-2"
+    name        = "ap-northeast-2"
+}
+
+# data.aws_s3_bucket.tfstate_bucket:
+data "aws_s3_bucket" "tfstate_bucket" {
+    arn                         = "arn:aws:s3:::tfstate-bucket-revolution112233"
+    bucket                      = "tfstate-bucket-revolution112233"
+    bucket_domain_name          = "tfstate-bucket-revolution112233.s3.amazonaws.com"
+    bucket_regional_domain_name = "tfstate-bucket-revolution112233.s3.ap-northeast-2.amazonaws.com"
+    hosted_zone_id              = "Z3W03O7B5YMIYP"
+    id                          = "tfstate-bucket-revolution112233"
+    region                      = "ap-northeast-2"
+}
+
+# data.aws_s3_bucket.web_bucket:
+data "aws_s3_bucket" "web_bucket" {
+    arn                         = "arn:aws:s3:::bet-application-total-logs"
+    bucket                      = "bet-application-total-logs"
+    bucket_domain_name          = "bet-application-total-logs.s3.amazonaws.com"
+    bucket_regional_domain_name = "bet-application-total-logs.s3.ap-northeast-2.amazonaws.com"
+    hosted_zone_id              = "Z3W03O7B5YMIYP"
+    id                          = "bet-application-total-logs"
+    region                      = "ap-northeast-2"
+}
+
+# aws_cloudtrail.main_trail:
+resource "aws_cloudtrail" "main_trail" {
+    arn                           = "arn:aws:cloudtrail:ap-northeast-2:248189921892:trail/main-log-integration-trail"
+    cloud_watch_logs_group_arn    = [90mnull[0m[0m
+    cloud_watch_logs_role_arn     = [90mnull[0m[0m
+    enable_log_file_validation    = false
+    enable_logging                = true
+    home_region                   = "ap-northeast-2"
+    id                            = "arn:aws:cloudtrail:ap-northeast-2:248189921892:trail/main-log-integration-trail"
+    include_global_service_events = true
+    is_multi_region_trail         = true
+    is_organization_trail         = false
+    kms_key_id                    = [90mnull[0m[0m
+    name                          = "main-log-integration-trail"
+    s3_bucket_name                = "log-opensearch-538ca6c17258cc4d"
+    s3_key_prefix                 = [90mnull[0m[0m
+    sns_topic_arn                 = [90mnull[0m[0m
+    sns_topic_name                = [90mnull[0m[0m
+    tags                          = {
+        "Environment" = "Development"
+        "Owner"       = "kyu"
+        "Project"     = "LogIntegration"
+    }
+    tags_all                      = {
+        "Environment" = "Development"
+        "Owner"       = "kyu"
+        "Project"     = "LogIntegration"
+    }
+}
+
+# aws_iam_policy.lambda_s3_opensearch_policy:
+resource "aws_iam_policy" "lambda_s3_opensearch_policy" {
+    arn              = "arn:aws:iam::248189921892:policy/lambda-s3-opensearch-policy"
+    attachment_count = 1
+    description      = "Policy for Lambda to read CloudTrail logs from S3 and write to OpenSearch"
+    id               = "arn:aws:iam::248189921892:policy/lambda-s3-opensearch-policy"
+    name             = "lambda-s3-opensearch-policy"
+    name_prefix      = [90mnull[0m[0m
+    path             = "/"
+    policy           = jsonencode(
+        {
+            Statement = [
+                {
+                    Action   = [
+                        "logs:CreateLogGroup",
+                        "logs:CreateLogStream",
+                        "logs:PutLogEvents",
+                    ]
+                    Effect   = "Allow"
+                    Resource = "arn:aws:logs:*:*:*"
+                },
+                {
+                    Action   = [
+                        "s3:GetObject",
+                        "s3:ListBucket",
+                    ]
+                    Effect   = "Allow"
+                    Resource = [
+                        "arn:aws:s3:::log-opensearch-538ca6c17258cc4d",
+                        "arn:aws:s3:::log-opensearch-538ca6c17258cc4d/*",
+                    ]
+                },
+                {
+                    Action   = [
+                        "es:ESHttpPost",
+                        "es:ESHttpPut",
+                        "es:ESHttpGet",
+                    ]
+                    Effect   = "Allow"
+                    Resource = "arn:aws:es:ap-northeast-2:248189921892:domain/integration-log-timangs/*"
+                },
+            ]
+            Version   = "2012-10-17"
+        }
+    )
+    policy_id        = "ANPATTSKFVJSJ4MLXI5TH"
+    tags             = {}
+    tags_all         = {}
+}
+
+# aws_iam_role.lambda_s3_opensearch_role:
+resource "aws_iam_role" "lambda_s3_opensearch_role" {
+    arn                   = "arn:aws:iam::248189921892:role/lambda-s3-opensearch-role"
+    assume_role_policy    = jsonencode(
+        {
+            Statement = [
+                {
+                    Action    = "sts:AssumeRole"
+                    Effect    = "Allow"
+                    Principal = {
+                        Service = "lambda.amazonaws.com"
+                    }
+                },
+            ]
+            Version   = "2012-10-17"
+        }
+    )
+    create_date           = "2025-04-24T00:44:22Z"
+    description           = [90mnull[0m[0m
+    force_detach_policies = false
+    id                    = "lambda-s3-opensearch-role"
+    managed_policy_arns   = [
+        "arn:aws:iam::248189921892:policy/lambda-s3-opensearch-policy",
+    ]
+    max_session_duration  = 3600
+    name                  = "lambda-s3-opensearch-role"
+    name_prefix           = [90mnull[0m[0m
+    path                  = "/"
+    permissions_boundary  = [90mnull[0m[0m
+    tags                  = {
+        "Environment" = "Development"
+        "Owner"       = "kyu"
+        "Project"     = "LogIntegration"
+    }
+    tags_all              = {
+        "Environment" = "Development"
+        "Owner"       = "kyu"
+        "Project"     = "LogIntegration"
+    }
+    unique_id             = "AROATTSKFVJSA7N5HSUBV"
+
+    inline_policy {
+        name   = "S3GetObjectWebAppLogsPolicy"
+        policy = jsonencode(
+            {
+                Statement = [
+                    {
+                        Action   = [
+                            "s3:GetObject",
+                            "s3:ListBucket",
+                        ]
+                        Effect   = "Allow"
+                        Resource = [
+                            "arn:aws:s3:::bet-application-total-logs",
+                            "arn:aws:s3:::bet-application-total-logs/*",
+                            "arn:aws:s3:::tfstate-bucket-revolution112233",
+                            "arn:aws:s3:::tfstate-bucket-revolution112233/*",
+                        ]
+                    },
+                ]
+                Version   = "2012-10-17"
+            }
+        )
+    }
+}
+
+# aws_iam_role_policy.lambda_s3_getobject_policy:
+resource "aws_iam_role_policy" "lambda_s3_getobject_policy" {
+    id          = "lambda-s3-opensearch-role:S3GetObjectWebAppLogsPolicy"
+    name        = "S3GetObjectWebAppLogsPolicy"
+    name_prefix = [90mnull[0m[0m
+    policy      = jsonencode(
+        {
+            Statement = [
+                {
+                    Action   = [
+                        "s3:GetObject",
+                        "s3:ListBucket",
+                    ]
+                    Effect   = "Allow"
+                    Resource = [
+                        "arn:aws:s3:::bet-application-total-logs",
+                        "arn:aws:s3:::bet-application-total-logs/*",
+                        "arn:aws:s3:::tfstate-bucket-revolution112233",
+                        "arn:aws:s3:::tfstate-bucket-revolution112233/*",
+                    ]
+                },
+            ]
+            Version   = "2012-10-17"
+        }
+    )
+    role        = "lambda-s3-opensearch-role"
+}
+
+# aws_iam_role_policy_attachment.lambda_s3_opensearch_attach:
+resource "aws_iam_role_policy_attachment" "lambda_s3_opensearch_attach" {
+    id         = "lambda-s3-opensearch-role-20250424005933094000000001"
+    policy_arn = "arn:aws:iam::248189921892:policy/lambda-s3-opensearch-policy"
+    role       = "lambda-s3-opensearch-role"
+}
+
+# aws_lambda_function.s3_to_cloudtrail_lambda:
+resource "aws_lambda_function" "s3_to_cloudtrail_lambda" {
+    architectures                  = [
+        "x86_64",
+    ]
+    arn                            = "arn:aws:lambda:ap-northeast-2:248189921892:function:s3-to-opensearch-cloudtrail"
+    code_sha256                    = "kwVRH3misCbWem6GLlQiFHmiRgPidyLUHpfgUjEvRqc="
+    code_signing_config_arn        = [90mnull[0m[0m
+    description                    = [90mnull[0m[0m
+    filename                       = "./lambda_s3_cloudtrail.zip"
+    function_name                  = "s3-to-opensearch-cloudtrail"
+    handler                        = "index.lambda_handler"
+    id                             = "s3-to-opensearch-cloudtrail"
+    image_uri                      = [90mnull[0m[0m
+    invoke_arn                     = "arn:aws:apigateway:ap-northeast-2:lambda:path/2015-03-31/functions/arn:aws:lambda:ap-northeast-2:248189921892:function:s3-to-opensearch-cloudtrail/invocations"
+    kms_key_arn                    = [90mnull[0m[0m
+    last_modified                  = "2025-04-24T00:59:33.028+0000"
+    layers                         = [
+        "arn:aws:lambda:ap-northeast-2:248189921892:layer:opensearch-python-libs:12",
+    ]
+    memory_size                    = 256
+    package_type                   = "Zip"
+    publish                        = false
+    qualified_arn                  = "arn:aws:lambda:ap-northeast-2:248189921892:function:s3-to-opensearch-cloudtrail:$LATEST"
+    qualified_invoke_arn           = "arn:aws:apigateway:ap-northeast-2:lambda:path/2015-03-31/functions/arn:aws:lambda:ap-northeast-2:248189921892:function:s3-to-opensearch-cloudtrail:$LATEST/invocations"
+    reserved_concurrent_executions = -1
+    role                           = "arn:aws:iam::248189921892:role/lambda-s3-opensearch-role"
+    runtime                        = "python3.9"
+    signing_job_arn                = [90mnull[0m[0m
+    signing_profile_version_arn    = [90mnull[0m[0m
+    skip_destroy                   = false
+    source_code_hash               = "kwVRH3misCbWem6GLlQiFHmiRgPidyLUHpfgUjEvRqc="
+    source_code_size               = 2426
+    tags                           = {
+        "Environment" = "Development"
+        "Owner"       = "kyu"
+        "Project"     = "LogIntegration"
+    }
+    tags_all                       = {
+        "Environment" = "Development"
+        "Owner"       = "kyu"
+        "Project"     = "LogIntegration"
+    }
+    timeout                        = 300
+    version                        = "$LATEST"
+
+    environment {
+        variables = {
+            "OPENSEARCH_ENDPOINT" = "search-integration-log-timangs-pmq42otk4e4kzasqldinbpkgey.ap-northeast-2.es.amazonaws.com"
+        }
+    }
+
+    ephemeral_storage {
+        size = 512
+    }
+
+    logging_config {
+        application_log_level = [90mnull[0m[0m
+        log_format            = "Text"
+        log_group             = "/aws/lambda/s3-to-opensearch-cloudtrail"
+        system_log_level      = [90mnull[0m[0m
+    }
+
+    tracing_config {
+        mode = "PassThrough"
+    }
+}
+
+# aws_lambda_function.s3_to_web_lambda:
+resource "aws_lambda_function" "s3_to_web_lambda" {
+    architectures                  = [
+        "x86_64",
+    ]
+    arn                            = "arn:aws:lambda:ap-northeast-2:248189921892:function:s3-to-opensearch-web"
+    code_sha256                    = "GTFi4+TQPqxrerXa4dCUS60XdTMc7AQNoxbGe9TW1aM="
+    code_signing_config_arn        = [90mnull[0m[0m
+    description                    = [90mnull[0m[0m
+    filename                       = "./lambda_s3_web.zip"
+    function_name                  = "s3-to-opensearch-web"
+    handler                        = "index.lambda_handler"
+    id                             = "s3-to-opensearch-web"
+    image_uri                      = [90mnull[0m[0m
+    invoke_arn                     = "arn:aws:apigateway:ap-northeast-2:lambda:path/2015-03-31/functions/arn:aws:lambda:ap-northeast-2:248189921892:function:s3-to-opensearch-web/invocations"
+    kms_key_arn                    = [90mnull[0m[0m
+    last_modified                  = "2025-04-24T01:08:58.525+0000"
+    layers                         = [
+        "arn:aws:lambda:ap-northeast-2:248189921892:layer:opensearch-python-libs:12",
+        "arn:aws:lambda:ap-northeast-2:248189921892:layer:opensearch-geoip-mmdb:1",
+    ]
+    memory_size                    = 256
+    package_type                   = "Zip"
+    publish                        = false
+    qualified_arn                  = "arn:aws:lambda:ap-northeast-2:248189921892:function:s3-to-opensearch-web:$LATEST"
+    qualified_invoke_arn           = "arn:aws:apigateway:ap-northeast-2:lambda:path/2015-03-31/functions/arn:aws:lambda:ap-northeast-2:248189921892:function:s3-to-opensearch-web:$LATEST/invocations"
+    reserved_concurrent_executions = -1
+    role                           = "arn:aws:iam::248189921892:role/lambda-s3-opensearch-role"
+    runtime                        = "python3.9"
+    signing_job_arn                = [90mnull[0m[0m
+    signing_profile_version_arn    = [90mnull[0m[0m
+    skip_destroy                   = false
+    source_code_hash               = "GTFi4+TQPqxrerXa4dCUS60XdTMc7AQNoxbGe9TW1aM="
+    source_code_size               = 3502
+    tags                           = {
+        "Environment" = "Development"
+        "Owner"       = "kyu"
+        "Project"     = "LogIntegration"
+    }
+    tags_all                       = {
+        "Environment" = "Development"
+        "Owner"       = "kyu"
+        "Project"     = "LogIntegration"
+    }
+    timeout                        = 300
+    version                        = "$LATEST"
+
+    environment {
+        variables = {
+            "OPENSEARCH_ENDPOINT" = "search-integration-log-timangs-pmq42otk4e4kzasqldinbpkgey.ap-northeast-2.es.amazonaws.com"
+        }
+    }
+
+    ephemeral_storage {
+        size = 512
+    }
+
+    logging_config {
+        application_log_level = [90mnull[0m[0m
+        log_format            = "Text"
+        log_group             = "/aws/lambda/s3-to-opensearch-web"
+        system_log_level      = [90mnull[0m[0m
+    }
+
+    tracing_config {
+        mode = "PassThrough"
+    }
+}
+
+# aws_lambda_layer_version.geoip_mmdb_layer:
+resource "aws_lambda_layer_version" "geoip_mmdb_layer" {
+    arn                         = "arn:aws:lambda:ap-northeast-2:248189921892:layer:opensearch-geoip-mmdb:1"
+    code_sha256                 = "t/yNe6u8QYJOBJk2mvG2wnUqnUttJ6AVeH+SggEAcvk="
+    compatible_runtimes         = [
+        "python3.9",
+    ]
+    created_date                = "2025-04-24T01:07:58.808+0000"
+    description                 = "GeoLite2-City MMDB 파일을 포함하는 Lambda Layer"
+    filename                    = "./lambda_layer.zip"
+    id                          = "arn:aws:lambda:ap-northeast-2:248189921892:layer:opensearch-geoip-mmdb:1"
+    layer_arn                   = "arn:aws:lambda:ap-northeast-2:248189921892:layer:opensearch-geoip-mmdb"
+    layer_name                  = "opensearch-geoip-mmdb"
+    license_info                = [90mnull[0m[0m
+    signing_job_arn             = [90mnull[0m[0m
+    signing_profile_version_arn = [90mnull[0m[0m
+    skip_destroy                = false
+    source_code_hash            = "jb3jY7BLzWfXlRx7jHSoieOCo8OGiqaqGBmK1J+JO/o="
+    source_code_size            = 4369244
+    version                     = "1"
+}
+
+# aws_lambda_layer_version.opensearch_libs_layer:
+resource "aws_lambda_layer_version" "opensearch_libs_layer" {
+    arn                         = "arn:aws:lambda:ap-northeast-2:248189921892:layer:opensearch-python-libs:12"
+    code_sha256                 = "t/yNe6u8QYJOBJk2mvG2wnUqnUttJ6AVeH+SggEAcvk="
+    compatible_architectures    = []
+    compatible_runtimes         = [
+        "python3.9",
+    ]
+    created_date                = "2025-04-24T00:44:22.914+0000"
+    description                 = "Layer containing requests and aws-requests-auth libraries for OpenSearch Lambda (From local zip)"
+    filename                    = "./lambda_layer.zip"
+    id                          = "arn:aws:lambda:ap-northeast-2:248189921892:layer:opensearch-python-libs:12"
+    layer_arn                   = "arn:aws:lambda:ap-northeast-2:248189921892:layer:opensearch-python-libs"
+    layer_name                  = "opensearch-python-libs"
+    license_info                = [90mnull[0m[0m
+    signing_job_arn             = [90mnull[0m[0m
+    signing_profile_version_arn = [90mnull[0m[0m
+    skip_destroy                = false
+    source_code_hash            = "t/yNe6u8QYJOBJk2mvG2wnUqnUttJ6AVeH+SggEAcvk="
+    source_code_size            = 4369244
+    version                     = "12"
+}
+
+# aws_lambda_permission.allow_s3_invocation_cloudtrail:
+resource "aws_lambda_permission" "allow_s3_invocation_cloudtrail" {
+    action                 = "lambda:InvokeFunction"
+    event_source_token     = [90mnull[0m[0m
+    function_name          = "s3-to-opensearch-cloudtrail"
+    function_url_auth_type = [90mnull[0m[0m
+    id                     = "AllowS3InvokeFunction"
+    principal              = "s3.amazonaws.com"
+    principal_org_id       = [90mnull[0m[0m
+    qualifier              = [90mnull[0m[0m
+    source_account         = "248189921892"
+    source_arn             = "arn:aws:s3:::log-opensearch-538ca6c17258cc4d"
+    statement_id           = "AllowS3InvokeFunction"
+    statement_id_prefix    = [90mnull[0m[0m
+}
+
+# aws_lambda_permission.allow_s3_invocation_web:
+resource "aws_lambda_permission" "allow_s3_invocation_web" {
+    action                 = "lambda:InvokeFunction"
+    event_source_token     = [90mnull[0m[0m
+    function_name          = "s3-to-opensearch-web"
+    function_url_auth_type = [90mnull[0m[0m
+    id                     = "AllowS3InvokeFunction"
+    principal              = "s3.amazonaws.com"
+    principal_org_id       = [90mnull[0m[0m
+    qualifier              = [90mnull[0m[0m
+    source_account         = "248189921892"
+    source_arn             = "arn:aws:s3:::bet-application-total-logs"
+    statement_id           = "AllowS3InvokeFunction"
+    statement_id_prefix    = [90mnull[0m[0m
+}
+
+# aws_opensearch_domain.log_domain:
+resource "aws_opensearch_domain" "log_domain" {
+    access_policies                   = jsonencode(
+        {
+            Statement = [
+                {
+                    Action    = "es:*"
+                    Effect    = "Allow"
+                    Principal = {
+                        AWS = "arn:aws:iam::248189921892:role/lambda-s3-opensearch-role"
+                    }
+                    Resource  = "arn:aws:es:ap-northeast-2:248189921892:domain/integration-log-timangs/*"
+                },
+                {
+                    Action    = "es:*"
+                    Condition = {
+                        IpAddress = {
+                            "aws:SourceIp" = [
+                                "121.160.41.207/32",
+                                "58.120.222.122/32",
+                                "59.9.132.74/32",
+                                "118.37.11.111/32",
+                                "211.104.182.166/32",
+                            ]
+                        }
+                    }
+                    Effect    = "Allow"
+                    Principal = {
+                        AWS = "*"
+                    }
+                    Resource  = "arn:aws:es:ap-northeast-2:248189921892:domain/integration-log-timangs/*"
+                },
+            ]
+            Version   = "2012-10-17"
+        }
+    )
+    advanced_options                  = {}
+    arn                               = "arn:aws:es:ap-northeast-2:248189921892:domain/integration-log-timangs"
+    dashboard_endpoint                = "search-integration-log-timangs-pmq42otk4e4kzasqldinbpkgey.ap-northeast-2.es.amazonaws.com/_dashboards"
+    domain_endpoint_v2_hosted_zone_id = [90mnull[0m[0m
+    domain_id                         = "248189921892/integration-log-timangs"
+    domain_name                       = "integration-log-timangs"
+    endpoint                          = "search-integration-log-timangs-pmq42otk4e4kzasqldinbpkgey.ap-northeast-2.es.amazonaws.com"
+    engine_version                    = "OpenSearch_2.17"
+    id                                = "arn:aws:es:ap-northeast-2:248189921892:domain/integration-log-timangs"
+    ip_address_type                   = "ipv4"
+    kibana_endpoint                   = "search-integration-log-timangs-pmq42otk4e4kzasqldinbpkgey.ap-northeast-2.es.amazonaws.com/_plugin/kibana/"
+    tags                              = {
+        "Environment" = "Development"
+        "Owner"       = "kyu"
+        "Project"     = "LogIntegration"
+    }
+    tags_all                          = {
+        "Environment" = "Development"
+        "Owner"       = "kyu"
+        "Project"     = "LogIntegration"
+    }
+
+    advanced_security_options {
+        anonymous_auth_enabled         = false
+        enabled                        = true
+        internal_user_database_enabled = true
+
+        master_user_options {
+            master_user_arn      = [90mnull[0m[0m
+            master_user_name     = "admin"
+            master_user_password = (sensitive value)
+        }
+    }
+
+    auto_tune_options {
+        desired_state       = "DISABLED"
+        rollback_on_disable = "NO_ROLLBACK"
+        use_off_peak_window = false
+    }
+
+    cluster_config {
+        dedicated_master_count        = 0
+        dedicated_master_enabled      = false
+        dedicated_master_type         = [90mnull[0m[0m
+        instance_count                = 1
+        instance_type                 = "t3.small.search"
+        multi_az_with_standby_enabled = false
+        warm_count                    = 0
+        warm_enabled                  = false
+        warm_type                     = [90mnull[0m[0m
+        zone_awareness_enabled        = false
+
+        cold_storage_options {
+            enabled = false
+        }
+    }
+
+    cognito_options {
+        enabled          = false
+        identity_pool_id = [90mnull[0m[0m
+        role_arn         = [90mnull[0m[0m
+        user_pool_id     = [90mnull[0m[0m
+    }
+
+    domain_endpoint_options {
+        custom_endpoint                 = [90mnull[0m[0m
+        custom_endpoint_certificate_arn = [90mnull[0m[0m
+        custom_endpoint_enabled         = false
+        enforce_https                   = true
+        tls_security_policy             = "Policy-Min-TLS-1-2-2019-07"
+    }
+
+    ebs_options {
+        ebs_enabled = true
+        iops        = 3000
+        throughput  = 125
+        volume_size = 10
+        volume_type = "gp3"
+    }
+
+    encrypt_at_rest {
+        enabled    = true
+        kms_key_id = "arn:aws:kms:ap-northeast-2:248189921892:key/a0ab9d7d-066c-4d10-9fb0-d5f7ed13f675"
+    }
+
+    node_to_node_encryption {
+        enabled = true
+    }
+
+    off_peak_window_options {
+        enabled = true
+
+        off_peak_window {
+            window_start_time {
+                hours   = 13
+                minutes = 0
+            }
+        }
+    }
+
+    snapshot_options {
+        automated_snapshot_start_hour = 0
+    }
+
+    software_update_options {
+        auto_software_update_enabled = false
+    }
+}
+
+# aws_s3_bucket.cloudtrail_bucket:
+resource "aws_s3_bucket" "cloudtrail_bucket" {
+    acceleration_status         = [90mnull[0m[0m
+    arn                         = "arn:aws:s3:::log-opensearch-538ca6c17258cc4d"
+    bucket                      = "log-opensearch-538ca6c17258cc4d"
+    bucket_domain_name          = "log-opensearch-538ca6c17258cc4d.s3.amazonaws.com"
+    bucket_prefix               = [90mnull[0m[0m
+    bucket_regional_domain_name = "log-opensearch-538ca6c17258cc4d.s3.ap-northeast-2.amazonaws.com"
+    force_destroy               = true
+    hosted_zone_id              = "Z3W03O7B5YMIYP"
+    id                          = "log-opensearch-538ca6c17258cc4d"
+    object_lock_enabled         = false
+    policy                      = jsonencode(
+        {
+            Statement = [
+                {
+                    Action    = "s3:GetBucketAcl"
+                    Effect    = "Allow"
+                    Principal = {
+                        Service = "cloudtrail.amazonaws.com"
+                    }
+                    Resource  = "arn:aws:s3:::log-opensearch-538ca6c17258cc4d"
+                    Sid       = "AWSCloudTrailAclCheck"
+                },
+                {
+                    Action    = "s3:PutObject"
+                    Condition = {
+                        StringEquals = {
+                            "s3:x-amz-acl" = "bucket-owner-full-control"
+                        }
+                    }
+                    Effect    = "Allow"
+                    Principal = {
+                        Service = "cloudtrail.amazonaws.com"
+                    }
+                    Resource  = "arn:aws:s3:::log-opensearch-538ca6c17258cc4d/AWSLogs/248189921892/*"
+                    Sid       = "AWSCloudTrailWrite"
+                },
+            ]
+            Version   = "2012-10-17"
+        }
+    )
+    region                      = "ap-northeast-2"
+    request_payer               = "BucketOwner"
+    tags                        = {
+        "Environment" = "Development"
+        "Owner"       = "kyu"
+        "Project"     = "LogIntegration"
+    }
+    tags_all                    = {
+        "Environment" = "Development"
+        "Owner"       = "kyu"
+        "Project"     = "LogIntegration"
+    }
+
+    grant {
+        id          = "0dc0c4d184bb603eaf35d5617751b196d6a45a2c79cd9fa7676ccc33fd75f370"
+        permissions = [
+            "FULL_CONTROL",
+        ]
+        type        = "CanonicalUser"
+        uri         = [90mnull[0m[0m
+    }
+
+    server_side_encryption_configuration {
+        rule {
+            bucket_key_enabled = false
+
+            apply_server_side_encryption_by_default {
+                kms_master_key_id = [90mnull[0m[0m
+                sse_algorithm     = "AES256"
+            }
+        }
+    }
+
+    versioning {
+        enabled    = false
+        mfa_delete = false
+    }
+}
+
+# aws_s3_bucket_notification.cloudtrail_bucket_notification:
+resource "aws_s3_bucket_notification" "cloudtrail_bucket_notification" {
+    bucket      = "log-opensearch-538ca6c17258cc4d"
+    eventbridge = false
+    id          = "log-opensearch-538ca6c17258cc4d"
+
+    lambda_function {
+        events              = [
+            "s3:ObjectCreated:*",
+        ]
+        filter_prefix       = [90mnull[0m[0m
+        filter_suffix       = ".gz"
+        id                  = "tf-s3-lambda-20250424005939035300000002"
+        lambda_function_arn = "arn:aws:lambda:ap-northeast-2:248189921892:function:s3-to-opensearch-cloudtrail"
+    }
+}
+
+# aws_s3_bucket_notification.web_bucket_notification:
+resource "aws_s3_bucket_notification" "web_bucket_notification" {
+    bucket      = "bet-application-total-logs"
+    eventbridge = false
+    id          = "bet-application-total-logs"
+
+    lambda_function {
+        events              = [
+            "s3:ObjectCreated:*",
+        ]
+        filter_prefix       = "WebApp_logs/"
+        filter_suffix       = ".json"
+        id                  = "tf-s3-lambda-20250424010903135400000001"
+        lambda_function_arn = "arn:aws:lambda:ap-northeast-2:248189921892:function:s3-to-opensearch-web"
+    }
+}
+
+# aws_s3_bucket_policy.cloudtrail_bucket_policy:
+resource "aws_s3_bucket_policy" "cloudtrail_bucket_policy" {
+    bucket = "log-opensearch-538ca6c17258cc4d"
+    id     = "log-opensearch-538ca6c17258cc4d"
+    policy = jsonencode(
+        {
+            Statement = [
+                {
+                    Action    = "s3:GetBucketAcl"
+                    Effect    = "Allow"
+                    Principal = {
+                        Service = "cloudtrail.amazonaws.com"
+                    }
+                    Resource  = "arn:aws:s3:::log-opensearch-538ca6c17258cc4d"
+                    Sid       = "AWSCloudTrailAclCheck"
+                },
+                {
+                    Action    = "s3:PutObject"
+                    Condition = {
+                        StringEquals = {
+                            "s3:x-amz-acl" = "bucket-owner-full-control"
+                        }
+                    }
+                    Effect    = "Allow"
+                    Principal = {
+                        Service = "cloudtrail.amazonaws.com"
+                    }
+                    Resource  = "arn:aws:s3:::log-opensearch-538ca6c17258cc4d/AWSLogs/248189921892/*"
+                    Sid       = "AWSCloudTrailWrite"
+                },
+            ]
+            Version   = "2012-10-17"
+        }
+    )
+}
+
+# random_id.bucket_suffix:
+resource "random_id" "bucket_suffix" {
+    b64_std     = "U4ymwXJYzE0="
+    b64_url     = "U4ymwXJYzE0"
+    byte_length = 8
+    dec         = "6020370151664831565"
+    hex         = "538ca6c17258cc4d"
+    id          = "U4ymwXJYzE0"
+}
+
+
+Outputs:
+
+cloudtrail_name = "main-log-integration-trail"
+cloudtrail_s3_bucket_name = "log-opensearch-538ca6c17258cc4d"
+lambda_iam_role_arn = "arn:aws:iam::248189921892:role/lambda-s3-opensearch-role"
+opensearch_domain_arn = "arn:aws:es:ap-northeast-2:248189921892:domain/integration-log-timangs"
+opensearch_domain_endpoint = "search-integration-log-timangs-pmq42otk4e4kzasqldinbpkgey.ap-northeast-2.es.amazonaws.com"
+opensearch_kibana_endpoint = "search-integration-log-timangs-pmq42otk4e4kzasqldinbpkgey.ap-northeast-2.es.amazonaws.com/_dashboards/"

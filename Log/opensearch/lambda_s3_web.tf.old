@@ -143,7 +143,10 @@ resource "aws_lambda_function" "s3_to_web_lambda" {
   memory_size   = 256
   environment {
     variables = {
-      OPENSEARCH_ENDPOINT = aws_opensearch_domain.log_domain.endpoint
+    OPENSEARCH_ENDPOINT = aws_opensearch_domain.log_domain.endpoint
+      GEOIP_DB_BUCKET     = "tfstate-bucket-revolution112233"
+      GEOIP_DB_KEY        = "mmdb/GeoLite2-City.mmdb" 
+      AWS_REGION          = var.aws_region
     }
   }
   layers = [aws_lambda_layer_version.opensearch_libs_layer.arn]

@@ -59,3 +59,7 @@ variable "source_log_group_name" {
   type        = string
   default     = "/aws/rds/instance/mysql-multi-az-rds-instance/general"
 }
+
+data "aws_s3_bucket" "tfstate_bucket" {
+  bucket = "tfstate-bucket-revolution112233"
+}

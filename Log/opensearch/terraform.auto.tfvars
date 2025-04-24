@@ -20,6 +20,3 @@ tags = {
   Environment = "Development" # "Production" 또는 "Staging", "Development" 등
   Owner       = "kyu"
 }
-
-
-
