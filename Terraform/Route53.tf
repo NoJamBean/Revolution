@@ -76,3 +76,11 @@ resource "aws_route53_record" "db" {
   ttl     = "300"
   records = [split(":", aws_db_instance.mysql_multi_az.endpoint)[0]]
 }
+
+resource "aws_route53_record" "ws" {
+  zone_id = data.aws_route53_zone.private.zone_id
+  name    = "ws"
+  type    = "A"
+  ttl     = "300"
+  records = [aws_instance.websocket_1.private_ip]
+}
