@@ -166,7 +166,7 @@ export default function PlayWidget({ isMain }: { isMain: boolean }) {
           </S.Info_Section>
         </S.HomeInfo>
         {!isMain && <S.DivdedTag></S.DivdedTag>}
-        <S.AwayInfo isMain={isMain}>
+        <S.AwayInfo>
           <S.Team_Title className='second'>
             <S.Team_Title_Logo
               src={homeAwayInfo?.away?.team?.logo || '/noimage.png'}

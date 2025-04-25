@@ -1,6 +1,6 @@
 import styled from '@emotion/styled';
 
-export const Wrapper = styled.div`
+export const Wrapper = styled.div<{ isMain: boolean }>`
   height: 100%;
   overflow-y: auto;
   background-color: #152230;

@@ -24,7 +24,7 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
   const userAgent = req.headers['user-agent'] || '';
 
   //random ip 할당함수 (임시용)
-  const getRandomIp = (arr) => {
+  const getRandomIp = (arr: any) => {
     const randomIdx = Math.floor(Math.random() * arr.length);
 
     return arr[randomIdx];

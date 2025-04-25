@@ -175,7 +175,7 @@ export default function SignUp() {
 
       // console.log('중복체크', result);
     } catch (error) {
-      if (error.response.status === 409) {
+      if (axios.isAxiosError(error) && error.response?.status === 409) {
         alert('이미 존재하는 ID 입니다');
         return;
       }
@@ -214,7 +214,7 @@ export default function SignUp() {
 
       setDoublechk((prev) => ({ ...prev, idchk: true }));
     } catch (error) {
-      if (error.response.status === 409) {
+      if (axios.isAxiosError(error) && error.response?.status === 409) {
         alert('이미 존재하는 닉네임 입니다');
         return;
       }

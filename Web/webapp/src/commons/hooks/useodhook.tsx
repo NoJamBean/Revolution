@@ -8,7 +8,7 @@ export const useOddHooks = () => {
 
   const [oddData, setOddData] = useState<any>([]);
   const [isVariableOdd, setIsVariableOdd] = useState(true);
-  const [betError, setBetError] = useState(null);
+  const [betError, setBetError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!router.isReady || !router.query.id) return;
@@ -81,7 +81,7 @@ export const useOddHooks = () => {
         setOddData(noOdds);
         setIsVariableOdd(false);
 
-        setBetError(error.message);
+        if (error instanceof Error) setBetError(error.message);
 
         return;
       }
