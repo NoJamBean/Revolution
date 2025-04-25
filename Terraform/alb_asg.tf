@@ -20,13 +20,13 @@ resource "aws_lb" "alb" {
   }
 }
 
-resource "aws_lb_target_group" "alb_tg" {
+resource "aws_lb_target_group" "web_tg" {
 
   lifecycle {
     create_before_destroy = true
   }
 
-  name_prefix = "lb-tg-"
+  name_prefix = "web-tg"
   port        = 80
   protocol    = "HTTP"
   vpc_id      = aws_vpc.vpc.id
@@ -44,7 +44,7 @@ resource "aws_lb_target_group" "alb_tg" {
   }
   target_type = "instance"
   tags = {
-    Name = "alb-tg"
+    Name = "web-tg"
   }
 }
 
@@ -72,14 +72,14 @@ resource "aws_lb_target_group" "api_tg" {
 
 resource "aws_lb_target_group" "websocket_tg" {
   name_prefix = "ws-tg"
-  port        = 3000
+  port        = 3001
   protocol    = "HTTP"
   vpc_id      = aws_vpc.vpc.id
   target_type = "instance"
   health_check {
     enabled             = true
     interval            = 60
-    port                = 3000
+    port                = 3001
     path                = "/"
     protocol            = "HTTP"
     timeout             = 5
@@ -99,7 +99,7 @@ resource "aws_lb_listener" "alb_listener" {
 
   default_action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.alb_tg.arn
+    target_group_arn = aws_lb_target_group.web_tg.arn
   }
 }
 
@@ -171,7 +171,7 @@ resource "aws_autoscaling_group" "asg" {
     version = "$Latest"
   }
 
-  target_group_arns = [aws_lb_target_group.alb_tg.arn]
+  target_group_arns = [aws_lb_target_group.web_tg.arn]
 
   health_check_type         = "EC2"
   health_check_grace_period = 300

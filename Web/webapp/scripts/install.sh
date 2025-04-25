@@ -81,7 +81,7 @@ export PATH=$NODEJS_HOME/bin:$PATH
 echo "[AfterInstall] Node.js 버전: $(node -v)"
 
 # 4. pm2, yarn 전역 설치 (sudo 필요)
-sudo npm install -g pm2 yarn
+sudo env "PATH=$PATH" npm install -g yarn pm2
 
 # 5. 프로젝트 폴더로 이동 (환경에 따라 경로 조정)
 cd /home/ubuntu/app

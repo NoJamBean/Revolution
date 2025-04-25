@@ -82,7 +82,7 @@ resource "aws_codedeploy_deployment_group" "web_dg" {
 
   load_balancer_info {
     target_group_info {
-      name = aws_lb_target_group.alb_tg.name
+      name = aws_lb_target_group.web_tg.name
     }
   }
 
