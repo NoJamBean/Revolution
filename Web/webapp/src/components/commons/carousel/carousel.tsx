@@ -5,7 +5,7 @@ import FootBallCarouselBanner from './banner/banner1/banner1';
 import SportsBanner from './banner/banner2/banner2';
 import SportsNewADBanner from './banner/banner3/banner3';
 import SportsHealthADBanner from './banner/banner4/banner4';
-// import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 const banners = [
   <FootBallCarouselBanner />,
