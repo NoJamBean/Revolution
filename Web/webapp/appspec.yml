@@ -1,38 +1,38 @@
 version: 0.0
-os: linux
+os: ubuntu
 
 files:
   - source: /
-    destination: /home/ec2-user/app
+    destination: /home/ubuntu/app
 
 hooks:
   AfterInstall:
     - location: scripts/install.sh
       timeout: 600
-      runas: ec2-user
+      runas: ubuntu
 
   # 로드밸런서 트래픽 처리용
   # BeforeAllowTraffic:
   #   - location: scripts/before-traffic.sh
   #     timeout: 60
-  #     runas: ec2-user
+  #     runas: ubuntu
 
   # AllowTraffic:
   #   - location: scripts/allow-traffic.sh
   #     timeout: 60
-  #     runas: ec2-user
+  #     runas: ubuntu
 
   # AfterAllowTraffic:
   #   - location: scripts/after-traffic.sh
   #     timeout: 60
-  #     runas: ec2-user
+  #     runas: ubuntu
 
   ApplicationStart:
     - location: scripts/start.sh
       timeout: 120
-      runas: ec2-user
+      runas: ubuntu
 
   ValidateService:
     - location: scripts/validate.sh
       timeout: 120
-      runas: ec2-user
+      runas: ubuntu
