@@ -185,7 +185,7 @@ export default function Betting() {
       );
 
       const result = await axios.post(
-        `${process.env.NEXT_PUBLIC_BACKEND_API_ENDPOINT}/api/games/bet`,
+        `${process.env.NEXT_PUBLIC_BACKEND_ENDPOINT}/api/games/bet`,
         {
           type: sport,
           matchid: matchId,

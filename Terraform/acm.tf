@@ -26,7 +26,7 @@ resource "tls_self_signed_cert" "private" {
   private_key_pem = tls_private_key.private.private_key_pem
 
   subject {
-    common_name  = "api.backend.internal"
+    common_name  = "alb.backend.internal"
     organization = "Totoro"
   }
 

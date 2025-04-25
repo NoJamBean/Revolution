@@ -30,7 +30,7 @@ export default function Login() {
 
     try {
       const result = await axios.post(
-        `${process.env.NEXT_PUBLIC_BACKEND_API_ENDPOINT}/api/users/login`,
+        `${process.env.NEXT_PUBLIC_BACKEND_ENDPOINT}/api/users/login`,
         {
           id: userMail,
           password: password,

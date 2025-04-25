@@ -39,7 +39,7 @@ export default function MyBetList({ userData }: InfoProps) {
   useEffect(() => {
     const getUserBetList = async () => {
       const result = await axios.get(
-        `${process.env.NEXT_PUBLIC_BACKEND_API_ENDPOINT}/api/games/mygames`,
+        `${process.env.NEXT_PUBLIC_BACKEND_ENDPOINT}/api/games/mygames`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -75,7 +75,7 @@ export default function MyBetList({ userData }: InfoProps) {
             const winner = getWinner(homescore, awayscore);
 
             await axios.post(
-              `${process.env.NEXT_PUBLIC_BACKEND_API_ENDPOINT}/api/games/update`,
+              `${process.env.NEXT_PUBLIC_BACKEND_ENDPOINT}/api/games/update`,
               {
                 matchid: matchId,
                 winner: winner,
@@ -94,7 +94,7 @@ export default function MyBetList({ userData }: InfoProps) {
 
           // 나머지는 PLAYING 처리
           await axios.post(
-            `${process.env.NEXT_PUBLIC_BACKEND_API_ENDPOINT}/api/games/update`,
+            `${process.env.NEXT_PUBLIC_BACKEND_ENDPOINT}/api/games/update`,
             {
               matchid: matchId,
               status: 'PLAYING',
@@ -114,7 +114,7 @@ export default function MyBetList({ userData }: InfoProps) {
 
       // 👉 다 끝나고 나면 DB 재조회
       const updatedList = await axios.get(
-        `${process.env.NEXT_PUBLIC_BACKEND_API_ENDPOINT}/api/games/mygames`,
+        `${process.env.NEXT_PUBLIC_BACKEND_ENDPOINT}/api/games/mygames`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

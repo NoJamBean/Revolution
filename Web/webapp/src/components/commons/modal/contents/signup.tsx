@@ -103,7 +103,7 @@ export default function SignUp() {
 
     try {
       const result = await axios.post(
-        `${process.env.NEXT_PUBLIC_BACKEND_API_ENDPOINT}/api/users/register/confirm`,
+        `${process.env.NEXT_PUBLIC_BACKEND_ENDPOINT}/api/users/register/confirm`,
         {
           id: id,
           password: password,
@@ -158,7 +158,7 @@ export default function SignUp() {
 
     try {
       const result = await axios.get(
-        `${process.env.NEXT_PUBLIC_BACKEND_API_ENDPOINT}/api/users/register/idcheck/${id}`,
+        `${process.env.NEXT_PUBLIC_BACKEND_ENDPOINT}/api/users/register/idcheck/${id}`,
         {
           headers: { 'Content-type': 'application/json' },
         }
@@ -195,7 +195,7 @@ export default function SignUp() {
 
     try {
       const result = await axios.get(
-        `${process.env.NEXT_PUBLIC_BACKEND_API_ENDPOINT}/api/users/register/nicknamecheck/${nickname}`,
+        `${process.env.NEXT_PUBLIC_BACKEND_ENDPOINT}/api/users/register/nicknamecheck/${nickname}`,
         {
           headers: { 'Content-type': 'application/json' },
         }
@@ -240,7 +240,7 @@ export default function SignUp() {
 
     try {
       const result = await axios.post(
-        `${process.env.NEXT_PUBLIC_BACKEND_API_ENDPOINT}/api/users/register`,
+        `${process.env.NEXT_PUBLIC_BACKEND_ENDPOINT}/api/users/register`,
         {
           id: id,
           password: password,
@@ -305,7 +305,7 @@ export default function SignUp() {
 
     try {
       const result = await axios.post(
-        `${process.env.NEXT_PUBLIC_BACKEND_API_ENDPOINT}/api/users/register/validate`,
+        `${process.env.NEXT_PUBLIC_BACKEND_ENDPOINT}/api/users/register/validate`,
         {
           id: id,
           code: emailauth,

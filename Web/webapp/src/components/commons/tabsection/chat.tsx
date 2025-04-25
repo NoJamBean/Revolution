@@ -45,7 +45,7 @@ export default function Chat() {
     console.log('일로넘어가냐?', userName);
     // socket 연결 시작
     if (!isChatConnected) {
-      socket = io(process.env.NEXT_PUBLIC_SOCKET_SERVER_ENDPOINT!, {
+      socket = io(process.env.NEXT_PUBLIC_BACKEND_ENDPOINT!, {
         path: '/socket',
         transports: ['websocket'],
       });
@@ -73,7 +73,7 @@ export default function Chat() {
     const loadMessages = async () => {
       try {
         const messagesResult = await axios.get(
-          `${process.env.NEXT_PUBLIC_BACKEND_API_ENDPOINT}/api/chat/message/list/${roomId}`,
+          `${process.env.NEXT_PUBLIC_BACKEND_ENDPOINT}/api/chat/message/list/${roomId}`,
           {
             headers: {
               'Content-type': 'application/json',

@@ -53,9 +53,9 @@ resource "aws_route53_record" "nat" {
 }
 
 #Private Records
-resource "aws_route53_record" "api" {
+resource "aws_route53_record" "alb" {
   zone_id = data.aws_route53_zone.private.id
-  name    = "api"
+  name    = "alb"
   type    = "A"
   ttl     = "300"
   records = [aws_instance.api_server_1.private_ip]
@@ -67,14 +67,6 @@ resource "aws_route53_record" "db" {
   type    = "CNAME"
   ttl     = "300"
   records = [split(":", aws_db_instance.mysql_multi_az.endpoint)[0]]
-}
-
-resource "aws_route53_record" "ws" {
-  zone_id = data.aws_route53_zone.private.zone_id
-  name    = "ws"
-  type    = "A"
-  ttl     = "300"
-  records = [aws_instance.websocket_1.private_ip]
 }
 
 #cert_validation

@@ -7,7 +7,7 @@ export function useDecodeToken() {
   const getDecodedToken = async (token: string) => {
     try {
       const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_BACKEND_API_ENDPOINT}/api/users/me`,
+        `${process.env.NEXT_PUBLIC_BACKEND_ENDPOINT}/api/users/me`,
         {
           headers: {
             'Content-Type': 'application/json',
