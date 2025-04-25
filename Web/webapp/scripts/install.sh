@@ -1,35 +1,3 @@
-#!/bin/bash
-
-# echo "[AfterInstall] 의존성 설치 시작"
-
-# # Node.js 수동 설치
-# echo "[AfterInstall] Node.js 18.17.1 설치 중"
-
-# sudo wget -nv https://d3rnber7ry90et.cloudfront.net/linux-x86_64/node-v18.17.1.tar.gz
-# sudo mkdir -p /usr/local/lib/node
-# sudo tar -xf node-v18.17.1.tar.gz
-# sudo mv node-v18.17.1 /usr/local/lib/node/nodejs
-
-# sudo rm -f node-v18.17.1.tar.gz
-
-# export NODEJS_HOME=/usr/local/lib/node/nodejs
-# export PATH=$NODEJS_HOME/bin:$PATH
-
-# cat << 'EOF' | sudo tee /etc/profile.d/node.sh > /dev/null
-# export NODEJS_HOME=/usr/local/lib/node/nodejs
-# export PATH=$NODEJS_HOME/bin:$PATH
-# EOF
-
-# sudo chmod +x /etc/profile.d/node.sh
-
-
-# # 임시코드
-# rm -rf /home/ec2-user/.cache/yarn
-# yarn cache clean
-
-
-
-
 echo "[AfterInstall] Node.js 18.17.1 고정 설치 시작"
 
 # 1. 필수 패키지 설치
@@ -49,15 +17,6 @@ sudo tar -xf ${NODE_FILENAME} -C $NODE_DIR
 sudo rm -f ${NODE_FILENAME}
 
 # 3. 환경변수 등록
-sudo -u ubuntu bash -c "cat <<EOF > /home/ubuntu/app/.env
-NEXT_PUBLIC_SPORTS_API_KEY=202f212e49d55e7bc005f7225c10cfec
-NEXT_PUBLIC_BACKEND_API_ENDPOINT=http://api.backend.internal
-NEXT_PUBLIC_SOCKET_SERVER_ENDPOINT=ws://ws.backend.internal
-PORT=3000
-NODE_ENV=development
-EOF
-"
-
 cat << 'EOF' | sudo tee /etc/profile.d/node.sh > /dev/null
 export NODEJS_HOME=/usr/local/lib/nodejs/node-v18.17.1-linux-x64
 export PATH=$NODEJS_HOME/bin:$PATH
@@ -78,6 +37,15 @@ cd /home/ubuntu/app
 
 # 6. ubuntu 유저에게 권한 부여
 sudo chown -R ubuntu:ubuntu /home/ubuntu/app
+
+sudo -u ubuntu bash -c "cat <<EOF > /home/ubuntu/app/.env
+NEXT_PUBLIC_SPORTS_API_KEY=202f212e49d55e7bc005f7225c10cfec
+NEXT_PUBLIC_BACKEND_API_ENDPOINT=http://api.backend.internal
+NEXT_PUBLIC_SOCKET_SERVER_ENDPOINT=ws://ws.backend.internal
+PORT=3000
+NODE_ENV=development
+EOF
+"
 
 # 7. yarn 캐시 클리어 및 의존성 설치
 rm -rf /home/ubuntu/.cache/yarn

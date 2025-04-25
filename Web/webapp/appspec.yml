@@ -11,22 +11,6 @@ hooks:
       timeout: 600
       runas: ubuntu
 
-  # 로드밸런서 트래픽 처리용
-  # BeforeAllowTraffic:
-  #   - location: scripts/before-traffic.sh
-  #     timeout: 60
-  #     runas: ubuntu
-
-  # AllowTraffic:
-  #   - location: scripts/allow-traffic.sh
-  #     timeout: 60
-  #     runas: ubuntu
-
-  # AfterAllowTraffic:
-  #   - location: scripts/after-traffic.sh
-  #     timeout: 60
-  #     runas: ubuntu
-
   ApplicationStart:
     - location: scripts/start.sh
       timeout: 120

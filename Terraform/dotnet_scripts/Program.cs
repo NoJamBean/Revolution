@@ -106,7 +106,7 @@ builder.Services.AddCors(options =>
             if (origin == "http://59.9.132.74") return true;
             if (origin == "http://118.37.11.111") return true;
             if (origin == "http://211.104.182.166") return true;
-            if (origin == "http://www.1bean.shop") return true;
+            if (origin.Contains("www.1bean.shop")) return true;
             // 필요하다면 더 추가
             return false;
         })
