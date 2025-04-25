@@ -12,8 +12,8 @@ phases:
   pre_build:
     commands:
       - echo "NEXT_PUBLIC_SPORTS_API_KEY=202f212e49d55e7bc005f7225c10cfec" >> .env
-      - echo "NEXT_PUBLIC_BACKEND_API_ENDPOINT=http://api.backend.internal" >> .env
-      - echo "NEXT_PUBLIC_SOCKET_SERVER_ENDPOINT=ws://ws.backend.internal" >> .env
+      - echo "NEXT_PUBLIC_BACKEND_API_ENDPOINT=https://www.1bean.shop" >> .env
+      - echo "NEXT_PUBLIC_SOCKET_SERVER_ENDPOINT=wss://www.1bean.shop" >> .env
       - echo "PORT=3000" >> .env
       - echo "NODE_ENV=development" >> .env
 

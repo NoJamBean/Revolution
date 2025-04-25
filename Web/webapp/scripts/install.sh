@@ -38,15 +38,6 @@ cd /home/ubuntu/app
 # 6. ubuntu 유저에게 권한 부여
 sudo chown -R ubuntu:ubuntu /home/ubuntu/app
 
-# sudo -u ubuntu bash -c "cat <<EOF > /home/ubuntu/app/.env
-# NEXT_PUBLIC_SPORTS_API_KEY=202f212e49d55e7bc005f7225c10cfec
-# NEXT_PUBLIC_BACKEND_API_ENDPOINT=http://api.backend.internal
-# NEXT_PUBLIC_SOCKET_SERVER_ENDPOINT=ws://ws.backend.internal
-# PORT=3000
-# NODE_ENV=development
-# EOF
-# "
-
 # 7. yarn 캐시 클리어 및 의존성 설치
 rm -rf /home/ubuntu/.cache/yarn
 yarn cache clean
