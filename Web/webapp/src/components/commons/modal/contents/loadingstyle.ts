@@ -29,6 +29,7 @@ export const ImgBox = styled.div`
 export const Loading_Img = styled.img`
   width: 100%;
   height: 100%;
+  object-fit: cover;
 `;
 
 export const Loading_Context = styled.div`

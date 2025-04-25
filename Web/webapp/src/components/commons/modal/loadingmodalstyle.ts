@@ -47,7 +47,8 @@ export const LoadingModalContent = styled.div<{
   modalType: any;
   isLoading: boolean;
 }>`
-  width: ${({ modalType }) => (modalType === 'Login' ? '600px' : '450px')};
+  /* width: ${({ modalType }) =>
+    modalType === 'Login' ? '600px' : '450px'}; */
   height: 400px;
   background-color: #343b4a;
   animation: ${({ isLoading }) => (isLoading ? fadeIn : fadeOut)} 0.5s ease
@@ -62,7 +63,7 @@ export const LoadingContent = styled.div`
   height: 100%;
   background-color: #343b4a;
   border-radius: 10px;
-  flex-grow: 1;
+  /* flex-grow: 1; */
 `;
 
 export const ButtonWrap = styled.div`
