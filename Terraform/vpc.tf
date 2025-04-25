@@ -1,7 +1,3 @@
-# aws_vpc.vpc 10.0.0.0/16
-# aws_subnet.subnet[sn1-4] 10.0.[1-4].0/24
-# aws_internet_gateway.igw aws_vpc.vpc
-
 #DHCP
 resource "aws_vpc_dhcp_options" "custom" {
   domain_name         = "ap-northeast-2.compute.internal"
@@ -29,10 +25,10 @@ resource "aws_subnet" "subnet" {
   for_each = {
     app1   = { cidr_block = "10.0.10.0/24", availability_zone = var.zone["a"], map_public_ip_on_launch = true }   #앱 서버 1
     app2   = { cidr_block = "10.0.11.0/24", availability_zone = var.zone["c"], map_public_ip_on_launch = true }   #앱 서버 2
-    ws1    = { cidr_block = "10.0.15.0/24", availability_zone = var.zone["a"], map_public_ip_on_launch = true }   #앱 서버 1
-    ws2    = { cidr_block = "10.0.16.0/24", availability_zone = var.zone["c"], map_public_ip_on_launch = true }   #앱 서버 2
     nat1   = { cidr_block = "10.0.20.0/24", availability_zone = var.zone["a"], map_public_ip_on_launch = true }   #NAT1
     nat2   = { cidr_block = "10.0.21.0/24", availability_zone = var.zone["c"], map_public_ip_on_launch = true }   #NAT2
+    ws1    = { cidr_block = "10.0.15.0/24", availability_zone = var.zone["a"], map_public_ip_on_launch = false }   #앱 서버 1
+    ws2    = { cidr_block = "10.0.16.0/24", availability_zone = var.zone["c"], map_public_ip_on_launch = false }   #앱 서버 2
     api1   = { cidr_block = "10.0.100.0/24", availability_zone = var.zone["a"], map_public_ip_on_launch = false } #백 서버 1
     api2   = { cidr_block = "10.0.101.0/24", availability_zone = var.zone["c"], map_public_ip_on_launch = false } #백 서버 2
     rds1   = { cidr_block = "10.0.50.0/24", availability_zone = var.zone["a"], map_public_ip_on_launch = false }  #DB 서버 1
@@ -98,7 +94,6 @@ resource "aws_route" "internet_access" {
   for_each = {
     rt1 = aws_route_table.routetable["app"].id
     rt2 = aws_route_table.routetable["nat"].id
-    rt3 = aws_route_table.routetable["ws"].id
   }
   route_table_id         = each.value
   destination_cidr_block = "0.0.0.0/0" # 모든 트래픽
@@ -107,10 +102,11 @@ resource "aws_route" "internet_access" {
 
 resource "aws_route" "nat_instance_route" {
   for_each = {
-    rt3 = { rt_id = aws_route_table.routetable["back1"].id, eni = aws_instance.nat_instance1.primary_network_interface_id }
-    # rt4 = { rt_id = aws_route_table.routetable["back2"].id, eni = aws_instance.nat_instance2.primary_network_interface_id }
-    rt5 = { rt_id = aws_route_table.routetable["log1"].id, eni = aws_instance.nat_instance1.primary_network_interface_id }
-    # rt6 = { rt_id = aws_route_table.routetable["log2"].id, eni = aws_instance.nat_instance2.primary_network_interface_id }
+    rt1 = { rt_id = aws_route_table.routetable["ws"].id, eni = aws_instance.nat_instance1.primary_network_interface_id }
+    rt2 = { rt_id = aws_route_table.routetable["back1"].id, eni = aws_instance.nat_instance1.primary_network_interface_id }
+    # rt3 = { rt_id = aws_route_table.routetable["back2"].id, eni = aws_instance.nat_instance2.primary_network_interface_id }
+    rt4 = { rt_id = aws_route_table.routetable["log1"].id, eni = aws_instance.nat_instance1.primary_network_interface_id }
+    # rt5 = { rt_id = aws_route_table.routetable["log2"].id, eni = aws_instance.nat_instance2.primary_network_interface_id }
   }
 
   route_table_id         = each.value.rt_id

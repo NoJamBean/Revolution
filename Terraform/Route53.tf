@@ -52,14 +52,6 @@ resource "aws_route53_record" "nat" {
   records = [aws_instance.nat_instance1.public_ip]
 }
 
-resource "aws_route53_record" "websocket" {
-  zone_id = data.aws_route53_zone.public.zone_id
-  name    = "ws"
-  type    = "A"
-  ttl     = "300"
-  records = [aws_instance.websocket_1.public_ip]
-}
-
 #Private Records
 resource "aws_route53_record" "api" {
   zone_id = data.aws_route53_zone.private.id
