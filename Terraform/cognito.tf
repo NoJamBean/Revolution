@@ -22,7 +22,14 @@ resource "aws_cognito_user_pool" "user_pool" {
       mutable                  = schema.value.mutable
       developer_only_attribute = schema.value.developer_only_attribute
     }
+  }
 
+  password_policy {
+    minimum_length    = 6              # 최소 길이
+    require_uppercase = false           # 대문자 포함
+    require_lowercase = false           # 소문자 포함
+    require_numbers   = false           # 숫자 포함
+    require_symbols   = false           # 특수문자 포함
   }
 }
 
