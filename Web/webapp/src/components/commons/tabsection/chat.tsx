@@ -46,7 +46,7 @@ export default function Chat() {
     // socket 연결 시작
     if (!isChatConnected) {
       socket = io(process.env.NEXT_PUBLIC_BACKEND_ENDPOINT!, {
-        path: '/socket',
+        path: '/ws',
         transports: ['websocket'],
       });
 

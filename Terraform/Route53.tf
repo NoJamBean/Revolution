@@ -57,6 +57,18 @@ resource "aws_route53_record" "alb" {
   zone_id = data.aws_route53_zone.private.id
   name    = "alb"
   type    = "A"
+
+  alias {
+    name                   = aws_lb.private_alb.dns_name
+    zone_id                = aws_lb.private_alb.zone_id
+    evaluate_target_health = true
+  }
+}
+
+resource "aws_route53_record" "api" {
+  zone_id = data.aws_route53_zone.private.id
+  name    = "api"
+  type    = "A"
   ttl     = "300"
   records = [aws_instance.api_server_1.private_ip]
 }

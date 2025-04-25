@@ -30,7 +30,7 @@ sudo chown -R ec2-user:ec2-user /home/ec2-user/websocket
 # .env 파일을 ec2-user 권한으로 생성
 sudo -u ec2-user bash -c "cat <<EOF > /home/ec2-user/websocket/.env
 REDIS_URL=redis://${redis_endpoint}:6379
-BACKEND_API_ENDPOINT=http://api.backend.internal
+BACKEND_API_ENDPOINT=https://alb.backend.internal
 EOF
 "
 

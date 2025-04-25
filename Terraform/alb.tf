@@ -97,7 +97,7 @@ resource "aws_lb_target_group" "websocket_tg" {
     enabled             = true
     interval            = 60
     port                = 3001
-    path                = "/"
+    path                = "/health"
     protocol            = "HTTP"
     timeout             = 5
     healthy_threshold   = 2
@@ -183,5 +183,17 @@ resource "aws_lb_listener_rule" "websocket_rule" {
       values = ["/ws/*"]
     }
   }
+}
+
+resource "aws_lb_target_group_attachment" "api_tg_attachment" {
+  target_group_arn = aws_lb_target_group.api_tg.arn
+  target_id        = aws_instance.api_server_1.id
+  port             = 80
+}
+
+resource "aws_lb_target_group_attachment" "websocket_tg_attachment" {
+  target_group_arn = aws_lb_target_group.websocket_tg.arn
+  target_id        = aws_instance.websocket_1.id
+  port             = 3001
 }
 
