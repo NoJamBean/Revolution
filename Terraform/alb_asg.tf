@@ -138,7 +138,7 @@ resource "aws_lb_listener_rule" "websocket_rule" {
 # Launch Template 생성
 resource "aws_launch_template" "template" {
   name_prefix   = "web-server"
-  image_id      = data.aws_ami.amazon_linux.id
+  image_id      = data.aws_ami.ubuntu.id
   instance_type = "t3a.medium"
   iam_instance_profile {
     name = aws_iam_instance_profile.ec2_instance_profile.name
