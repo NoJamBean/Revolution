@@ -24,7 +24,7 @@ const io = new Server(httpServer, {
     origin: '*',
     methods: ['GET', 'POST'],
   },
-  path: '/socket',
+  path: '/ws',
 });
 
 const pubClient = createClient({ url: process.env.REDIS_URL });

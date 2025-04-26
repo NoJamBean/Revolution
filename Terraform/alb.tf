@@ -139,13 +139,10 @@ resource "aws_lb_listener" "alb_https" {
   }
 }
 
-resource "aws_lb_listener" "private_alb_https" {
+resource "aws_lb_listener" "private_alb_http" {
   load_balancer_arn = aws_lb.private_alb.arn
-  port              = 443
-  protocol          = "HTTPS"
-
-  ssl_policy        = "ELBSecurityPolicy-2016-08"
-  certificate_arn   = aws_acm_certificate.self_signed.arn
+  port              = 80
+  protocol          = "HTTP"
 
   default_action {
     type             = "forward"
@@ -154,7 +151,7 @@ resource "aws_lb_listener" "private_alb_https" {
 }
 
 resource "aws_lb_listener_rule" "api_rule" {
-  listener_arn = aws_lb_listener.private_alb_https.arn
+  listener_arn = aws_lb_listener.private_alb_http.arn
   priority     = 10
 
   action {
@@ -170,7 +167,7 @@ resource "aws_lb_listener_rule" "api_rule" {
 }
 
 resource "aws_lb_listener_rule" "websocket_rule" {
-  listener_arn = aws_lb_listener.private_alb_https.arn
+  listener_arn = aws_lb_listener.private_alb_http.arn
   priority     = 20
 
   action {

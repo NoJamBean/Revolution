@@ -59,7 +59,7 @@ server {
 
     # API 프록시 (프라이빗 ALB)
     location /api/ {
-        proxy_pass https://alb.backend.internal/api/;
+        proxy_pass http://alb.backend.internal/api/;
         proxy_set_header Host alb.backend.internal;
         proxy_ssl_verify off;  # self-signed 인증서면 필요
         proxy_set_header X-Real-IP \$remote_addr;
@@ -69,7 +69,7 @@ server {
 
     # WebSocket 프록시 (필요할 때만)
     location /ws/ {
-        proxy_pass https://alb.backend.internal/ws/;
+        proxy_pass http://alb.backend.internal/ws/;
         proxy_http_version 1.1;
         proxy_set_header Upgrade \$http_upgrade;
         proxy_set_header Connection "upgrade";
