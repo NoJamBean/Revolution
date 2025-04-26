@@ -47,7 +47,6 @@ resource "aws_instance" "websocket_1" {
   key_name               = var.seoul_key_name # SSH용 키 페어
   iam_instance_profile = aws_iam_instance_profile.api_server_profile.name
   private_ip = "10.0.15.100"
-  associate_public_ip_address = true
   
   user_data = data.template_file.websocket_server.rendered
 
