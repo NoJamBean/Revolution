@@ -21,7 +21,7 @@ sudo setcap 'cap_net_bind_service=+ep' $NODEJS_HOME/bin/node
 pm2 delete "$APP_NAME" || echo "[ApplicationStart] 기존 pm2 앱 없음"
 
 # 앱 실행 (yarn start → next start, 80포트)
-PORT=80 pm2 start yarn --name "$APP_NAME" -- start
+PORT=3000 pm2 start yarn --name "$APP_NAME" -- start
 
 # PM2 상태 저장 (재부팅 시 자동 복구용)
 pm2 save

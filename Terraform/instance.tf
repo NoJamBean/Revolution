@@ -78,7 +78,7 @@ resource "aws_instance" "api_server_1" {
 set -e
 
 sudo tee -a /etc/environment > /dev/null <<EOL
-DB_ENDPOINT="${var.rds_dns}"
+DB_ENDPOINT="${split(":", aws_db_instance.mysql_multi_az.endpoint)[0]}"
 DB_USERNAME="${var.db_username}"
 DB_PASSWORD="${var.db_password}"
 COGNITO_USER_POOL="${aws_cognito_user_pool.user_pool.id}"

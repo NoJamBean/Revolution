@@ -22,7 +22,7 @@ resource "aws_lb" "alb" {
 
 resource "aws_lb" "private_alb" {
   name               = "priv-alb"
-  internal           = false
+  internal           = true
   load_balancer_type = "application"
   security_groups    = [aws_security_group.alb_sg.id]
   subnets = [
@@ -75,7 +75,7 @@ resource "aws_lb_target_group" "api_tg" {
     enabled             = true
     interval            = 60
     port                = 80
-    path                = "/"
+    path                = "/api/health"
     protocol            = "HTTP"
     timeout             = 5
     healthy_threshold   = 2
@@ -97,7 +97,7 @@ resource "aws_lb_target_group" "websocket_tg" {
     enabled             = true
     interval            = 60
     port                = 3001
-    path                = "/health"
+    path                = "/ws/health"
     protocol            = "HTTP"
     timeout             = 5
     healthy_threshold   = 2

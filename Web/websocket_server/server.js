@@ -9,7 +9,7 @@ const axios = require('axios');
 
 //healthCheck 처리 응답
 const httpServer = createServer((req, res) => {
-  if (req.url === '/health' && req.method === 'GET') {
+  if (req.url === '/ws/health' && req.method === 'GET') {
     res.writeHead(200, { 'Content-Type': 'text/plain' });
     return res.end('OK');
   }

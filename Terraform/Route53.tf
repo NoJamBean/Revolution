@@ -55,7 +55,7 @@ resource "aws_route53_record" "nat" {
 #Private Records
 resource "aws_route53_record" "alb" {
   zone_id = data.aws_route53_zone.private.id
-  name    = "alb"
+  name    = "alb.backend.internal"
   type    = "A"
 
   alias {
