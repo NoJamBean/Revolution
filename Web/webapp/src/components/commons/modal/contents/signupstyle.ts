@@ -36,7 +36,6 @@ export const CloseBtn = styled.div`
 export const Title = styled.div`
   position: sticky;
   width: 100%;
-  /* border-radius: 5px 5px 0 0; */
   background-color: #192736;
   top: 0;
   z-index: 99;
@@ -63,16 +62,20 @@ export const SubTitle = styled.div`
 
 export const Input_Wrapper = styled.div`
   position: relative;
-  height: 70%;
+  height: 65%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: space-between;
 `;
 
 export const Email_Input_Wrapper = styled.div`
-  padding-top: 5px;
   position: relative;
+  width: 100%;
   height: 70%;
   display: flex;
-  align-items: flex-start;
-  justify-content: flex-end;
+  flex-direction: column;
+  align-items: flex-end;
 `;
 
 export const Input = styled.input`
@@ -171,7 +174,7 @@ export const EmailChkBtn = styled.button`
   position: absolute;
   width: 80px;
   height: 38px;
-  top: 6px;
+  top: 52px;
   left: calc(100% - 80px);
   border-radius: 0 10px 10px 0;
   z-index: 3;
@@ -182,6 +185,8 @@ export const EmailChkBtn = styled.button`
     background-color: #94a3b8;
     color: #273848;
   }
+
+  /* border: 1px solid red; */
 `;
 
 export const Password = styled.div`

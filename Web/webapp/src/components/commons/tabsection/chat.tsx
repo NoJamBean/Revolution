@@ -81,7 +81,6 @@ export default function Chat() {
           }
         );
 
-        // 이거 리턴하지말고 걍 여기서 저장하셈 ㅇㅋ?
         //
         console.log(messagesResult?.data, 'dataatatataat');
         const prevMessages = messagesResult?.data;

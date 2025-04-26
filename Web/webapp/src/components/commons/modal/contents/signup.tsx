@@ -88,15 +88,15 @@ export default function SignUp() {
       return;
     }
 
-    for (const key of checkValList as SignUpKey[]) {
-      const validatorFunc = validators[key];
-      const validateResult = validatorFunc(signUpVal[key], signUpVal);
+    // for (const key of checkValList as SignUpKey[]) {
+    //   const validatorFunc = validators[key];
+    //   const validateResult = validatorFunc(signUpVal[key], signUpVal);
 
-      if (validateResult !== 'SUCCESS') {
-        alert(validateResult);
-        return;
-      }
-    }
+    //   if (validateResult !== 'SUCCESS') {
+    //     alert(validateResult);
+    //     return;
+    //   }
+    // }
 
     //최종 입력된 값
     const { id, password, email, nickname, phoneNum } = signUpVal;
@@ -222,7 +222,6 @@ export default function SignUp() {
   };
 
   const requestEmailCode = async () => {
-    // console.log('email 코드 전송임');
     for (const key of checkValList as SignUpKey[]) {
       const validatorFunc = validators[key];
       const validateResult = validatorFunc(signUpVal[key], signUpVal);
@@ -369,25 +368,6 @@ export default function SignUp() {
             </S.DoubleCheck>
           </S.Input_Wrapper>
         </S.NickName>
-        <S.Email>
-          <S.SubTitle>E-MAIL</S.SubTitle>
-          <S.Input_Wrapper>
-            <S.Input isReq={false} name='email' onChange={changeInputValue} />
-            <S.EmailReqBtn type='button' onClick={requestEmailCode}>
-              발급요청
-            </S.EmailReqBtn>
-            <S.Email_Input_Wrapper>
-              <S.Input
-                isReq={true}
-                name='emailauth'
-                onChange={changeInputValue}
-              />
-              <S.EmailChkBtn type='button' onClick={requestEmailAuth}>
-                인증요청
-              </S.EmailChkBtn>
-            </S.Email_Input_Wrapper>
-          </S.Input_Wrapper>
-        </S.Email>
         <S.Password>
           <S.SubTitle>비밀번호</S.SubTitle>
           <S.Input_Wrapper>
@@ -422,6 +402,25 @@ export default function SignUp() {
             />
           </S.Input_Wrapper>
         </S.Phone>
+        <S.Email>
+          <S.SubTitle>E-MAIL</S.SubTitle>
+          <S.Input_Wrapper>
+            <S.Input isReq={false} name='email' onChange={changeInputValue} />
+            <S.EmailReqBtn type='button' onClick={requestEmailCode}>
+              발급요청
+            </S.EmailReqBtn>
+            {/* <S.Email_Input_Wrapper> */}
+            <S.Input
+              isReq={true}
+              name='emailauth'
+              onChange={changeInputValue}
+            />
+            <S.EmailChkBtn type='button' onClick={requestEmailAuth}>
+              인증요청
+            </S.EmailChkBtn>
+            {/* </S.Email_Input_Wrapper> */}
+          </S.Input_Wrapper>
+        </S.Email>
         <S.SignUpBtn type='submit'>SIGN UP</S.SignUpBtn>
       </S.Contents>
     </S.Wrapper>

@@ -55,6 +55,8 @@ export const LoadingModalContent = styled.div<{
     forwards;
   width: 260px;
   height: 300px;
+  display: flex;
+  flex-direction: column;
   border-radius: 10px;
 `;
 

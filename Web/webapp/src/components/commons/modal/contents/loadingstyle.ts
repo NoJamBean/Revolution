@@ -5,6 +5,7 @@ export const Wrapper = styled.div`
   height: 100%;
   background-color: #343b4a;
   border-radius: 10px;
+  min-height: 0; /* ✅ 부모 영향 방지 */
 `;
 
 export const LoadingContent = styled.div`
@@ -45,4 +46,5 @@ export const Loading_Context = styled.div`
   }
 
   color: #e2e8f0;
+  text-align: center; /* ✅ 텍스트 중앙 정렬 */
 `;

@@ -27,8 +27,6 @@ export const useGetDateandTime = () => {
 };
 
 export const transISOToHumanTime = (timestr: string) => {
-  console.log(123123213213, '예?', timestr);
-
   if (timestr) {
     const formatted = timestr?.replace('T', ' ').slice(0, 16);
 
