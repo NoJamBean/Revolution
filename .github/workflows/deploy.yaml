@@ -6,9 +6,9 @@ on:
     types:
       - completed
   workflow_dispatch:
-  push:
-    branches:
-      - web
+  # push:
+  #   branches:
+  #     - web
 
 jobs:
   deploy:
@@ -50,6 +50,11 @@ jobs:
           done
           echo "PUBLIC_IPS=$PUBLIC_IPS" >> $GITHUB_ENV
           echo "ASG 인스턴스 Public IP 목록: $PUBLIC_IPS"
+
+      - name: Save SSH key
+        run: |
+          echo "${{ secrets.EC2_SSH_KEY }}" > ./ec2_key.pem
+          chmod 400 ./ec2_key.pem
 
       - name: Deploy to all ASG EC2 instances
         run: |
