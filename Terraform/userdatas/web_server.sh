@@ -52,7 +52,7 @@ apt install -y nginx
 systemctl enable nginx
 systemctl start nginx
 
-sudo tee /etc/nginx/conf.d/webserver.conf > /dev/null <<'EOL'
+sudo tee /etc/nginx/conf.d/webserver.conf > /dev/null <<EOL
 server {
     listen 80;
     server_name www.1bean.shop;
@@ -86,7 +86,7 @@ server {
         proxy_set_header X-Forwarded-Proto \$scheme;
     }
 
-    location /ws {
+    location = /ws {
         proxy_pass http://alb.backend.internal/ws;
         proxy_http_version 1.1;
         proxy_set_header Upgrade \$http_upgrade;
