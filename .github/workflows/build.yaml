@@ -2,9 +2,9 @@ name: Build Next.js App
 
 on:
   push:
-    branches: [ "Web" ]
+    branches: [ "web" ]
   pull_request:
-    branches: [ "Web" ]
+    branches: [ "web" ]
 
 jobs:
   build:
