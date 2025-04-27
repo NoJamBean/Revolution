@@ -1,4 +1,4 @@
-name: Build Next.js App
+name: Build & Deploy Next.js App
 
 on:
   push:
@@ -74,3 +74,27 @@ jobs:
 
       - name: Upload to S3
         run: aws s3 cp deploy-output.zip s3://webdeploy-artifact-bucket/webapp-pipeline/deploy-output.zip
+    
+  deploy:
+    runs-on: ubuntu-22.04
+    needs: build  # build가 끝난 뒤에만 실행됨
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-2
+
+      - name: Deploy with CodeDeploy
+        run: |
+          aws deploy create-deployment \
+            --application-name web-server \
+            --deployment-group-name webapp-deployment-group \
+            --s3-location bucket=webdeploy-artifact-bucket,key=webapp-pipeline/deploy-output.zip,bundleType=zip \
+            --deployment-config-name CodeDeployDefault.AllAtOnce \
+            --region ap-northeast-2
