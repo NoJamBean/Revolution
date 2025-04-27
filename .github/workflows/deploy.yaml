@@ -14,8 +14,44 @@ jobs:
       - name: Checkout source
         uses: actions/checkout@v4
 
-      # (여기에 빌드, deploy-output 디렉토리 준비 등 필요한 단계가 있어야 함)
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-2
 
+      - name: Get all ASG EC2 Public IPs
+        id: get_public_ips
+        run: |
+          ASG_NAME="web-asg" # ← 실제 ASG 이름으로 바꿔주세요!
+          INSTANCE_IDS=$(aws autoscaling describe-auto-scaling-groups \
+            --auto-scaling-group-names "$ASG_NAME" \
+            --query "AutoScalingGroups[0].Instances[].InstanceId" --output text)
+          PUBLIC_IPS=""
+          for id in $INSTANCE_IDS; do
+            IP=$(aws ec2 describe-instances --instance-ids $id \
+              --query "Reservations[0].Instances[0].PublicIpAddress" --output text)
+            if [ "$IP" != "None" ]; then
+              PUBLIC_IPS="$PUBLIC_IPS $IP"
+            fi
+          done
+          echo "PUBLIC_IPS=$PUBLIC_IPS" >> $GITHUB_ENV
+          echo "ASG 인스턴스 Public IP 목록: $PUBLIC_IPS"
+
+      - name: Deploy to all ASG EC2 instances
+        run: |
+          for IP in $PUBLIC_IPS; do
+            echo "Uploading to $IP ..."
+            scp -o StrictHostKeyChecking=no -i ./ec2_key.pem -r ./Web/webapp/deploy-output/* ubuntu@$IP:/home/ubuntu/app/
+            echo "Running install.sh on $IP ..."
+            ssh -o StrictHostKeyChecking=no -i ./ec2_key.pem ubuntu@$IP "bash /home/ubuntu/app/scripts/install.sh"
+            echo "Running start.sh on $IP ..."
+            ssh -o StrictHostKeyChecking=no -i ./ec2_key.pem ubuntu@$IP "bash /home/ubuntu/app/scripts/start.sh"
+          done
+        env:
+          PUBLIC_IPS: ${{ env.PUBLIC_IPS }}
+    
       - name: Upload to EC2
         uses: appleboy/scp-action@v0.1.7
         with:
