@@ -57,7 +57,7 @@ jobs:
 
       - name: Archive build artifacts
         working-directory: Web/webapp/deploy-output
-        run: zip -r ../../deploy-output.zip .
+        run: zip -r $GITHUB_WORKSPACE/deploy-output.zip .
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
