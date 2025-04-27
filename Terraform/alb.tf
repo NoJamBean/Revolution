@@ -97,7 +97,7 @@ resource "aws_lb_target_group" "websocket_tg" {
     enabled             = true
     interval            = 60
     port                = 3001
-    path                = "/ws/health"
+    path                = "/health"
     protocol            = "HTTP"
     timeout             = 5
     healthy_threshold   = 2
@@ -177,7 +177,7 @@ resource "aws_lb_listener_rule" "websocket_rule" {
 
   condition {
     path_pattern {
-      values = ["/ws/*"]
+      values = ["/ws/*", "/ws"]
     }
   }
 }

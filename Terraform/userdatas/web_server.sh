@@ -52,24 +52,23 @@ apt install -y nginx
 systemctl enable nginx
 systemctl start nginx
 
-sudo tee /etc/nginx/conf.d/webserver.conf > /dev/null <<EOL
+sudo tee /etc/nginx/conf.d/webserver.conf > /dev/null <<'EOL'
 server {
     listen 80;
     server_name www.1bean.shop;
 
     location = /api/log {
         proxy_pass http://localhost:3000;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
     }
 
     # API 프록시 (프라이빗 ALB)
     location /api/ {
         proxy_pass http://alb.backend.internal/api/;
         proxy_set_header Host alb.backend.internal;
-        proxy_ssl_verify off;  # self-signed 인증서면 필요
         proxy_set_header X-Real-IP \$remote_addr;
         proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto \$scheme;
@@ -81,7 +80,17 @@ server {
         proxy_http_version 1.1;
         proxy_set_header Upgrade \$http_upgrade;
         proxy_set_header Connection "upgrade";
-        proxy_ssl_verify off;
+        proxy_set_header Host alb.backend.internal;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+    }
+
+    location /ws {
+        proxy_pass http://alb.backend.internal/ws;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade \$http_upgrade;
+        proxy_set_header Connection "upgrade";
         proxy_set_header Host alb.backend.internal;
         proxy_set_header X-Real-IP \$remote_addr;
         proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
