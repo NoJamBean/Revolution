@@ -61,3 +61,26 @@ jobs:
         with:
           name: deploy-output
           path: Web/webapp/deploy-output/
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-2
+
+      - name: Archive build artifacts
+        working-directory: Web/webapp/deploy-output
+        run: zip -r ../../deploy-output.zip .
+
+      - name: Upload to S3
+        run: aws s3 cp deploy-output.zip s3://webdeploy-artifact-bucket/webapp-pipeline/deploy-output.zip
+
+      - name: Deploy with CodeDeploy
+        run: |
+          aws deploy create-deployment \
+            --application-name web-server \
+            --deployment-group-name webapp-deployment-group \
+            --s3-location bucket=webdeploy-artifact-bucket,key=webapp-pipeline/deploy-output.zip,bundleType=zip \
+            --deployment-config-name CodeDeployDefault.AllAtOnce \
+            --region ap-northeast-2

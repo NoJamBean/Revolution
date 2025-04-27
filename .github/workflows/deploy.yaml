@@ -1,0 +1,53 @@
+name: Deploy to EC2
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - web
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      # (여기에 빌드, deploy-output 디렉토리 준비 등 필요한 단계가 있어야 함)
+
+      - name: Upload to EC2
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.SEOUL_EC2_SSH_KEY }}
+          source: "./Web/webapp/deploy-output/*"
+          target: "/home/ubuntu/app/"
+
+      - name: AfterInstall
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.SEOUL_EC2_SSH_KEY }}
+          script: |
+            bash /home/ubuntu/app/scripts/install.sh
+
+      - name: ApplicationStart
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.SEOUL_EC2_SSH_KEY }}
+          script: |
+            bash /home/ubuntu/app/scripts/start.sh
+
+      - name: ValidateService
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.SEOUL_EC2_SSH_KEY }}
+          script: |
+            bash /home/ubuntu/app/scripts/validate.sh
