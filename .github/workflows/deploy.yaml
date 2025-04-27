@@ -1,4 +1,4 @@
-name: Deploy to EC2
+name: Deploy with CodeDeploy
 
 on:
   workflow_run:
@@ -6,9 +6,6 @@ on:
     types:
       - completed
   workflow_dispatch:
-  # push:
-  #   branches:
-  #     - web
 
 jobs:
   deploy:
@@ -25,82 +22,11 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-northeast-2
 
-      - name: Download build artifact from S3
-        run: aws s3 cp s3://webdeploy-artifact-bucket/webapp-pipeline/deploy-output.zip ./deploy-output.zip
-
-      - name: Unzip build artifact
+      - name: Deploy with CodeDeploy
         run: |
-          mkdir -p Web/webapp/deploy-output
-          unzip -o deploy-output.zip -d Web/webapp/deploy-output
-
-      - name: Get all ASG EC2 Public IPs
-        id: get_public_ips
-        run: |
-          ASG_NAME="web-asg" # ← 실제 ASG 이름으로 바꿔주세요!
-          INSTANCE_IDS=$(aws autoscaling describe-auto-scaling-groups \
-            --auto-scaling-group-names "$ASG_NAME" \
-            --query "AutoScalingGroups[0].Instances[].InstanceId" --output text)
-          PUBLIC_IPS=""
-          for id in $INSTANCE_IDS; do
-            IP=$(aws ec2 describe-instances --instance-ids $id \
-              --query "Reservations[0].Instances[0].PublicIpAddress" --output text)
-            if [ "$IP" != "None" ]; then
-              PUBLIC_IPS="$PUBLIC_IPS $IP"
-            fi
-          done
-          echo "PUBLIC_IPS=$PUBLIC_IPS" >> $GITHUB_ENV
-          echo "ASG 인스턴스 Public IP 목록: $PUBLIC_IPS"
-
-      - name: Save SSH key
-        run: |
-          echo "${{ secrets.EC2_SSH_KEY }}" > ./ec2_key.pem
-          chmod 400 ./ec2_key.pem
-
-      - name: Deploy to all ASG EC2 instances
-        run: |
-          for IP in $PUBLIC_IPS; do
-            echo "Uploading to $IP ..."
-            scp -o StrictHostKeyChecking=no -i ./ec2_key.pem -r ./Web/webapp/deploy-output/* ubuntu@$IP:/home/ubuntu/app/
-            echo "Running install.sh on $IP ..."
-            ssh -o StrictHostKeyChecking=no -i ./ec2_key.pem ubuntu@$IP "bash /home/ubuntu/app/scripts/install.sh"
-            echo "Running start.sh on $IP ..."
-            ssh -o StrictHostKeyChecking=no -i ./ec2_key.pem ubuntu@$IP "bash /home/ubuntu/app/scripts/start.sh"
-          done
-        env:
-          PUBLIC_IPS: ${{ env.PUBLIC_IPS }}
-    
-      - name: Upload to EC2
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ubuntu
-          key: ${{ secrets.SEOUL_EC2_SSH_KEY }}
-          source: "./Web/webapp/deploy-output/*"
-          target: "/home/ubuntu/app/"
-
-      - name: AfterInstall
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ubuntu
-          key: ${{ secrets.SEOUL_EC2_SSH_KEY }}
-          script: |
-            bash /home/ubuntu/app/scripts/install.sh
-
-      - name: ApplicationStart
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ubuntu
-          key: ${{ secrets.SEOUL_EC2_SSH_KEY }}
-          script: |
-            bash /home/ubuntu/app/scripts/start.sh
-
-      - name: ValidateService
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ubuntu
-          key: ${{ secrets.SEOUL_EC2_SSH_KEY }}
-          script: |
-            bash /home/ubuntu/app/scripts/validate.sh
+          aws deploy create-deployment \
+            --application-name web-server \
+            --deployment-group-name webapp-deployment-group \
+            --s3-location bucket=webdeploy-artifact-bucket,key=webapp-pipeline/deploy-output.zip,bundleType=zip \
+            --deployment-config-name CodeDeployDefault.AllAtOnce \
+            --region ap-northeast-2
