@@ -1,6 +1,10 @@
 name: Deploy to EC2
 
 on:
+  workflow_run:
+    workflows: ["Build Next.js App"]
+    types:
+      - completed
   workflow_dispatch:
   push:
     branches:
@@ -8,7 +12,7 @@ on:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     steps:
       - name: Checkout source
@@ -20,6 +24,14 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-northeast-2
+
+      - name: Download build artifact from S3
+        run: aws s3 cp s3://webdeploy-artifact-bucket/webapp-pipeline/deploy-output.zip ./deploy-output.zip
+
+      - name: Unzip build artifact
+        run: |
+          mkdir -p Web/webapp/deploy-output
+          unzip -o deploy-output.zip -d Web/webapp/deploy-output
 
       - name: Get all ASG EC2 Public IPs
         id: get_public_ips
