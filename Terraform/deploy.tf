@@ -1,42 +1,3 @@
-
-
-# CodeBuild 생성 
-resource "aws_codebuild_project" "app_build" {
-  name         = "revolution-build"
-  description  = "Build project for Revolution app"
-  service_role = aws_iam_role.codebuild_role.arn
-
-  artifacts {
-    type = "CODEPIPELINE"
-  }
-
-  environment {
-    compute_type    = "BUILD_GENERAL1_SMALL"
-    image           = "aws/codebuild/standard:7.0"
-    type            = "LINUX_CONTAINER"
-    privileged_mode = true # Docker build 시 필요
-  }
-
-  source {
-    type      = "CODEPIPELINE"
-    buildspec = "Web/webapp/buildspec.yml"
-  }
-
-  #   logs_config {
-  #     cloudwatch_logs {
-  #       group_name  = "/aws/codebuild/revolution"
-  #       stream_name = "revolution-build"
-  #     }
-  #   }
-
-  tags = {
-    Name = "Revolution CodeBuild"
-  }
-}
-
-
-
-
 # 코드 배포용 CodeDeploy Application 생성
 resource "aws_codedeploy_app" "web_app" {
   name             = "web-server"
@@ -102,93 +63,93 @@ resource "aws_codedeploy_deployment_group" "web_dg" {
 
 
 # CodePipeline 생성
-resource "aws_codepipeline" "web_pipeline" {
-  name     = "webapp-pipeline"
-  role_arn = aws_iam_role.codepipeline_role.arn
+# resource "aws_codepipeline" "web_pipeline" {
+#   name     = "webapp-pipeline"
+#   role_arn = aws_iam_role.codepipeline_role.arn
 
-  artifact_store {
-    location = aws_s3_bucket.my_pipelines_first_artifact_bucket.bucket
-    type     = "S3"
+#   artifact_store {
+#     location = aws_s3_bucket.my_pipelines_first_artifact_bucket.bucket
+#     type     = "S3"
 
-    encryption_key {
-      id   = "alias/aws/s3"
-      type = "KMS"
-    }
-  }
-
-
-  # 1단계: Source (GitHub → ZIP)
-  stage {
-    name = "Source"
-
-    action {
-      name             = "GitHub_Source"
-      category         = "Source"
-      owner            = "AWS"
-      provider         = "CodeStarSourceConnection"
-      version          = "1"
-      output_artifacts = ["SourceOutput"]
-
-      configuration = {
-        ConnectionArn    = "arn:aws:codeconnections:us-east-1:248189921892:connection/f58fa5ca-9f80-4c75-b270-e1db80975efd" //원빈 쪽 repo 요청 승인 후 연결생성 & 해당 연결 arn 정보 입력할 예정!
-        FullRepositoryId = "NoJamBean/Revolution"
-        BranchName       = var.github_branch
-        DetectChanges    = "true"
-      }
-
-      run_order = 1
-    }
-  }
+#     encryption_key {
+#       id   = "alias/aws/s3"
+#       type = "KMS"
+#     }
+#   }
 
 
-  # 2단계: Build (CodeBuild 실행)
-  stage {
-    name = "Build"
+#   # 1단계: Source (GitHub → ZIP)
+#   stage {
+#     name = "Source"
 
-    action {
-      name             = "Build_App"
-      category         = "Build"
-      owner            = "AWS"
-      provider         = "CodeBuild"
-      version          = 1
-      input_artifacts  = ["SourceOutput"]
-      output_artifacts = ["BuildOutput"]
+#     action {
+#       name             = "GitHub_Source"
+#       category         = "Source"
+#       owner            = "AWS"
+#       provider         = "CodeStarSourceConnection"
+#       version          = "1"
+#       output_artifacts = ["SourceOutput"]
 
-      configuration = {
-        ProjectName = aws_codebuild_project.app_build.name
-      }
+#       configuration = {
+#         ConnectionArn    = "arn:aws:codeconnections:us-east-1:248189921892:connection/f58fa5ca-9f80-4c75-b270-e1db80975efd" //원빈 쪽 repo 요청 승인 후 연결생성 & 해당 연결 arn 정보 입력할 예정!
+#         FullRepositoryId = "NoJamBean/Revolution"
+#         BranchName       = var.github_branch
+#         DetectChanges    = "true"
+#       }
 
-      run_order = 1
-    }
-  }
+#       run_order = 1
+#     }
+#   }
 
 
-  # 3단계: Deploy (CodeDeploy 호출)
-  stage {
-    name = "Deploy"
+#   # 2단계: Build (CodeBuild 실행)
+#   stage {
+#     name = "Build"
 
-    action {
-      name            = "Deploy_App"
-      category        = "Deploy"
-      owner           = "AWS"
-      provider        = "CodeDeploy"
-      version         = 1
-      input_artifacts = ["BuildOutput"]
+#     action {
+#       name             = "Build_App"
+#       category         = "Build"
+#       owner            = "AWS"
+#       provider         = "CodeBuild"
+#       version          = 1
+#       input_artifacts  = ["SourceOutput"]
+#       output_artifacts = ["BuildOutput"]
 
-      configuration = {
-        ApplicationName     = aws_codedeploy_app.web_app.name
-        DeploymentGroupName = aws_codedeploy_deployment_group.web_dg.deployment_group_name
-      }
+#       configuration = {
+#         ProjectName = aws_codebuild_project.app_build.name
+#       }
 
-      run_order = 1
-    }
-  }
+#       run_order = 1
+#     }
+#   }
 
-  tags = {
-    Name        = "WebAppCodePipeline"
-    Environment = "dev"
-  }
-}
+
+#   # 3단계: Deploy (CodeDeploy 호출)
+#   stage {
+#     name = "Deploy"
+
+#     action {
+#       name            = "Deploy_App"
+#       category        = "Deploy"
+#       owner           = "AWS"
+#       provider        = "CodeDeploy"
+#       version         = 1
+#       input_artifacts = ["BuildOutput"]
+
+#       configuration = {
+#         ApplicationName     = aws_codedeploy_app.web_app.name
+#         DeploymentGroupName = aws_codedeploy_deployment_group.web_dg.deployment_group_name
+#       }
+
+#       run_order = 1
+#     }
+#   }
+
+#   tags = {
+#     Name        = "WebAppCodePipeline"
+#     Environment = "dev"
+#   }
+# }
 
 
 
