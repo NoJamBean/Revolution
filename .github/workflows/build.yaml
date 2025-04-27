@@ -1,0 +1,63 @@
+name: Build Next.js App
+
+on:
+  push:
+    branches: [ "Web" ]
+  pull_request:
+    branches: [ "Web" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        working-directory: Web/webapp
+        run: |
+          echo "[INSTALL] 의존성 설치 시작"
+          yarn install
+
+      - name: Set environment variables
+        working-directory: Web/webapp
+        run: |
+          echo "NEXT_PUBLIC_SPORTS_API_KEY=202f212e49d55e7bc005f7225c10cfec" >> .env
+          echo "NEXT_PUBLIC_BACKEND_ENDPOINT=https://www.1bean.shop" >> .env
+          echo "PORT=3000" >> .env
+          echo "NODE_ENV=development" >> .env
+
+      - name: Build
+        working-directory: Web/webapp
+        run: |
+          echo "[BUILD] Next.js 빌드 시작"
+          sleep 30
+          yarn build
+
+      - name: Change scripts permissions
+        working-directory: Web/webapp
+        run: chmod +x scripts/*.sh
+
+      - name: Prepare deploy-output directory
+        working-directory: Web/webapp
+        run: |
+          mkdir -p deploy-output
+          cp -r .next deploy-output/
+          cp -r public deploy-output/
+          cp package.json deploy-output/
+          cp yarn.lock deploy-output/
+          cp next.config.mjs deploy-output/
+          cp appspec.yml deploy-output/
+          cp -r scripts deploy-output/
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: deploy-output
+          path: Web/webapp/deploy-output/
