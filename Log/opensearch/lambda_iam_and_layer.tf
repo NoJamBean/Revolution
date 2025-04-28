@@ -37,12 +37,20 @@ resource "aws_iam_policy" "lambda_s3_opensearch_policy" {
           "${aws_s3_bucket.rds_metrics_bucket.arn}",
           "${aws_s3_bucket.rds_metrics_bucket.arn}/*",
           "${data.aws_s3_bucket.web_bucket.arn}",
-          "${data.aws_s3_bucket.web_bucket.arn}/*"
+          "${data.aws_s3_bucket.web_bucket.arn}/*",
+          "${data.aws_s3_bucket.tfstate_bucket.arn}",
+          "${data.aws_s3_bucket.tfstate_bucket.arn}/*"
         ] 
       },
       { 
         Action = [
-          "es:ESHttpPost", "es:ESHttpPut", "es:ESHttpGet"], Effect = "Allow", Resource = "${aws_opensearch_domain.log_domain.arn}/*" }
+          "es:ESHttpPost", 
+          "es:ESHttpPut", 
+          "es:ESHttpGet"
+        ], 
+        Effect = "Allow", 
+        Resource = "${aws_opensearch_domain.log_domain.arn}/*" 
+      }
     ]
   })
 }
