@@ -2,9 +2,9 @@ name: Build & Deploy Next.js App
 
 on:
   push:
-    branches: [ "web" ]
+    branches: ['web']
   pull_request:
-    branches: [ "web" ]
+    branches: ['web']
 
 jobs:
   build:
@@ -54,6 +54,7 @@ jobs:
           cp yarn.lock deploy-output/
           cp next.config.mjs deploy-output/
           cp -r scripts deploy-output/
+          cp appspec.yml deploy-output/
 
       - name: Archive build artifacts
         working-directory: Web/webapp/deploy-output
@@ -74,10 +75,10 @@ jobs:
 
       - name: Upload to S3
         run: aws s3 cp deploy-output.zip s3://webdeploy-artifact-bucket/webapp-pipeline/deploy-output.zip
-    
+
   deploy:
     runs-on: ubuntu-22.04
-    needs: build  # build가 끝난 뒤에만 실행됨
+    needs: build # build가 끝난 뒤에만 실행됨
 
     steps:
       - name: Checkout source
