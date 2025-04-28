@@ -12,6 +12,7 @@ variable "db_password" {
   }
 variable "db_allocated_storage" { default = 20 }
 variable "seoul_key_name" { default = "temp" }
+variable "singapore_key_name" { default = "sptemp" }
 variable "instance_type" { default = "t2.micro" }
 variable "agwlog_role_arn" { default = "arn:aws:iam::248189921892:role/agwlog" }
 variable "private_domain_name" { default = "backend.internal" } # 원하는 도메인명으로 변경
@@ -27,6 +28,15 @@ variable "zone" {
     b = "ap-northeast-2b",
     c = "ap-northeast-2c",
     d = "ap-northeast-2d"
+  }
+}
+
+variable "sin_zone" {
+  type = map(string)
+  default = {
+    "a" = "ap-southeast-1a"
+    "b" = "ap-southeast-1b"
+    "c" = "ap-southeast-1c"
   }
 }
 
