@@ -19,7 +19,7 @@ resource "aws_ec2_transit_gateway_vpc_attachment" "singapore_vpc_attachment" {
   provider = aws.singapore
   transit_gateway_id = aws_ec2_transit_gateway.singapore_tgw.id
   vpc_id             = aws_vpc.sin_vpc.id
-  subnet_ids         = [aws_subnet.subnet.ids]
+  subnet_ids         = [aws_subnet.sin_subnet.ids]
 }
 
 # 피어링
