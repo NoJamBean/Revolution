@@ -19,10 +19,12 @@ namespace MyApi.Controllers
         private readonly IConfiguration _configuration;
         private readonly IPasswordHasher _passwordHasher;
         private readonly UserDbContext _userContext;
+        private readonly UserReadDbContext _userReadContext;
 
-        public UsersController(UserDbContext userContext, IConfiguration configuration, IPasswordHasher passwordHasher, CognitoService cognitoService)
+        public UsersController(UserDbContext userContext, UserReadDbContext userReadContext, IConfiguration configuration, IPasswordHasher passwordHasher, CognitoService cognitoService)
         {
             _userContext = userContext;
+            _userReadContext = userReadContext;
             _configuration = configuration;
             _passwordHasher = passwordHasher;
             _cognitoService = cognitoService;
@@ -42,7 +44,7 @@ namespace MyApi.Controllers
                     return Unauthorized(new { message = "토큰에서 사용자 ID를 찾을 수 없습니다." });
                 }
 
-                var user = await _userContext.Users.FirstOrDefaultAsync(u => u.Id == userId);
+                var user = await _userReadContext.Users.FirstOrDefaultAsync(u => u.Id == userId);
 
                 if (user == null)
                 {
@@ -83,7 +85,7 @@ namespace MyApi.Controllers
                 }
 
                 // 2. 사용자 조회
-                var user = await _userContext.Users.FirstOrDefaultAsync(u => u.Id == userId);
+                var user = await _userReadContext.Users.FirstOrDefaultAsync(u => u.Id == userId);
 
                 if (user == null)
                 {
@@ -115,7 +117,7 @@ namespace MyApi.Controllers
             {
                 await _cognitoService.DeleteUserAsync(id);
 
-                var user = await _userContext.Users.SingleOrDefaultAsync(u => u.Id == id);
+                var user = await _userReadContext.Users.SingleOrDefaultAsync(u => u.Id == id);
                 if (user != null)
                 {
                     _userContext.Users.Remove(user);
@@ -316,7 +318,7 @@ namespace MyApi.Controllers
             try
             {
                 // 1. DB에서 사용자 조회c
-                var user = await _userContext.Users.SingleOrDefaultAsync(u => u.Id == request.Id);
+                var user = await _userReadContext.Users.SingleOrDefaultAsync(u => u.Id == request.Id);
 
                 if (user == null)
                 {

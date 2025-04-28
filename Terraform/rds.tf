@@ -40,7 +40,7 @@ resource "aws_db_instance" "mysql_multi_az" {
   multi_az                            = true # 다중 AZ 활성화
   db_subnet_group_name                = aws_db_subnet_group.rds_subnet_group.name
   vpc_security_group_ids              = [aws_security_group.rds_sg.id]
-  backup_retention_period             = 0
+  backup_retention_period             = 1
   apply_immediately                   = true # 수정 즉시적용
   skip_final_snapshot                 = true
   deletion_protection                 = false
@@ -52,6 +52,21 @@ resource "aws_db_instance" "mysql_multi_az" {
   enabled_cloudwatch_logs_exports = ["error", "general", "slowquery", "audit"]
   availability_zone                   = null # 자동 배정
   tags                                = { Name = "MySQL Multi-AZ RDS Instance" }
+}
+
+resource "aws_db_instance" "mysql_read_replica" {
+  identifier           = "mysql-read-replica"
+  engine               = "mysql"
+  instance_class       = "db.t3.micro"
+  replicate_source_db  = aws_db_instance.mysql_multi_az.arn  # 반드시 마스터의 identifier를 지정
+  publicly_accessible  = false
+  db_subnet_group_name = aws_db_subnet_group.rds_subnet_group.name
+  vpc_security_group_ids = [aws_security_group.rds_sg.id]
+
+
+  tags = {
+    Name = "MySQL Read Replica"
+  }
 }
 
 #읽기 복제본 프록시

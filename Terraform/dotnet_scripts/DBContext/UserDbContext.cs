@@ -15,10 +15,21 @@ namespace MyApi.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             // 사용자 테이블 설정
-            modelBuilder.Entity<User>()
-                .HasKey(u => u.Id);
+            modelBuilder.Entity<User>().HasKey(u => u.Id);
         }
     }
+
+    public class UserReadDbContext : DbContext
+    {
+        public UserReadDbContext(DbContextOptions<UserReadDbContext> options) : base(options) { }
+
+        public DbSet<User> Users { get; } = null!;
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<User>().HasKey(u => u.Id);
+        }
+    } 
 
     [Table("userTBL")]
     public class User

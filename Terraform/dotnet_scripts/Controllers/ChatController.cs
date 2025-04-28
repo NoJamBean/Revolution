@@ -10,11 +10,13 @@ namespace MyApi.Controllers
     [Route("api/chat")]
     public class ChatController : ControllerBase
     {
-        private readonly ChatDbContext _context;
+        private readonly ChatDbContext _chatContext;
+        private readonly ChatReadDbContext _chatReadContext;
 
-        public ChatController(ChatDbContext context)
+        public ChatController(ChatDbContext chatContext, ChatReadDbContext chatReadContext)
         {
-            _context = context;
+            _chatContext = chatContext;
+            _chatReadContext = chatReadContext
         }
 
         [Authorize]
@@ -26,15 +28,15 @@ namespace MyApi.Controllers
                 if (string.IsNullOrEmpty(roomid))
                     return BadRequest("roomid가 필요합니다.");
 
-                var room = await _context.Rooms.FirstOrDefaultAsync(r => r.RoomId == roomid);
+                var room = await _chatReadContext.Rooms.FirstOrDefaultAsync(r => r.RoomId == roomid);
                 if (room == null)
                 {
                     room = new Room {
                         RoomId = roomid,
                         ModifiedDate = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("Asia/Seoul"))
                     };
-                    _context.Rooms.Add(room);
-                    await _context.SaveChangesAsync();
+                    _chatContext.Rooms.Add(room);
+                    await _chatContext.SaveChangesAsync();
                     return Ok(new { created = true, room });
                 }
 
@@ -56,12 +58,12 @@ namespace MyApi.Controllers
             if (string.IsNullOrEmpty(roomid))
                 return BadRequest("roomid가 필요합니다.");
 
-            var room = await _context.Rooms.FirstOrDefaultAsync(r => r.RoomId == roomid);
+            var room = await _chatReadContext.Rooms.FirstOrDefaultAsync(r => r.RoomId == roomid);
             if (room == null)
                 return Ok(new { deleted = false, message = "삭제할 방이 없습니다." });
 
-            _context.Rooms.Remove(room);
-            await _context.SaveChangesAsync();
+            _chatContext.Rooms.Remove(room);
+            await _chatContext.SaveChangesAsync();
             return Ok(new { deleted = true, message = $"{roomid} 방이 삭제되었습니다." });
         }
 
@@ -82,8 +84,8 @@ namespace MyApi.Controllers
             req.Time = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("Asia/Seoul"));;
 
             // 메시지 DB 저장
-            _context.Messages.Add(req);
-            await _context.SaveChangesAsync();
+            _chatContext.Messages.Add(req);
+            await _chatContext.SaveChangesAsync();
 
             return Ok(new { logged = true, message = req });
         }
@@ -97,7 +99,7 @@ namespace MyApi.Controllers
                     return BadRequest("roomid가 필요합니다.");
 
                 // 해당 방의 메시지 로그를 시간 순으로 모두 조회
-                var messages = await _context.Messages
+                var messages = await _chatReadContext.Messages
                     .Where(m => m.RoomId == roomid)
                     .OrderBy(m => m.Time)
                     .ToListAsync();

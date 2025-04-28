@@ -15,12 +15,12 @@ namespace MyApi.Controllers
     public class GamesController : ControllerBase
     {
         private readonly GameDbContext _gameContext;
-        private readonly UserDbContext _userContext;
+        private readonly GameReadDbContext _gameReadContext;
 
-        public GamesController(GameDbContext gameContext, UserDbContext userContext)
+        public GamesController(GameDbContext gameContext, GameReadDbContext _gameReadContext)
         {
             _gameContext = gameContext;
-            _userContext = userContext;
+            _gameReadContext = gameReadContext;
         }
 
         // 특정 사용자의 게임 정보 조회
@@ -36,7 +36,7 @@ namespace MyApi.Controllers
                     return Unauthorized(new { message = "토큰에서 사용자 ID를 찾을 수 없습니다." });
                 }
 
-                var games = await _gameContext.GameInfos
+                var games = await _gameReadContext.GameInfos
                                             .Where(g => g.Id == userId)
                                             .OrderByDescending(g => g.GameDate)
                                             .ToListAsync();
@@ -69,7 +69,7 @@ namespace MyApi.Controllers
 
                 newGame.Id = userId;
 
-                bool exists = await _gameContext.GameInfos
+                bool exists = await _gameReadContext.GameInfos
                     .AnyAsync(g => g.Id == newGame.Id && g.MatchId == newGame.MatchId);
 
                 if (exists)
@@ -120,7 +120,7 @@ namespace MyApi.Controllers
                 if (string.IsNullOrEmpty(userId))
                     return Unauthorized(new { message = "사용자 ID를 확인할 수 없습니다." });
 
-                var existingGame = await _gameContext.GameInfos
+                var existingGame = await _gameReadContext.GameInfos
                     .FirstOrDefaultAsync(g => g.Id == userId && g.MatchId == matchId);
 
                 if (existingGame == null)
@@ -140,7 +140,7 @@ namespace MyApi.Controllers
                         using var transaction = await _gameContext.Database.BeginTransactionAsync();
                         try
                         {
-                            bool resultExists = await _gameContext.GameResults
+                            bool resultExists = await _gameReadContext.GameResults
                                 .AnyAsync(r => r.Id == userId && r.MatchId == matchId);
 
                             if (!resultExists)
@@ -180,7 +180,7 @@ namespace MyApi.Controllers
                     });
 
                     // Balance 지급은 트랜잭션 밖에서 따로 처리 (동시성 충돌 피하기)
-                    var resultEntity = await _gameContext.GameResults
+                    var resultEntity = await _gameReadContext.GameResults
                         .FirstOrDefaultAsync(r => r.Id == userId && r.MatchId == matchId);
                     if (resultEntity?.ResultPrice > 0)
                     {
@@ -229,7 +229,7 @@ namespace MyApi.Controllers
             try
             {
                 // 1. 해당 게임이 GameInfo에 존재하는지 확인
-                var gameInfo = await _gameContext.GameInfos
+                var gameInfo = await _gameReadContext.GameInfos
                     .FirstOrDefaultAsync(g => g.Id == result.Id && g.MatchId == result.MatchId);
 
                 if (gameInfo == null)

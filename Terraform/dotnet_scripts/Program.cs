@@ -48,6 +48,7 @@ builder.Host.UseSerilog((context, services, configuration) =>
 // 환경 변수에서 데이터베이스 및 Cognito 정보 가져오기
 // string agw_url = Environment.GetEnvironmentVariable("AGW_URL") ??;
 string dbEndpoint = Environment.GetEnvironmentVariable("DB_ENDPOINT") ?? configuration["ConnectionStrings:UserDbConnection"];
+string dbEndpointRo = Environment.GetEnvironmentVariable("DB_ENDPOINT_RO") ?? configuration["ConnectionStrings:UserDbConnectionRO"];
 string dbUsername = Environment.GetEnvironmentVariable("DB_USERNAME") ?? "root";
 string dbPassword = Environment.GetEnvironmentVariable("DB_PASSWORD") ?? "";
 string cognitoUserPoolId = Environment.GetEnvironmentVariable("COGNITO_USER_POOL") ?? configuration["Cognito:UserPoolId"];
@@ -64,8 +65,11 @@ if (string.IsNullOrEmpty(bucketName))
 // builder.Configuration에 적용
 builder.Configuration["Kestrel:Endpoints:Http:Url"] = "http://127.0.0.1:5000";
 builder.Configuration["ConnectionStrings:UserDbConnection"] = $"Server={dbEndpoint};Database=userDB;User={dbUsername};Password={dbPassword};SslMode=Preferred;";
+builder.Configuration["ConnectionStrings:UserDbConnectionRO"] = $"Server={dbEndpointRo};Database=userDB;User={dbUsername};Password={dbPassword};SslMode=Preferred;";
 builder.Configuration["ConnectionStrings:GameDbConnection"] = $"Server={dbEndpoint};Database=gameDB;User={dbUsername};Password={dbPassword};SslMode=Preferred;";
+builder.Configuration["ConnectionStrings:GameDbConnectionRO"] = $"Server={dbEndpointRo};Database=gameDB;User={dbUsername};Password={dbPassword};SslMode=Preferred;";
 builder.Configuration["ConnectionStrings:ChatDbConnection"] = $"Server={dbEndpoint};Database=chatDB;User={dbUsername};Password={dbPassword};SslMode=Preferred;";
+builder.Configuration["ConnectionStrings:ChatDbConnectionRO"] = $"Server={dbEndpointRo};Database=chatDB;User={dbUsername};Password={dbPassword};SslMode=Preferred;";
 builder.Configuration["Cognito:UserPoolId"] = cognitoUserPoolId;
 builder.Configuration["Cognito:AppClientId"] = cognitoAppClientId;
 
@@ -119,6 +123,13 @@ builder.Services.AddDbContext<UserDbContext>(options =>
         mySqlOptions => mySqlOptions.EnableRetryOnFailure(5)
 ));
 
+builder.Services.AddDbContext<UserReadDbContext>(options =>
+    options.UseMySql(
+        builder.Configuration.GetConnectionString("UserDbConnectionRO"),
+        new MySqlServerVersion(new Version(8, 0, 40)),
+        mySqlOptions => mySqlOptions.EnableRetryOnFailure(5)
+    )
+);
 
 builder.Services.AddDbContext<GameDbContext>(options =>
 options.UseMySql(
@@ -127,12 +138,28 @@ options.UseMySql(
         mySqlOptions => mySqlOptions.EnableRetryOnFailure(5)
 ));
 
+builder.Services.AddDbContext<GameReadDbContext>(options =>
+    options.UseMySql(
+        builder.Configuration.GetConnectionString("GameDbConnectionRO"),
+        new MySqlServerVersion(new Version(8, 0, 40)),
+        mySqlOptions => mySqlOptions.EnableRetryOnFailure(5)
+    )
+);
+
 builder.Services.AddDbContext<ChatDbContext>(options =>
 options.UseMySql(
         builder.Configuration.GetConnectionString("ChatDbConnection"),
         new MySqlServerVersion(new Version(8, 0, 40)),
         mySqlOptions => mySqlOptions.EnableRetryOnFailure(5)
 ));
+
+builder.Services.AddDbContext<ChatReadDbContext>(options =>
+    options.UseMySql(
+        builder.Configuration.GetConnectionString("ChatDbConnectionRO"),
+        new MySqlServerVersion(new Version(8, 0, 40)),
+        mySqlOptions => mySqlOptions.EnableRetryOnFailure(5)
+    )
+);
 
 // Add services to the container.
 builder.Services.AddControllers();
