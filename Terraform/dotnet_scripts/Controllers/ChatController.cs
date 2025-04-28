@@ -16,7 +16,7 @@ namespace MyApi.Controllers
         public ChatController(ChatDbContext chatContext, ChatReadDbContext chatReadContext)
         {
             _chatContext = chatContext;
-            _chatReadContext = chatReadContext
+            _chatReadContext = chatReadContext;
         }
 
         [Authorize]

@@ -16,11 +16,15 @@ namespace MyApi.Controllers
     {
         private readonly GameDbContext _gameContext;
         private readonly GameReadDbContext _gameReadContext;
+        private readonly UserDbContext _userContext;
+        private readonly UserReadDbContext _userReadContext;
 
-        public GamesController(GameDbContext gameContext, GameReadDbContext _gameReadContext)
+        public GamesController(GameDbContext gameContext, GameReadDbContext gameReadContext, UserDbContext userContext, UserReadDbContext userReadContext)
         {
             _gameContext = gameContext;
             _gameReadContext = gameReadContext;
+            _userContext = _userContext;
+            _userReadContext = userReadContext;
         }
 
         // 특정 사용자의 게임 정보 조회
@@ -184,7 +188,7 @@ namespace MyApi.Controllers
                         .FirstOrDefaultAsync(r => r.Id == userId && r.MatchId == matchId);
                     if (resultEntity?.ResultPrice > 0)
                     {
-                        var user = await _userContext.Users.FirstOrDefaultAsync(u => u.Id == userId);
+                        var user = await _userReadContext.Users.FirstOrDefaultAsync(u => u.Id == userId);
                         if (user != null)
                         {
                             user.Balance += resultEntity.ResultPrice;
