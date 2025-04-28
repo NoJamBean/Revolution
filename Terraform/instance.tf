@@ -6,6 +6,7 @@ resource "aws_instance" "nat_instance1" {
   key_name               = var.seoul_key_name
   source_dest_check      = false
   associate_public_ip_address = true
+  private_ip = "10.0.20.100"
 
   credit_specification {
     cpu_credits = "standard"
@@ -27,6 +28,7 @@ resource "aws_instance" "nat_instance2" {
   key_name               = var.seoul_key_name
   source_dest_check      = false
   associate_public_ip_address = true
+  private_ip = "10.0.21.100"
 
   credit_specification {
     cpu_credits = "standard"

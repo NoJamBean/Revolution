@@ -124,11 +124,11 @@ resource "aws_route_table_association" "routetable_association" {
     api1 = { route_table_id = aws_route_table.routetable["back1"].id, subnet_id = aws_subnet.subnet["api1"].id }
     api2 = { route_table_id = aws_route_table.routetable["back2"].id, subnet_id = aws_subnet.subnet["api2"].id }
     rds1 = { route_table_id = aws_route_table.routetable["back1"].id, subnet_id = aws_subnet.subnet["rds1"].id }
-    rds2 = {route_table_id=aws_route_table.routetable["back2"].id, subnet_id=aws_subnet.subnet["rds2"].id}
+    rds2 = { route_table_id = aws_route_table.routetable["back2"].id, subnet_id=aws_subnet.subnet["rds2"].id}
     log1 = { route_table_id = aws_route_table.routetable["log1"].id, subnet_id = aws_subnet.subnet["log1"].id }
     log2 = { route_table_id = aws_route_table.routetable["log1"].id, subnet_id = aws_subnet.subnet["log2"].id }
-    log3 = {route_table_id=aws_route_table.routetable["log2"].id, subnet_id=aws_subnet.subnet["log3"].id}
-    log4 = {route_table_id=aws_route_table.routetable["log2"].id, subnet_id=aws_subnet.subnet["log4"].id}
+    log3 = { route_table_id=aws_route_table.routetable["log2"].id, subnet_id=aws_subnet.subnet["log3"].id}
+    log4 = { route_table_id=aws_route_table.routetable["log2"].id, subnet_id=aws_subnet.subnet["log4"].id}
   }
   route_table_id = each.value.route_table_id
   subnet_id      = each.value.subnet_id

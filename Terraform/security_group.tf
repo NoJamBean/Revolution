@@ -13,8 +13,8 @@ resource "aws_security_group" "default_sg" {
       ssh = { from_port = 22, to_port = 22, protocol = "tcp", cidr_blocks = ["0.0.0.0/0"] }
       http      = { from_port = 80, to_port = 80, protocol = "tcp", cidr_blocks = ["0.0.0.0/0"] }
       https     = { from_port = 443, to_port = 443, protocol = "tcp", cidr_blocks = ["0.0.0.0/0"] }
-      webserver = { from_port = 3000, to_port = 3000, protocol = "tcp", cidr_blocks = ["10.0.0.0/16"] }
-      icmp      = { from_port = -1, to_port = -1, protocol = "icmp", cidr_blocks = ["10.0.0.0/16"] }
+      webserver = { from_port = 3000, to_port = 3000, protocol = "tcp", cidr_blocks = ["10.0.0.0/14"] }
+      icmp      = { from_port = -1, to_port = -1, protocol = "icmp", cidr_blocks = ["10.0.0.0/14"] }
     }
 
     content {
@@ -48,11 +48,11 @@ resource "aws_security_group" "alb_sg" {
       ssh = { from_port = 22, to_port = 22, protocol = "tcp", cidr_blocks = ["0.0.0.0/0"] }
       http      = { from_port = 80, to_port = 80, protocol = "tcp", cidr_blocks = ["0.0.0.0/0"] }
       https     = { from_port = 443, to_port = 443, protocol = "tcp", cidr_blocks = ["0.0.0.0/0"] }
-      mysql     = { from_port = 3306, to_port = 3306, protocol = "tcp", cidr_blocks = ["10.0.0.0/16"] }
-      webserver = { from_port = 3000, to_port = 3000, protocol = "tcp", cidr_blocks = ["10.0.0.0/16"] }
-      websocket = { from_port = 3001, to_port = 3001, protocol = "tcp", cidr_blocks = ["10.0.0.0/16"] }
-      dotnet    = { from_port = 5000, to_port = 5000, protocol = "tcp", cidr_blocks = ["10.0.0.0/16"] }
-      icmp      = { from_port = -1, to_port = -1, protocol = "icmp", cidr_blocks = ["10.0.0.0/16"] }
+      mysql     = { from_port = 3306, to_port = 3306, protocol = "tcp", cidr_blocks = ["10.0.0.0/14"] }
+      webserver = { from_port = 3000, to_port = 3000, protocol = "tcp", cidr_blocks = ["10.0.0.0/14"] }
+      websocket = { from_port = 3001, to_port = 3001, protocol = "tcp", cidr_blocks = ["10.0.0.0/14"] }
+      dotnet    = { from_port = 5000, to_port = 5000, protocol = "tcp", cidr_blocks = ["10.0.0.0/14"] }
+      icmp      = { from_port = -1, to_port = -1, protocol = "icmp", cidr_blocks = ["10.0.0.0/14"] }
     }
 
     content {
@@ -87,11 +87,11 @@ resource "aws_security_group" "dotnet_sg" {
 
   dynamic "ingress" {
     for_each = {
-      ssh    = { from_port = 22, to_port = 22, protocol = "tcp", cidr_blocks = ["10.0.0.0/16"] }
+      ssh    = { from_port = 22, to_port = 22, protocol = "tcp", cidr_blocks = ["10.0.0.0/14"] }
       http   = { from_port = 80, to_port = 80, protocol = "tcp", cidr_blocks = ["0.0.0.0/0"] }
       https   = { from_port = 80, to_port = 80, protocol = "tcp", cidr_blocks = ["0.0.0.0/0"] }
-      mysql  = { from_port = 3306, to_port = 3306, protocol = "tcp", cidr_blocks = ["10.0.0.0/16"] }
-      dotnet = { from_port = 5000, to_port = 5000, protocol = "tcp", cidr_blocks = ["10.0.0.0/16"] }
+      mysql  = { from_port = 3306, to_port = 3306, protocol = "tcp", cidr_blocks = ["10.0.0.0/14"] }
+      dotnet = { from_port = 5000, to_port = 5000, protocol = "tcp", cidr_blocks = ["10.0.0.0/14"] }
     }
 
     content {
@@ -120,10 +120,10 @@ resource "aws_security_group" "rds_sg" {
 
   dynamic "ingress" {
     for_each = {
-      ssh = { from_port = 22, to_port = 22, protocol = "tcp", cidr_blocks = ["10.0.0.0/16"] }
-      mysql  = { from_port = 3306, to_port = 3306, protocol = "tcp", cidr_blocks = ["10.0.0.0/16"] }
-      dotnet = { from_port = 5000, to_port = 5000, protocol = "tcp", cidr_blocks = ["10.0.0.0/16"] }
-      icmp   = { from_port = -1, to_port = -1, protocol = "icmp", cidr_blocks = ["10.0.0.0/16"] }
+      ssh = { from_port = 22, to_port = 22, protocol = "tcp", cidr_blocks = ["10.0.0.0/14"] }
+      mysql  = { from_port = 3306, to_port = 3306, protocol = "tcp", cidr_blocks = ["10.0.0.0/14"] }
+      dotnet = { from_port = 5000, to_port = 5000, protocol = "tcp", cidr_blocks = ["10.0.0.0/14"] }
+      icmp   = { from_port = -1, to_port = -1, protocol = "icmp", cidr_blocks = ["10.0.0.0/14"] }
     }
 
     content {
@@ -158,7 +158,7 @@ resource "aws_security_group" "redis_sg" {
     from_port       = 6379
     to_port         = 6379
     protocol        = "tcp"
-    cidr_blocks = ["10.0.0.0/16"]
+    cidr_blocks = ["10.0.0.0/14"]
   }
 
   egress {
@@ -180,10 +180,10 @@ resource "aws_security_group" "websocket_sg" {
 
   dynamic "ingress" {
     for_each = {
-      ssh    = { from_port = 22, to_port = 22, protocol = "tcp", cidr_blocks = ["10.0.0.0/16"] }
-      http   = { from_port = 80, to_port = 80, protocol = "tcp", cidr_blocks = ["10.0.0.0/16"] }
-      https  = { from_port = 443, to_port = 443, protocol = "tcp", cidr_blocks = ["10.0.0.0/16"] }
-      ws     = { from_port = 3001, to_port = 3001, protocol = "tcp", cidr_blocks = ["10.0.0.0/16"] }
+      ssh    = { from_port = 22, to_port = 22, protocol = "tcp", cidr_blocks = ["10.0.0.0/14"] }
+      http   = { from_port = 80, to_port = 80, protocol = "tcp", cidr_blocks = ["10.0.0.0/14"] }
+      https  = { from_port = 443, to_port = 443, protocol = "tcp", cidr_blocks = ["10.0.0.0/14"] }
+      ws     = { from_port = 3001, to_port = 3001, protocol = "tcp", cidr_blocks = ["10.0.0.0/14"] }
       redis = { from_port = 6379, to_port = 6379, protocol = "tcp", cidr_blocks = ["0.0.0.0/0"] }
     }
 
@@ -220,7 +220,7 @@ resource "aws_security_group" "websocket_sg" {
 #     from_port   = 443
 #     to_port     = 443
 #     protocol    = "tcp"
-#     cidr_blocks = ["10.0.0.0/16"] # 또는 API 서버가 있는 CIDR만
+#     cidr_blocks = ["10.0.0.0/14"] # 또는 API 서버가 있는 CIDR만
 #   }
 
 #   egress {
