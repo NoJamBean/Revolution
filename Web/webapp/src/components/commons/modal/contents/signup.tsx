@@ -409,7 +409,6 @@ export default function SignUp() {
             <S.EmailReqBtn type='button' onClick={requestEmailCode}>
               발급요청
             </S.EmailReqBtn>
-            {/* <S.Email_Input_Wrapper> */}
             <S.Input
               isReq={true}
               name='emailauth'
@@ -418,7 +417,6 @@ export default function SignUp() {
             <S.EmailChkBtn type='button' onClick={requestEmailAuth}>
               인증요청
             </S.EmailChkBtn>
-            {/* </S.Email_Input_Wrapper> */}
           </S.Input_Wrapper>
         </S.Email>
         <S.SignUpBtn type='submit'>SIGN UP</S.SignUpBtn>

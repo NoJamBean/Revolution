@@ -28,6 +28,30 @@ namespace MyApi.Data
         }
     }
 
+    public class GameReadDbContext : DbContext
+    {
+        public GameReadDbContext(DbContextOptions<GameDbContext> options) : base(options) { }
+
+        public DbSet<GameInfo> GameInfos { get; } = null!;
+        public DbSet<GameResult> GameResults { get; } = null!;
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<GameInfo>()
+                .HasKey(g => new { g.Id, g.MatchId });
+
+            modelBuilder.Entity<GameResult>()
+                .HasKey(gr => new { gr.Id, gr.MatchId });
+
+            modelBuilder.Entity<GameResult>()
+                .HasOne(gr => gr.GameInfo)
+                .WithMany()
+                .HasForeignKey(gr => new { gr.Id, gr.MatchId })
+                .HasPrincipalKey(g => new { g.Id, g.MatchId }) // 꼭 추가!
+                .OnDelete(DeleteBehavior.Cascade);
+        }
+    }
+
     [Table("gameinfoTBL")]
     public class GameInfo
     {

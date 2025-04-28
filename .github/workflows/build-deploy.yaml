@@ -2,9 +2,9 @@ name: Build & Deploy Next.js App
 
 on:
   push:
-    branches: ['web']
+    branches: ['deploy']
   pull_request:
-    branches: ['web']
+    branches: ['deploy']
 
 jobs:
   build:

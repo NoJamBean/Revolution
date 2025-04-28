@@ -1,8 +1,8 @@
 import styled from '@emotion/styled';
 
 export const Wrapper = styled.div`
-  width: 100%;
-  height: 100%;
+  width: 260px;
+  height: 300px;
   background-color: #343b4a;
   border-radius: 10px;
   min-height: 0; /* ✅ 부모 영향 방지 */
