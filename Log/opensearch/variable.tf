@@ -63,3 +63,13 @@ variable "source_log_group_name" {
 data "aws_s3_bucket" "tfstate_bucket" {
   bucket = "tfstate-bucket-revolution112233"
 }
+
+variable "firehose_s3_backup_bucket_name" {
+  default = "firehose-backup"
+  type = string
+}
+
+variable "lambda_metric" {
+  default = "firehose-metric"
+  type = string
+}

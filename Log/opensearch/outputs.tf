@@ -28,6 +28,10 @@ output "cloudtrail_name" {
 
 output "lambda_iam_role_arn" {
   description = "The ARN of the Lambda function's execution role."
-  # aws_iam_role 리소스 (lambda_s3_opensearch.tf 에 정의됨)의 arn 속성 참조
   value = aws_iam_role.lambda_s3_opensearch_role.arn
+}
+
+output "firehose_iam_role_arn" {
+  description = "The ARN of the Firehose delivery stream's execution role."
+  value = aws_iam_role.firehose_role.arn
 }
