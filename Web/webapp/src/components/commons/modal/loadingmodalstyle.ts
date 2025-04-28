@@ -5,24 +5,20 @@ export const LoadingModalOverlay = styled.div`
   position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
+  width: 100vw; /* ✅ 뷰포트 기준 100% */
+  height: 100vh; /* ✅ 뷰포트 기준 100% */
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 9999;
-  /* Css 수정 */
-  /* backdrop-filter: ${({ isLoading }: { isLoading: boolean }) =>
-    isLoading ? 'blur(7px)' : 'blur(0px)'};
-  background-color: ${({ isLoading }) =>
-    isLoading ? 'rgba(0, 0, 0, 0.3)' : 'rgba(0, 0, 0, 0)'}; */
-  backdrop-filter: blur(7px);
-  background-color: transparent;
 
-  transition: backdrop-filter 0.3s ease, background-color 0.3s ease;
+  backdrop-filter: blur(7px);
+  background-color: rgba(0, 0, 0, 0.3); /* ✅ 반투명 블랙 깔고 */
+
+  /* ✅ 버그 막기 위해 transform 제거 */
   will-change: backdrop-filter, background-color;
 
-  /* ✅ ::before 강제로 없애기 */
+  /* ✅ ::before 꼬라지 방지 */
   &::before {
     content: none;
     display: none;
