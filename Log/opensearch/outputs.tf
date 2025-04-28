@@ -31,7 +31,20 @@ output "lambda_iam_role_arn" {
   value = aws_iam_role.lambda_s3_opensearch_role.arn
 }
 
+#------------여기부터 RDS Metric을 위한 Output----------
 output "firehose_iam_role_arn" {
   description = "The ARN of the Firehose delivery stream's execution role."
   value = aws_iam_role.firehose_role.arn
+}
+
+output "s3_rds_metrics_bucket_name" {
+  value = aws_s3_bucket.metrics_destination.bucket
+}
+
+output "firehose_stream_arn" {
+  value = aws_kinesis_firehose_delivery_stream.rds_metrics_stream.arn
+}
+
+output "metric_stream_arn" {
+  value = aws_cloudwatch_metric_stream.rds_stream.arn
 }

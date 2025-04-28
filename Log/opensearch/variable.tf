@@ -1,5 +1,3 @@
-# 변수 정의
-
 variable "aws_region" {
   description = "배포할 AWS 리전"
   type        = string
@@ -38,7 +36,7 @@ variable "cloudtrail_s3_bucket_name" {
 variable "opensearch_master_user_password" {
   description = "OpenSearch 고급 보안 마스터 사용자 비밀번호"
   type        = string
-  sensitive   = true # 비밀번호는 민감 정보로 처리
+  sensitive   = true
 }
 
 variable "tags" {

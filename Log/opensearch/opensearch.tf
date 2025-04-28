@@ -2,11 +2,11 @@
 
 # --- OpenSearch 도메인 생성 ---
 resource "aws_opensearch_domain" "log_domain" {
-  domain_name    = var.opensearch_domain_name # 변수 사용 (variables.tf 정의)
-  engine_version = "OpenSearch_2.17"       # 필요에 따라 버전 조정
+  domain_name    = var.opensearch_domain_name
+  engine_version = "OpenSearch_2.17"  
 
   cluster_config {
-    instance_type           = var.opensearch_instance_type    # 변수 사용
+    instance_type           = var.opensearch_instance_type 
     instance_count          = var.opensearch_instance_count   # 변수 사용
     dedicated_master_enabled = false                         # 작은 클러스터용
     zone_awareness_enabled   = var.opensearch_instance_count > 1 # 고가용성 설정
