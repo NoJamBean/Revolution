@@ -60,7 +60,7 @@ resource "aws_instance" "websocket_1" {
 resource "aws_instance" "api_server_1" {
   depends_on             = [aws_instance.nat_instance1]
   ami                    = data.aws_ami.amazon_linux.id
-  instance_type          = "t3.medium" //var.instance_type
+  instance_type          = "t3a.small" //var.instance_type
   subnet_id              = aws_subnet.subnet["api1"].id
   vpc_security_group_ids = [aws_security_group.dotnet_sg.id]
   key_name               = var.seoul_key_name
