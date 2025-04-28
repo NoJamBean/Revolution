@@ -64,7 +64,7 @@ resource "aws_instance" "websocket_2" {
   vpc_security_group_ids = [aws_security_group.websocket_sg.id]
   key_name               = var.seoul_key_name # SSH용 키 페어
   iam_instance_profile = aws_iam_instance_profile.api_server_profile.name
-  private_ip = "10.0.15.100"
+  private_ip = "10.0.16.100"
   
   user_data = data.template_file.websocket_server.rendered
 
@@ -131,7 +131,7 @@ resource "aws_instance" "api_server_2" {
   vpc_security_group_ids = [aws_security_group.dotnet_sg.id]
   key_name               = var.seoul_key_name
   iam_instance_profile   = aws_iam_instance_profile.api_server_profile.name
-  private_ip             = "10.0.100.200"
+  private_ip             = "10.0.101.100"
 
   credit_specification {
     cpu_credits = "standard"
