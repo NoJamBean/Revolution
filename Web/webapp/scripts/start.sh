@@ -20,6 +20,8 @@ sudo setcap 'cap_net_bind_service=+ep' $NODEJS_HOME/bin/node
 # 이전 실행된 pm2 프로세스 종료 (있으면)
 pm2 delete "$APP_NAME" || echo "[ApplicationStart] 기존 pm2 앱 없음"
 
+yarn install
+
 # 앱 실행 (yarn start → next start, 80포트)
 PORT=3000 pm2 start yarn --name "$APP_NAME" -- start
 
