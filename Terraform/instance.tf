@@ -57,7 +57,7 @@ resource "aws_instance" "websocket_1" {
   }
 }
 
-resource "aws_instance" "websocket_1" {
+resource "aws_instance" "websocket_2" {
   ami                    = data.aws_ami.amazon_linux.id
   instance_type          = "t3.micro"
   subnet_id              = aws_subnet.subnet["ws2"].id

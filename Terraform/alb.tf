@@ -194,13 +194,13 @@ resource "aws_lb_target_group_attachment" "api_tg_attachment_2" {
   port             = 80
 }
 
-resource "aws_lb_target_group_attachment" "websocket_tg_attachment" {
+resource "aws_lb_target_group_attachment" "websocket_tg_attachment_1" {
   target_group_arn = aws_lb_target_group.websocket_tg.arn
   target_id        = aws_instance.websocket_1.id
   port             = 3001
 }
 
-resource "aws_lb_target_group_attachment" "websocket_tg_attachment" {
+resource "aws_lb_target_group_attachment" "websocket_tg_attachment_2" {
   target_group_arn = aws_lb_target_group.websocket_tg.arn
   target_id        = aws_instance.websocket_2.id
   port             = 3001
