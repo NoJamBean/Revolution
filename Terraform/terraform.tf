@@ -20,3 +20,9 @@ provider "aws" {
 }
 
 
+# azure용 provider
+provider "azurerm" {
+  features {}
+}
+
+

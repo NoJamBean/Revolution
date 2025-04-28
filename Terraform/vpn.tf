@@ -1,0 +1,46 @@
+# aws - vpn gateway
+resource "aws_vpn_gateway" "vpn_gateway" {
+  vpc_id          = aws_vpc.vpc.id
+  amazon_side_asn = 64512
+
+  tags = {
+    Name = "vpn-to-azure"
+  }
+}
+
+
+
+# aws - customer gateway
+resource "aws_customer_gateway" "azure_cgw" {
+  bgp_asn    = 65000     # Azure쪽 BGP ASN (일단 기본값)
+  ip_address = "1.2.3.4" # 더미 IP (나중에 실제 Azure VPN Gateway 퍼블릭 IP로 수정 예정)
+  type       = "ipsec.1"
+
+  tags = {
+    Name = "azure-customer-gateway"
+  }
+}
+
+
+
+
+# vpn connection
+resource "aws_vpn_connection" "vpn_connection" {
+  vpn_gateway_id      = aws_vpn_gateway.vpn_gateway.id
+  customer_gateway_id = aws_customer_gateway.azure_cgw.id
+  type                = "ipsec.1"
+
+  static_routes_only = true # Static Routing 모드로 설정
+
+  tags = {
+    Name = "vpn-aws-to-azure"
+  }
+}
+
+
+
+# vpn routes
+resource "aws_vpn_connection_route" "to_azure_vnet" {
+  vpn_connection_id      = aws_vpn_connection.vpn_connection.id
+  destination_cidr_block = "10.2.0.0/16" # Azure VNet의 CIDR (임시)
+}
