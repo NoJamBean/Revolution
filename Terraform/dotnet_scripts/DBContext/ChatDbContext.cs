@@ -27,10 +27,10 @@ namespace MyApi.Data
 
     public class ChatReadDbContext : DbContext
     {
-        public ChatReadDbContext(DbContextOptions<ChatDbContext> options) : base(options) { }
+        public ChatReadDbContext(DbContextOptions<ChatReadDbContext> options) : base(options) { }
         
-        public DbSet<Room> Rooms { get; } = null!;
-        public DbSet<Message> Messages { get; } = null!;
+        public DbSet<Room> Rooms { get; set; } = null!;
+        public DbSet<Message> Messages { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

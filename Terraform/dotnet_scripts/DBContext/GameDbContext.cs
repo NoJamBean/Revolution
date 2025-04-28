@@ -32,8 +32,8 @@ namespace MyApi.Data
     {
         public GameReadDbContext(DbContextOptions<GameDbContext> options) : base(options) { }
 
-        public DbSet<GameInfo> GameInfos { get; } = null!;
-        public DbSet<GameResult> GameResults { get; } = null!;
+        public DbSet<GameInfo> GameInfos { get; set; } = null!;
+        public DbSet<GameResult> GameResults { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

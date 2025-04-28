@@ -19,6 +19,10 @@ provider "aws" {
   region = "ap-northeast-2"
 }
 
+provider "aws" {
+  alias  = "singapore"
+  region = "ap-southeast-1"
+}
 
 # azure용 provider
 provider "azurerm" {

@@ -23,7 +23,7 @@ namespace MyApi.Data
     {
         public UserReadDbContext(DbContextOptions<UserReadDbContext> options) : base(options) { }
 
-        public DbSet<User> Users { get; } = null!;
+        public DbSet<User> Users { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

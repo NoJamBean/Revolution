@@ -46,26 +46,52 @@ resource "aws_db_instance" "mysql_multi_az" {
   deletion_protection                 = false
   publicly_accessible                 = false
   storage_encrypted                   = true
-  monitoring_interval                 = 0 
+  monitoring_interval                 = 60 
+  monitoring_role_arn                 = aws_iam_role.rds_to_cwlogs.arn
   iam_database_authentication_enabled = false # IAM 인증 비활성화 (암호 인증 사용)
   parameter_group_name                = aws_db_parameter_group.parm.name
+  
   enabled_cloudwatch_logs_exports = ["error", "general", "slowquery", "audit"]
   availability_zone                   = null # 자동 배정
   tags                                = { Name = "MySQL Multi-AZ RDS Instance" }
+
+  lifecycle {
+    ignore_changes = [
+      maintenance_window,
+      backup_window,
+      auto_minor_version_upgrade,
+      final_snapshot_identifier,
+      ca_cert_identifier,
+      # 진짜 자주 바뀌는 속성만 추가
+    ]
+  }
 }
 
 resource "aws_db_instance" "mysql_read_replica" {
   identifier           = "mysql-read-replica"
   engine               = "mysql"
   instance_class       = "db.t3.micro"
-  replicate_source_db  = aws_db_instance.mysql_multi_az.arn  # 반드시 마스터의 identifier를 지정
+  replicate_source_db  = aws_db_instance.mysql_multi_az.identifier
   publicly_accessible  = false
   db_subnet_group_name = aws_db_subnet_group.rds_subnet_group.name
   vpc_security_group_ids = [aws_security_group.rds_sg.id]
   skip_final_snapshot = true
+  monitoring_interval                 = 60 
+  monitoring_role_arn                 = aws_iam_role.rds_to_cwlogs.arn
 
   tags = {
     Name = "MySQL Read Replica"
+  }
+
+  lifecycle {
+    ignore_changes = [
+      maintenance_window,
+      backup_window,
+      auto_minor_version_upgrade,
+      final_snapshot_identifier,
+      ca_cert_identifier,
+      # 진짜 자주 바뀌는 속성만 추가
+    ]
   }
 }
 
