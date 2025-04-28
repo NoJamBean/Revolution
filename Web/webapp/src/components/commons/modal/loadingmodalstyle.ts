@@ -18,7 +18,7 @@ export const LoadingModalOverlay = styled.div`
 
   transition: backdrop-filter 0.3s ease, background-color 0.3s ease;
   will-change: backdrop-filter, background-color;
-  transform: translateZ(0);
+  /* transform: translateZ(0); */
 `;
 
 const fadeIn = keyframes`
