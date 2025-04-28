@@ -38,7 +38,7 @@ output "firehose_iam_role_arn" {
 }
 
 output "s3_rds_metrics_bucket_name" {
-  value = aws_s3_bucket.metrics_destination.bucket
+  value = aws_s3_bucket.rds_metrics_bucket.bucket
 }
 
 output "firehose_stream_arn" {

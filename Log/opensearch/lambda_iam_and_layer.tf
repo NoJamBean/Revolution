@@ -16,9 +16,33 @@ resource "aws_iam_policy" "lambda_s3_opensearch_policy" {
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
-      { Action = ["logs:CreateLogGroup", "logs:CreateLogStream", "logs:PutLogEvents"], Effect = "Allow", Resource = "arn:aws:logs:*:*:*" },
-      { Action = ["s3:GetObject", "s3:ListBucket"], Effect = "Allow", Resource = [ "${aws_s3_bucket.cloudtrail_bucket.arn}", "${aws_s3_bucket.cloudtrail_bucket.arn}/*" ] },
-      { Action = ["es:ESHttpPost", "es:ESHttpPut", "es:ESHttpGet"], Effect = "Allow", Resource = "${aws_opensearch_domain.log_domain.arn}/*" }
+      {
+        Action = [
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents"
+        ], 
+        Effect = "Allow", 
+        Resource = "arn:aws:logs:*:*:*" 
+      },
+      { 
+        Action = [
+          "s3:GetObject", 
+          "s3:ListBucket"
+        ], 
+        Effect = "Allow", 
+        Resource = [ 
+          "${aws_s3_bucket.cloudtrail_bucket.arn}", 
+          "${aws_s3_bucket.cloudtrail_bucket.arn}/*",
+          "${aws_s3_bucket.rds_metrics_bucket.arn}",
+          "${aws_s3_bucket.rds_metrics_bucket.arn}/*",
+          "${data.aws_s3_bucket.web_bucket.arn}",
+          "${data.aws_s3_bucket.web_bucket.arn}/*"
+        ] 
+      },
+      { 
+        Action = [
+          "es:ESHttpPost", "es:ESHttpPut", "es:ESHttpGet"], Effect = "Allow", Resource = "${aws_opensearch_domain.log_domain.arn}/*" }
     ]
   })
 }

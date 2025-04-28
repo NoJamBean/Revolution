@@ -17,7 +17,7 @@ import requests
 from aws_requests_auth.aws_auth import AWSRequestsAuth
 from datetime import datetime
 import logging
-import ipaddress # <--- ipaddress 모듈 추가
+import ipaddress 
 import geoip2.database
 
 logger = logging.getLogger()
@@ -245,7 +245,6 @@ resource "aws_lambda_function" "s3_to_cloudtrail_lambda" {
   tags = var.tags
 }
 
-# --- Lambda 함수 호출 권한 및 S3 이벤트 트리거 설정 ---
 resource "aws_lambda_permission" "allow_s3_invocation_cloudtrail" {
   statement_id  = "AllowS3InvokeFunction"
   action        = "lambda:InvokeFunction"
