@@ -71,7 +71,7 @@ resource "aws_instance" "websocket_2" {
   user_data = data.template_file.websocket_server.rendered
 
   tags = {
-    Name = "WebSocketServer1"
+    Name = "WebSocketServer2"
   }
 }
 
