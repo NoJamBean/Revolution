@@ -11,10 +11,13 @@ export const LoadingModalOverlay = styled.div`
   justify-content: center;
   align-items: center;
   z-index: 9999;
-  backdrop-filter: ${({ isLoading }: { isLoading: boolean }) =>
+  /* Css 수정 */
+  /* backdrop-filter: ${({ isLoading }: { isLoading: boolean }) =>
     isLoading ? 'blur(7px)' : 'blur(0px)'};
   background-color: ${({ isLoading }) =>
-    isLoading ? 'rgba(0, 0, 0, 0.3)' : 'rgba(0, 0, 0, 0)'};
+    isLoading ? 'rgba(0, 0, 0, 0.3)' : 'rgba(0, 0, 0, 0)'}; */
+  backdrop-filter: blur(7px);
+  background-color: transparent;
 
   transition: backdrop-filter 0.3s ease, background-color 0.3s ease;
   will-change: backdrop-filter, background-color;
