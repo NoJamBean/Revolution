@@ -13,13 +13,13 @@ variable "opensearch_domain_name" {
 variable "opensearch_instance_type" {
   description = "OpenSearch 도메인의 인스턴스 유형"
   type        = string
-  default     = "t3.small.search" # 개발/테스트용. 프로덕션 환경에서는 더 큰 유형 고려
+  default     = "m5.large.search" # 개발/테스트용. 프로덕션 환경에서는 더 큰 유형 고려
 }
 
 variable "opensearch_instance_count" {
   description = "OpenSearch 도메인의 데이터 노드 수"
   type        = number
-  default     = 1 # 개발/테스트용. 프로덕션 환경에서는 3 이상 권장 (고가용성)
+  default     = 3 # 개발/테스트용. 프로덕션 환경에서는 3 이상 권장 (고가용성)
 }
 
 variable "ebs_volume_size" {
@@ -50,6 +50,7 @@ variable "tags" {
 
 data "aws_s3_bucket" "web_bucket" {
   bucket =  "bet-application-total-logs"
+
 }
 
 variable "source_log_group_name" {

@@ -8,7 +8,7 @@ resource "aws_s3_bucket" "cloudtrail_bucket" {
   tags   = var.tags
 }
 
-resource "aws_s3_bucket_lifecycle_configuration" "example_bucket_lifecycle" {
+resource "aws_s3_bucket_lifecycle_configuration" "cloudtrail_bucket_lifecycle" {
   bucket = aws_s3_bucket.cloudtrail_bucket.id
 
   # Lifecycle 규칙 정의

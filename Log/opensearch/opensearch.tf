@@ -9,9 +9,9 @@ resource "aws_opensearch_domain" "log_domain" {
     instance_type           = var.opensearch_instance_type 
     instance_count          = var.opensearch_instance_count   # 변수 사용
     dedicated_master_enabled = false                         # 작은 클러스터용
-    zone_awareness_enabled   = var.opensearch_instance_count > 1 # 고가용성 설정
+    zone_awareness_enabled   = var.opensearch_instance_count > 1 ? true : true
     zone_awareness_config {
-      availability_zone_count = var.opensearch_instance_count > 1 ? 2 : null
+      availability_zone_count = var.opensearch_instance_count > 1 ? 3 : null
     }
   }
 
