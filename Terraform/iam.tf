@@ -370,6 +370,11 @@ resource "aws_iam_role_policy_attachment" "codedeploy_policy_attach" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSCodeDeployRole"
 }
 
+resource "aws_iam_role_policy_attachment" "codedeploy_s3_policy_attach" {
+  role       = aws_iam_role.codedeploy_role.name
+  policy_arn = aws_iam_policy.s3_full_access_policy.arn
+}
+
 # CodePipeline용 정책 생성 및 부착
 resource "aws_iam_role_policy_attachment" "codepipeline_fullaccess" {
   role       = aws_iam_role.codepipeline_role.name
