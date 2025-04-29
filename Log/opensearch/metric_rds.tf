@@ -7,6 +7,22 @@ resource "aws_s3_bucket" "rds_metrics_bucket" {
   force_destroy = true
 }
 
+resource "aws_s3_bucket_lifecycle_configuration" "example_bucket_lifecycle" {
+  bucket = aws_s3_bucket.rds_metrics_bucket.id
+  rule {
+    id     = "rds-metrics-bucket-rule"
+    status = "Enabled"
+    filter {}
+    transition {
+      days          = 30
+      storage_class = "STANDARD_IA"
+    }
+    expiration {
+      days = 180
+    }
+  }
+}
+
 resource "aws_iam_role" "firehose_role" {
   name = "firehose-s3-delivery-role"
 

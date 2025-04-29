@@ -8,6 +8,24 @@ resource "aws_s3_bucket" "cloudtrail_bucket" {
   tags   = var.tags
 }
 
+resource "aws_s3_bucket_lifecycle_configuration" "example_bucket_lifecycle" {
+  bucket = aws_s3_bucket.cloudtrail_bucket.id
+
+  # Lifecycle 규칙 정의
+  rule {
+    id     = "${var.cloudtrail_s3_bucket_name}-rule"
+    status = "Enabled"
+    filter {}
+    transition {
+      days          = 30
+      storage_class = "STANDARD_IA"
+    }
+    expiration {
+      days = 180
+    }
+  }
+}
+
 resource "aws_s3_bucket_policy" "cloudtrail_bucket_policy" {
   bucket = aws_s3_bucket.cloudtrail_bucket.id
   policy = data.aws_iam_policy_document.cloudtrail_s3_policy.json
