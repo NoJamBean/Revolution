@@ -32,6 +32,23 @@ resource "aws_iam_role" "rds_to_cwlogs" {
   })
 }
 
+resource "aws_iam_role" "s3_replication_role" {
+  name = "s3_replication_role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = {
+          Service = "s3.amazonaws.com"
+        }
+        Action = "sts:AssumeRole"
+      }
+    ]
+  })
+}
+
 resource "aws_iam_role" "ec2_s3_role" {
   name = "ec2_s3_fullaccess_role"
 
@@ -327,6 +344,24 @@ resource "aws_iam_policy" "s3_full_access_policy" {
   })
 }
 
+resource "aws_iam_policy" "ec2_ssm_policy" {
+  name        = "EC2SSMPolicy"
+  description = "Policy to allow EC2 instances to communicate with Systems Manager"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect   = "Allow"
+        Action   = [
+          "ssm:*"
+        ]
+        Resource = "*"
+      }
+    ]
+  })
+}
+
 #Attachment
 
 resource "aws_iam_policy_attachment" "s3_full_access" {
@@ -370,6 +405,11 @@ resource "aws_iam_role_policy_attachment" "codedeploy_policy_attach" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSCodeDeployRole"
 }
 
+resource "aws_iam_role_policy_attachment" "codedeploy_s3_policy_attach" {
+  role       = aws_iam_role.codedeploy_role.name
+  policy_arn = aws_iam_policy.s3_full_access_policy.arn
+}
+
 # CodePipeline용 정책 생성 및 부착
 resource "aws_iam_role_policy_attachment" "codepipeline_fullaccess" {
   role       = aws_iam_role.codepipeline_role.name
@@ -387,9 +427,14 @@ resource "aws_iam_role_policy_attachment" "attach_codedeploy_policy" {
 }
 
 # CodeDeploy용 권한 attach
-resource "aws_iam_role_policy_attachment" "codedeploy_attach" {
+resource "aws_iam_role_policy_attachment" "ec2_codedeploy_attach" {
   role       = aws_iam_role.ec2_s3_role.name
   policy_arn = "arn:aws:iam::aws:policy/AWSCodeDeployFullAccess"
+}
+
+resource "aws_iam_role_policy_attachment" "ec2_ssm_attach" {
+  role       = aws_iam_role.ec2_s3_role.name
+  policy_arn = aws_iam_policy.ec2_ssm_policy.arn
 }
 
 resource "aws_iam_role_policy_attachment" "attach_to_api_server_role_cognito" {
@@ -414,6 +459,11 @@ resource "aws_iam_role_policy_attachment" "enhanced_monitoring" {
 
 resource "aws_iam_role_policy_attachment" "websocket_s3" {
   role       = aws_iam_role.websocket_role.name
+  policy_arn = aws_iam_policy.s3_full_access_policy.arn
+}
+
+resource "aws_iam_role_policy_attachment" "s3_replica" {
+  role       = aws_iam_role.s3_replication_role.name
   policy_arn = aws_iam_policy.s3_full_access_policy.arn
 }
 
