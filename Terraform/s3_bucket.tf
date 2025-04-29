@@ -258,14 +258,14 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "artifact_bucket_e
 }
 
 # 버킷 퍼블릭 액세스 차단
-resource "aws_s3_bucket_public_access_block" "block_public" {
-  bucket = aws_s3_bucket.my_pipelines_first_artifact_bucket.id
+# resource "aws_s3_bucket_public_access_block" "block_public" {
+#   bucket = aws_s3_bucket.my_pipelines_first_artifact_bucket.id
 
-  block_public_acls       = true
-  ignore_public_acls      = true
-  block_public_policy     = true
-  restrict_public_buckets = true
-}
+#   block_public_acls       = true
+#   ignore_public_acls      = true
+#   block_public_policy     = true
+#   restrict_public_buckets = true
+# }
 
 
 resource "random_id" "bucket_suffix" {
