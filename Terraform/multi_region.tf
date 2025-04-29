@@ -575,7 +575,7 @@ resource "aws_security_group" "sin_websocket_sg" {
 resource "aws_launch_template" "sin_template" {
   provider = aws.singapore
   name_prefix   = "sin-web-server"
-  image_id      =  "ami-004dea1f77bd3fa11"  #data.aws_ami.ubuntu.id
+  image_id      =  "ami-0c1907b6d738188e5"  #data.aws_ami.ubuntu.id
   instance_type = "t3a.small"
   iam_instance_profile {
     name = aws_iam_instance_profile.ec2_instance_profile.name
