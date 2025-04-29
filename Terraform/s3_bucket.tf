@@ -213,7 +213,7 @@ resource "aws_s3_bucket_policy" "allow_same_vpc_only_3" {
           ]
         },
         Action = [
-          "s3:GetObject"
+          "s3:*"
         ],
         Resource = [
           "${aws_s3_bucket.my_pipelines_first_artifact_bucket.arn}",
