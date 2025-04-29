@@ -327,6 +327,24 @@ resource "aws_iam_policy" "s3_full_access_policy" {
   })
 }
 
+resource "aws_iam_policy" "ec2_ssm_policy" {
+  name        = "EC2SSMPolicy"
+  description = "Policy to allow EC2 instances to communicate with Systems Manager"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect   = "Allow"
+        Action   = [
+          "ssm:*"
+        ]
+        Resource = "*"
+      }
+    ]
+  })
+}
+
 #Attachment
 
 resource "aws_iam_policy_attachment" "s3_full_access" {
@@ -392,9 +410,14 @@ resource "aws_iam_role_policy_attachment" "attach_codedeploy_policy" {
 }
 
 # CodeDeploy용 권한 attach
-resource "aws_iam_role_policy_attachment" "codedeploy_attach" {
+resource "aws_iam_role_policy_attachment" "ec2_codedeploy_attach" {
   role       = aws_iam_role.ec2_s3_role.name
   policy_arn = "arn:aws:iam::aws:policy/AWSCodeDeployFullAccess"
+}
+
+resource "aws_iam_role_policy_attachment" "ec2_ssm_attach" {
+  role       = aws_iam_role.ec2_s3_role.name
+  policy_arn = aws_iam_policy.ec2_ssm_policy.arn
 }
 
 resource "aws_iam_role_policy_attachment" "attach_to_api_server_role_cognito" {
