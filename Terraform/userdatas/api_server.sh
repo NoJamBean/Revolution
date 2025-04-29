@@ -34,7 +34,7 @@ sudo dotnet new webapi
 
 # Entity Framework Core 패키지 추가
 sudo dotnet add package AWSSDK.CognitoIdentityProvider
-sudo dotnet add package AWSSDK.S3 --version 3.7.0
+sudo dotnet add package AWSSDK.S3 --version 4.0.0
 sudo dotnet add package BCrypt.Net-Next --version 4.0.2
 sudo dotnet add package Microsoft.AspNetCore.Authentication.JwtBearer --version 6.0.26
 sudo dotnet add package Microsoft.AspNetCore.Authorization --version 6.0.0
@@ -62,26 +62,26 @@ sudo chown -R ec2-user:ec2-user /usr/share/dotnet
 sudo chmod -R 755 /usr/share/dotnet
 
 # S3에서 설정 파일 다운로드
-sudo aws s3 cp s3://$S3_BUCKET/userdatas/rds_userdata.sh /home/ec2-user/rdsuserdata.sh
+sudo aws s3 cp s3://$S3_BUCKET/userdatas/rds_userdata.sh /home/ec2-user/rdsuserdata.sh --region ap-northeast-2
 sudo chmod +x /home/ec2-user/rdsuserdata.sh
 sudo /home/ec2-user/rdsuserdata.sh
 
 # S3에서 주요 프로젝트 파일 다운로드
 sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/Program.cs $LOCAL_PATH/Program.cs
 
-sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/Controllers/ChatController.cs $LOCAL_PATH/Controllers/ChatController.cs
-sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/Controllers/GamesController.cs $LOCAL_PATH/Controllers/GamesController.cs
-sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/Controllers/HealthController.cs $LOCAL_PATH/HealthController.cs
-sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/Controllers/UsersController.cs $LOCAL_PATH/Controllers/UsersController.cs
-sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/DBContext/ChatDbContext.cs $LOCAL_PATH/Data/ChatDbContext.cs
-sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/DBContext/GameDbContext.cs $LOCAL_PATH/Data/GameDbContext.cs
-sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/DBContext/UserDbContext.cs $LOCAL_PATH/Data/UserDbContext.cs
-sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/Services/BcryptPasswordHasher.cs $LOCAL_PATH/Service/BcryptPasswordHasher.cs
-sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/Services/CognitoService.cs $LOCAL_PATH/Service/CognitoService.cs
-sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/Services/IPasswordHasher.cs $LOCAL_PATH/Service/IPasswordHasher.cs
-sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/Services/RequestLoggingMiddleware.cs $LOCAL_PATH/Service/RequestLoggingMiddleware.cs
+sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/Controllers/ChatController.cs $LOCAL_PATH/Controllers/ChatController.cs --region ap-northeast-2
+sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/Controllers/GamesController.cs $LOCAL_PATH/Controllers/GamesController.cs --region ap-northeast-2
+sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/Controllers/HealthController.cs $LOCAL_PATH/HealthController.cs --region ap-northeast-2
+sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/Controllers/UsersController.cs $LOCAL_PATH/Controllers/UsersController.cs --region ap-northeast-2
+sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/DBContext/ChatDbContext.cs $LOCAL_PATH/Data/ChatDbContext.cs --region ap-northeast-2
+sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/DBContext/GameDbContext.cs $LOCAL_PATH/Data/GameDbContext.cs --region ap-northeast-2
+sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/DBContext/UserDbContext.cs $LOCAL_PATH/Data/UserDbContext.cs --region ap-northeast-2
+sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/Services/BcryptPasswordHasher.cs $LOCAL_PATH/Service/BcryptPasswordHasher.cs --region ap-northeast-2
+sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/Services/CognitoService.cs $LOCAL_PATH/Service/CognitoService.cs --region ap-northeast-2
+sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/Services/IPasswordHasher.cs $LOCAL_PATH/Service/IPasswordHasher.cs --region ap-northeast-2
+sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/Services/RequestLoggingMiddleware.cs $LOCAL_PATH/Service/RequestLoggingMiddleware.cs --region ap-northeast-2
 
-sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/dotnet_run.sh ~/run.sh
+sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/dotnet_run.sh ~/run.sh --region ap-northeast-2
 
 # 종속성 복원 및 빌드
 cd $LOCAL_PATH
@@ -109,7 +109,7 @@ for LOG_FILE in "${LOG_FILES[@]}"; do
       S3_DEST="s3://${S3_LOG_BUCKET}/API_Server/nginx/${DEST_FILENAME}"
 
       echo "[Watcher] Change detected in ${LOG_FILE}, uploading to ${S3_DEST}..." >> "${WATCH_LOG}"
-      aws s3 cp "${LOG_FILE}" "${S3_DEST}" >> "${WATCH_LOG}" 2>&1
+      aws s3 cp "${LOG_FILE}" "${S3_DEST}" --region ap-northeast-2 >> "${WATCH_LOG}" 2>&1
     done
   ) &
 done

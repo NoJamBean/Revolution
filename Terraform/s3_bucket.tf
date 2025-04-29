@@ -1,4 +1,4 @@
-#tfstatefile저장용 버킷
+# tfstatefile저장용 버킷 ---절대 삭제금지
 # resource "aws_s3_bucket" "tf_state" {
 #   bucket = "tfstate-bucket-revolution112233"
 
@@ -16,7 +16,9 @@
 #     }
 #   }
 # }
+#-----------------------------------------------
 
+###이 아래로 주석처리된 부분은 크로스리전용임
 resource "aws_s3_bucket" "long_user_data_bucket" {
   bucket = "long-user-data-bucket"
 
@@ -46,18 +48,222 @@ resource "aws_s3_bucket" "log_bucket" {
   }
 }
 
-
-# Build 파일 저장용 버킷 생성
 resource "aws_s3_bucket" "my_pipelines_first_artifact_bucket" {
   bucket        = "webdeploy-artifact-bucket" # 전 세계 유일한 이름 필요
   force_destroy = true
 
+  # versioning {
+  #   enabled = true  # 버전 관리 활성화
+  # }
 
   tags = {
     Name        = "codebuild-artifact-bucket"
     Environment = "production"
   }
 }
+
+# resource "aws_s3_bucket_public_access_block" "allow_public_access_user_data_bucket" {
+#   bucket = aws_s3_bucket.long_user_data_bucket.id
+
+#   block_public_acls       = false
+#   block_public_policy     = false
+#   ignore_public_acls      = false
+#   restrict_public_buckets = false
+# }
+
+
+# resource "aws_s3_bucket_public_access_block" "allow_public_access_log_bucket" {
+#   bucket = aws_s3_bucket.log_bucket.id
+
+#   block_public_acls       = false
+#   block_public_policy     = false
+#   ignore_public_acls      = false
+#   restrict_public_buckets = false
+# }
+
+# resource "aws_s3_bucket_public_access_block" "allow_public_access_artifact_bucket" {
+#   bucket = aws_s3_bucket.my_pipelines_first_artifact_bucket.id
+
+#   block_public_acls       = false
+#   block_public_policy     = false
+#   ignore_public_acls      = false
+#   restrict_public_buckets = false
+# }
+
+# resource "aws_s3_bucket_policy" "allow_same_vpc_only_1" {
+#   bucket = aws_s3_bucket.long_user_data_bucket.id
+
+#   policy = jsonencode({
+#     Version = "2012-10-17",
+#     Statement = [
+#       {
+#         Sid    = "AllowAccessFromSameVPC",
+#         Effect = "Allow",
+#         Principal = "*",
+#         Action = [
+#           "s3:*"
+#         ],
+#         Resource = [
+#           "${aws_s3_bucket.long_user_data_bucket.arn}",
+#           "${aws_s3_bucket.long_user_data_bucket.arn}/*"
+#         ]
+#         Condition = {
+#           StringEquals = {
+#             "aws:SourceVpc" = [
+#               aws_vpc.sin_vpc.id,
+#               aws_vpc.vpc.id
+#             ]
+#           }
+#         }
+#       }
+#     ]
+#   })
+# }
+
+
+
+
+
+# resource "aws_s3_bucket_policy" "allow_same_vpc_only_2" {
+#   bucket = aws_s3_bucket.log_bucket.id
+
+#   policy = jsonencode({
+#     Version = "2012-10-17",
+#     Statement = [
+#       {
+#         Sid    = "AllowAccessFromSameVPC",
+#         Effect = "Allow",
+#         Principal = "*",
+#         Action = [
+#           "s3:*"
+#         ],
+#         Resource = [
+#           "${aws_s3_bucket.log_bucket.arn}",
+#           "${aws_s3_bucket.log_bucket.arn}/*"
+#         ]
+#         Condition = {
+#           StringEquals = {
+#             "aws:SourceVpc" = [
+#               aws_vpc.sin_vpc.id,
+#               aws_vpc.vpc.id
+#             ]
+#           }
+#         }
+#       },
+#       {
+#         Sid    = "AllowLambdaAccess",
+#         Effect = "Allow",
+#         Principal = {
+#           AWS = [
+#             data.aws_iam_role.lambda_execution_role_1.arn,
+#             data.aws_iam_role.lambda_execution_role_2.arn,
+#             data.aws_iam_role.lambda_execution_role_3.arn
+#           ]
+#         },
+#         Action = [
+#           "s3:*"
+#         ],
+#         Resource = [
+#           "${aws_s3_bucket.log_bucket.arn}",
+#           "${aws_s3_bucket.log_bucket.arn}/*"
+#         ]
+#       }
+#     ]
+#   })
+# }
+
+
+
+
+# resource "aws_s3_bucket_policy" "allow_same_vpc_only_3" {
+#   bucket = aws_s3_bucket.my_pipelines_first_artifact_bucket.id
+
+#   policy = jsonencode({
+#     Version = "2012-10-17",
+#     Statement = [
+#       {
+#         Sid    = "AllowAccessFromSameVPC",
+#         Effect = "Allow",
+#         Principal = "*",
+#         Action = [
+#           "s3:*"
+#         ],
+#         Resource = [
+#           "${aws_s3_bucket.my_pipelines_first_artifact_bucket.arn}",  # 버킷 자체 리소스
+#           "${aws_s3_bucket.my_pipelines_first_artifact_bucket.arn}/*"  # 버킷 내 객체들
+#         ],
+#         Condition = {
+#           StringEquals = {
+#             "aws:SourceVpc" = [
+#               aws_vpc.sin_vpc.id,
+#               aws_vpc.vpc.id
+#             ]
+#           }
+#         }
+#       },
+#       {
+#         Sid    = "AllowCodeDeployAccess",
+#         Effect = "Allow",
+#         Principal = {
+#           AWS = [
+#             aws_iam_role.codedeploy_role.arn
+#           ]
+#         },
+#         Action = [
+#           "s3:*"
+#         ],
+#         Resource = [
+#           "${aws_s3_bucket.my_pipelines_first_artifact_bucket.arn}",
+#           "${aws_s3_bucket.my_pipelines_first_artifact_bucket.arn}/*"  # 버킷 내 객체들만 지정
+#         ]
+#       }
+#     ]
+#   })
+# }
+
+# Build 파일 저장용 버킷 생성
+
+
+# # 크로스리전용 버킷 복제본 만들기
+# resource "aws_s3_bucket" "my_pipelines_second_artifact_bucket" {
+#   provider = aws.singapore
+#   bucket        = "sin-webdeploy-artifact-bucket" # 싱가포르 리전에서 사용할 S3 버킷
+#   force_destroy = true
+
+#   versioning {
+#     enabled = true  # 버전 관리 활성화
+#   }
+
+#   tags = {
+#     Name        = "sin-codebuild-artifact-bucket"
+#     Environment = "production"
+#   }
+# }
+
+# resource "aws_s3_bucket_replication_configuration" "replica" {
+#   bucket = aws_s3_bucket.my_pipelines_first_artifact_bucket.bucket
+
+#   role = aws_iam_role.s3_replication_role.arn
+
+#   rule {
+#     id     = "ReplicationRule"
+#     status = "Enabled"
+
+#     destination {
+#       bucket        = aws_s3_bucket.my_pipelines_second_artifact_bucket.arn
+#       storage_class = "STANDARD"
+#     }
+
+#     filter {
+#       prefix = ""  # 복제할 객체의 접두사 필터 (빈 값이면 모든 객체가 복제됨)
+#     }
+
+#     delete_marker_replication {
+#       status = "Enabled"  # 삭제 마커 복제 활성화
+#     }
+#   }
+# }
+
 
 
 
@@ -71,17 +277,6 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "artifact_bucket_e
     }
   }
 }
-
-# 버킷 퍼블릭 액세스 차단
-resource "aws_s3_bucket_public_access_block" "block_public" {
-  bucket = aws_s3_bucket.my_pipelines_first_artifact_bucket.id
-
-  block_public_acls       = true
-  ignore_public_acls      = true
-  block_public_policy     = true
-  restrict_public_buckets = true
-}
-
 
 resource "random_id" "bucket_suffix" {
   byte_length = 8

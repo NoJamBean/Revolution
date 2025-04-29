@@ -20,9 +20,9 @@ sudo env "PATH=$PATH" npm install -g yarn pm2
 sudo -u ec2-user mkdir -p /home/ec2-user/websocket
 
 # S3에서 파일 복사
-sudo aws s3 cp s3://${bucket_name}/websocket_files/package.json /home/ec2-user/websocket/package.json
-sudo aws s3 cp s3://${bucket_name}/websocket_files/server.js /home/ec2-user/websocket/server.js
-sudo aws s3 cp s3://${bucket_name}/websocket_files/yarn.lock /home/ec2-user/websocket/yarn.lock
+sudo aws s3 cp s3://${bucket_name}/websocket_files/package.json /home/ec2-user/websocket/package.json --region ap-northeast-2
+sudo aws s3 cp s3://${bucket_name}/websocket_files/server.js /home/ec2-user/websocket/server.js --region ap-northeast-2
+sudo aws s3 cp s3://${bucket_name}/websocket_files/yarn.lock /home/ec2-user/websocket/yarn.lock --region ap-northeast-2
 
 # 디렉토리 권한 ec2-user로 재설정 (중요)
 sudo chown -R ec2-user:ec2-user /home/ec2-user/websocket
