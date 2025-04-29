@@ -29,35 +29,85 @@ resource "aws_route53_zone_association" "private_zone_association" {
   vpc_id  = aws_vpc.vpc.id
 }
 
-#싱가포르 연결
-resource "aws_route53_zone_association" "sin_private_zone_association" {
-  provider = aws.singapore
-  zone_id = data.aws_route53_zone.private.id
-  vpc_id  = aws_vpc.sin_vpc.id
-}
+# #싱가포르 연결
+# resource "aws_route53_zone_association" "sin_private_zone_association" {
+#   provider = aws.singapore
+#   zone_id = data.aws_route53_zone.private.id
+#   vpc_id  = aws_vpc.sin_vpc.id
+# }
 
 
 #Public Record
+# resource "aws_route53_record" "web_alb_a_record" {
+#   count   = 2
+#   zone_id = data.aws_route53_zone.public.zone_id
+#   name    = "www.${var.public_domain_name}"
+#   type    = "A"
+
+#   set_identifier = ["korea", "singapore"][count.index]
+
+#   geolocation_routing_policy {
+#     country = ["KR", "SG"][count.index]
+#   }
+
+#   failover_routing_policy {
+#     type = "PRIMARY"  # 첫 번째 리전이 primary
+#   }
+
+#   alias {
+#     name                   = [aws_lb.alb.dns_name, aws_lb.sin_alb.dns_name][count.index]
+#     zone_id                = [aws_lb.alb.zone_id, aws_lb.sin_alb.zone_id][count.index]
+#     evaluate_target_health = true
+#   }
+
+#   health_check_id = [aws_route53_health_check.korea_health_check.id, aws_route53_health_check.singapore_health_check.id][count.index]
+
+#   depends_on = [aws_lb.alb, aws_lb.sin_alb]
+# }
+
 resource "aws_route53_record" "web_alb_a_record" {
-  count   = 2
   zone_id = data.aws_route53_zone.public.zone_id
   name    = "www.${var.public_domain_name}"
   type    = "A"
 
-  set_identifier = ["korea", "singapore"][count.index]
+  set_identifier = "korea"  # 'korea'만 남김
 
   geolocation_routing_policy {
-    country = ["KR", "SG"][count.index]
+    country = "KR"  # 'KR'만 남김
+  }
+
+  failover_routing_policy {
+    type = "PRIMARY"  # 첫 번째 리전이 primary
   }
 
   alias {
-    name                   = [aws_lb.alb.dns_name, aws_lb.sin_alb.dns_name][count.index]
-    zone_id                = [aws_lb.alb.zone_id, aws_lb.sin_alb.zone_id][count.index]
+    name                   = aws_lb.alb.dns_name
+    zone_id                = aws_lb.alb.zone_id
     evaluate_target_health = true
   }
 
-  depends_on = [aws_lb.alb, aws_lb.sin_alb]
+  health_check_id = aws_route53_health_check.korea_health_check.id
+
+  depends_on = [aws_lb.alb]
 }
+
+resource "aws_route53_health_check" "korea_health_check" {
+  fqdn = "www.${var.public_domain_name}" # 트래픽을 확인할 DNS 이름
+  type = "HTTP"
+  resource_path = "/" # 건강 상태를 확인할 경로
+
+  failure_threshold = 3
+  request_interval  = 30
+}
+
+# resource "aws_route53_health_check" "singapore_health_check" {
+#   fqdn = "www.${var.public_domain_name}"
+#   type = "HTTP"
+#   resource_path = "/"
+
+#   failure_threshold = 3
+#   request_interval  = 30
+# }
 
 resource "aws_route53_record" "nat" {
   zone_id = data.aws_route53_zone.public.zone_id

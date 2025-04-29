@@ -112,16 +112,17 @@ resource "aws_route" "nat_instance_route" {
   network_interface_id   = each.value.eni
 }
 
-resource "aws_route" "back_to_singapore" {
-  for_each = {
-    back1 = aws_route_table.routetable["back1"].id
-    back2 = aws_route_table.routetable["back2"].id
-  }
+#트랜짓게이트웨이를 통해 싱가포르로
+# resource "aws_route" "back_to_singapore" {
+#   for_each = {
+#     back1 = aws_route_table.routetable["back1"].id
+#     back2 = aws_route_table.routetable["back2"].id
+#   }
 
-  route_table_id         = each.value
-  destination_cidr_block = "10.1.0.0/16"
-  transit_gateway_id     = aws_ec2_transit_gateway.seoul_tgw.id
-}
+#   route_table_id         = each.value
+#   destination_cidr_block = "10.1.0.0/16"
+#   transit_gateway_id     = aws_ec2_transit_gateway.seoul_tgw.id
+# }
 
 # 서브넷과 라우트 테이블 연결
 resource "aws_route_table_association" "routetable_association" {
