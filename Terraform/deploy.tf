@@ -75,7 +75,7 @@ resource "aws_codedeploy_deployment_group" "sin_web_dg" {
 
   deployment_config_name  = "CodeDeployDefault.AllAtOnce"
 
-  autoscaling_groups      = [aws_autoscaling_group.asg_sin.id]
+  autoscaling_groups      = [aws_autoscaling_group.sin_asg.id]
 
   deployment_style {
     deployment_option = "WITH_TRAFFIC_CONTROL"
