@@ -1,7 +1,7 @@
 import { keyframes } from '@emotion/react';
 import styled from '@emotion/styled';
 
-export const LoadingModalOverlay = styled.div`
+export const LoadingModalOverlay = styled.div<{ isLoading: boolean }>`
   position: fixed;
   top: 0;
   left: 0;
