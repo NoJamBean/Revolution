@@ -116,6 +116,18 @@ resource "aws_route" "sin_nat_instance_route" {
   network_interface_id   = each.value.eni
 }
 
+resource "aws_route" "back_to_seoul" {
+  provider = aws.singapore
+  for_each = {
+    back1 = aws_route_table.sin_routetable["back1"].id
+    # back2 = aws_route_table.routetable["back2"].id
+  }
+
+  route_table_id         = each.value
+  destination_cidr_block = "10.0.0.0/16"
+  transit_gateway_id     = aws_ec2_transit_gateway.singapore_tgw.id
+}
+
 # 서브넷과 라우트 테이블 연결
 resource "aws_route_table_association" "sin_routetable_association" {
   provider = aws.singapore
@@ -435,7 +447,7 @@ resource "aws_security_group" "sin_dotnet_sg" {
     for_each = {
       ssh    = { from_port = 22, to_port = 22, protocol = "tcp", cidr_blocks = ["10.0.0.0/14"] }
       http   = { from_port = 80, to_port = 80, protocol = "tcp", cidr_blocks = ["0.0.0.0/0"] }
-      https   = { from_port = 80, to_port = 80, protocol = "tcp", cidr_blocks = ["0.0.0.0/0"] }
+      https   = { from_port = 443, to_port = 443, protocol = "tcp", cidr_blocks = ["0.0.0.0/0"] }
       mysql  = { from_port = 3306, to_port = 3306, protocol = "tcp", cidr_blocks = ["10.0.0.0/14"] }
       dotnet = { from_port = 5000, to_port = 5000, protocol = "tcp", cidr_blocks = ["10.0.0.0/14"] }
     }
@@ -563,7 +575,7 @@ resource "aws_security_group" "sin_websocket_sg" {
 resource "aws_launch_template" "sin_template" {
   provider = aws.singapore
   name_prefix   = "sin-web-server"
-  image_id      =  "ami-0c1907b6d738188e5"  #data.aws_ami.ubuntu.id
+  image_id      =  "ami-004dea1f77bd3fa11"  #data.aws_ami.ubuntu.id
   instance_type = "t3a.small"
   iam_instance_profile {
     name = aws_iam_instance_profile.ec2_instance_profile.name
@@ -672,7 +684,7 @@ resource "aws_cloudwatch_metric_alarm" "sin_cpu_low" {
 
 resource "aws_instance" "sin_nat_instance1" {
   provider = aws.singapore
-  ami                    = "ami-05ab12222a9f39021"#data.aws_ami.amazon_linux.id
+  ami                    = "ami-004dea1f77bd3fa11"#data.aws_ami.amazon_linux.id
   instance_type          = "t3.micro"
   subnet_id              = aws_subnet.sin_subnet["nat1"].id
   vpc_security_group_ids = [aws_security_group.sin_default_sg.id]
@@ -719,7 +731,7 @@ resource "aws_instance" "sin_nat_instance1" {
 # 송현섭
 resource "aws_instance" "sin_websocket_1" {
   provider = aws.singapore
-  ami                    = "ami-05ab12222a9f39021"
+  ami                    = "ami-004dea1f77bd3fa11"
   instance_type          = "t3.micro"
   subnet_id              = aws_subnet.sin_subnet["ws1"].id
   vpc_security_group_ids = [aws_security_group.sin_websocket_sg.id]
@@ -732,6 +744,7 @@ resource "aws_instance" "sin_websocket_1" {
   tags = {
     Name = "Singapore-WebSocketServer1"
   }
+  depends_on = [ aws_instance.sin_nat_instance1 ]
 }
 
 # resource "aws_instance" "sin_websocket_2" {
@@ -756,14 +769,13 @@ resource "aws_instance" "sin_websocket_1" {
 resource "aws_instance" "sin_api_server_1" {
   provider = aws.singapore
   depends_on             = [aws_instance.sin_nat_instance1]
-  ami                    = "ami-05ab12222a9f39021"
+  ami                    = "ami-004dea1f77bd3fa11"
   instance_type          = "t3a.small" //var.instance_type
   subnet_id              = aws_subnet.sin_subnet["api1"].id
   vpc_security_group_ids = [aws_security_group.sin_dotnet_sg.id]
   key_name               = var.singapore_key_name
   iam_instance_profile   = aws_iam_instance_profile.api_server_profile.name
   private_ip             = "10.1.100.100"
-
   credit_specification {
     cpu_credits = "standard"
   }
@@ -792,7 +804,7 @@ source /etc/environment
 export S3_BUCKET="${aws_s3_bucket.long_user_data_bucket.bucket}"
 export LOCAL_PATH="/var/www/dotnet-api/MyApi"
 
-sudo aws s3 cp s3://$S3_BUCKET/userdatas/api_server.sh /tmp/api_server.sh
+sudo aws s3 cp s3://$S3_BUCKET/userdatas/api_server.sh /tmp/api_server.sh --region ap-northeast-2
 sudo chmod +x /tmp/api_server.sh
 sudo /tmp/api_server.sh
 EOT
@@ -800,6 +812,7 @@ EOT
   tags = {
     Name = "Singapore-DotNet-API-SERVER1"
   }
+  
 }
 
 # resource "aws_instance" "sin_api_server_2" {
@@ -900,50 +913,3 @@ resource "aws_db_instance" "sin_mysql_read_replica" {
     Name = "Singapore-MySQL Read Replica"
   }
 }
-
-#읽기 복제본 프록시
-
-#DB PROXY
-# resource "aws_db_proxy" "sin_db_proxy" {
-#   provider = aws.singapore
-#   name                   = "sin_db_proxy"
-#   debug_logging          = false
-#   engine_family          = "MYSQL"
-#   idle_client_timeout    = 1800
-#   require_tls            = true
-#   role_arn               = aws_iam_role.example.arn
-#   vpc_security_group_ids = [aws_security_group.sin_sg.id]
-#   vpc_subnet_ids         = [data.aws_subnets.sin_default.id[*]]
-
-#   auth {
-#     auth_scheme = "SECRETS"
-#     description = "example"
-#     iam_auth    = "DISABLED"
-#     secret_arn  = aws_secretsmanager_secret.sin_example.arn
-#   }
-
-#   tags = {
-#     Name = "example"
-#     Key  = "value"
-#   }
-# }
-
-# resource "aws_db_proxy_default_target_group" "sin_group" {
-#   provider = aws.singapore
-#   db_proxy_name = aws_db_proxy.sin_db_proxy.name
-
-#   connection_pool_config {
-#     connection_borrow_timeout    = 120
-#     init_query                   = "SET x=1, y=2"
-#     max_connections_percent      = 100
-#     max_idle_connections_percent = 50
-#     session_pinning_filters      = ["EXCLUDE_VARIABLE_SETS"]
-#   }
-# }
-
-# resource "aws_db_proxy_target" "sin_target" {
-#   provider = aws.singapore
-#   db_instance_identifier = aws_db_instance.sin_mysql_multi_az.identifier
-#   db_proxy_name          = aws_db_proxy.sin_db_proxy.name
-#   target_group_name      = aws_db_proxy_default_target_group.sin_group.name
-# }

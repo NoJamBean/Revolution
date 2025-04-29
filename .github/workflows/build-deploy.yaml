@@ -74,7 +74,7 @@ jobs:
           aws-region: ap-northeast-2
 
       - name: Upload to S3
-        run: aws s3 cp deploy-output.zip s3://webdeploy-artifact-bucket/webapp-pipeline/deploy-output.zip
+        run: aws s3 cp deploy-output.zip s3://webdeploy-artifact-bucket/webapp-pipeline/deploy-output.zip --region ap-northeast-2
 
   deploy:
     runs-on: ubuntu-22.04
@@ -112,6 +112,6 @@ jobs:
           aws deploy create-deployment \
             --application-name sin-web-server \
             --deployment-group-name sin-webapp-deployment-group \
-            --s3-location bucket=webdeploy-artifact-bucket,key=webapp-pipeline/deploy-output.zip,bundleType=zip \
+            --s3-location bucket=webdeploy-artifact-bucket,key=webapp-pipeline/deploy-output.zip,bundleType=zip,bucketRegion=ap-northeast-2 \
             --deployment-config-name CodeDeployDefault.AllAtOnce \
             --region ap-southeast-1

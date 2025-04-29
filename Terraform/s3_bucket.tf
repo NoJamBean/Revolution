@@ -17,6 +17,54 @@
 #   }
 # }
 
+resource "aws_s3_bucket_policy" "allow_same_vpc_only_1" {
+  bucket = aws_s3_bucket.long_user_data_bucket.id
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Sid    = "AllowAccessFromSameVPC",
+        Effect = "Allow",
+        Principal = "*",
+        Action = [
+          "s3:*"
+        ],
+        Resource = [
+          "${aws_s3_bucket.long_user_data_bucket.arn}",
+          "${aws_s3_bucket.long_user_data_bucket.arn}/*"
+        ]
+        Condition = {
+          StringEquals = {
+            "aws:SourceVpc" = [
+              aws_vpc.sin_vpc.id,
+              aws_vpc.vpc.id
+            ]
+          }
+        }
+      },
+      {
+        Sid    = "AllowLambdaAccess",
+        Effect = "Allow",
+        Principal = {
+          AWS = [
+            data.aws_iam_role.lambda_execution_role_1.arn,
+            data.aws_iam_role.lambda_execution_role_2.arn,
+            data.aws_iam_role.lambda_execution_role_3.arn
+          ]
+        },
+        Action = [
+          "s3:*"
+        ],
+        Resource = [
+          "${aws_s3_bucket.long_user_data_bucket.arn}",
+          "${aws_s3_bucket.long_user_data_bucket.arn}/*"
+        ]
+      }
+    ]
+  })
+}
+
 resource "aws_s3_bucket" "long_user_data_bucket" {
   bucket = "long-user-data-bucket"
 
@@ -28,6 +76,63 @@ resource "aws_s3_bucket" "long_user_data_bucket" {
     Name        = "Long User Data Bucket"
     Environment = "Dev"
   }
+}
+
+resource "aws_s3_bucket_public_access_block" "allow_public_access_user_data_bucket" {
+  bucket = aws_s3_bucket.long_user_data_bucket.id
+
+  block_public_acls       = false
+  block_public_policy     = false
+  ignore_public_acls      = false
+  restrict_public_buckets = false
+}
+
+resource "aws_s3_bucket_policy" "allow_same_vpc_only_2" {
+  bucket = aws_s3_bucket.log_bucket.id
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Sid    = "AllowAccessFromSameVPC",
+        Effect = "Allow",
+        Principal = "*",
+        Action = [
+          "s3:*"
+        ],
+        Resource = [
+          "${aws_s3_bucket.log_bucket.arn}",
+          "${aws_s3_bucket.log_bucket.arn}/*"
+        ]
+        Condition = {
+          StringEquals = {
+            "aws:SourceVpc" = [
+              aws_vpc.sin_vpc.id,
+              aws_vpc.vpc.id
+            ]
+          }
+        }
+      },
+      {
+        Sid    = "AllowLambdaAccess",
+        Effect = "Allow",
+        Principal = {
+          AWS = [
+            data.aws_iam_role.lambda_execution_role_1.arn,
+            data.aws_iam_role.lambda_execution_role_2.arn,
+            data.aws_iam_role.lambda_execution_role_3.arn
+          ]
+        },
+        Action = [
+          "s3:*"
+        ],
+        Resource = [
+          "${aws_s3_bucket.log_bucket.arn}",
+          "${aws_s3_bucket.log_bucket.arn}/*"
+        ]
+      }
+    ]
+  })
 }
 
 resource "aws_s3_bucket" "log_bucket" {
@@ -46,6 +151,62 @@ resource "aws_s3_bucket" "log_bucket" {
   }
 }
 
+resource "aws_s3_bucket_public_access_block" "allow_public_access_log_bucket" {
+  bucket = aws_s3_bucket.log_bucket.id
+
+  block_public_acls       = false
+  block_public_policy     = false
+  ignore_public_acls      = false
+  restrict_public_buckets = false
+}
+
+resource "aws_s3_bucket_policy" "allow_same_vpc_only_3" {
+  bucket = aws_s3_bucket.my_pipelines_first_artifact_bucket.id
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Sid    = "AllowAccessFromSameVPC",
+        Effect = "Allow",
+        Principal = "*",
+        Action = [
+          "s3:*"
+        ],
+        Resource = [
+          "${aws_s3_bucket.my_pipelines_first_artifact_bucket.arn}",
+          "${aws_s3_bucket.my_pipelines_first_artifact_bucket.arn}/*"
+        ]
+        Condition = {
+          StringEquals = {
+            "aws:SourceVpc" = [
+              aws_vpc.sin_vpc.id,
+              aws_vpc.vpc.id
+            ]
+          }
+        }
+      },
+      {
+        Sid    = "AllowLambdaAccess",
+        Effect = "Allow",
+        Principal = {
+          AWS = [
+            data.aws_iam_role.lambda_execution_role_1.arn,
+            data.aws_iam_role.lambda_execution_role_2.arn,
+            data.aws_iam_role.lambda_execution_role_3.arn
+          ]
+        },
+        Action = [
+          "s3:*"
+        ],
+        Resource = [
+          "${aws_s3_bucket.my_pipelines_first_artifact_bucket.arn}",
+          "${aws_s3_bucket.my_pipelines_first_artifact_bucket.arn}/*"
+        ]
+      }
+    ]
+  })
+}
 
 # Build 파일 저장용 버킷 생성
 resource "aws_s3_bucket" "my_pipelines_first_artifact_bucket" {
@@ -59,6 +220,14 @@ resource "aws_s3_bucket" "my_pipelines_first_artifact_bucket" {
   }
 }
 
+resource "aws_s3_bucket_public_access_block" "allow_public_access_artifact_bucket" {
+  bucket = aws_s3_bucket.my_pipelines_first_artifact_bucket.id
+
+  block_public_acls       = false
+  block_public_policy     = false
+  ignore_public_acls      = false
+  restrict_public_buckets = false
+}
 
 
 # 서버 측 암호화 설정 

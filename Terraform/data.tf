@@ -51,3 +51,15 @@ data "aws_route53_zone" "private" {
 }
 
 data "aws_caller_identity" "current" {}
+
+data "aws_iam_role" "lambda_execution_role_1" {
+  name = "lambda-s3-opensearch-role"
+}
+
+data "aws_iam_role" "lambda_execution_role_2" {
+  name = "metric-stream-to-firehose-role"
+}
+
+data "aws_iam_role" "lambda_execution_role_3" {
+  name = "firehose-s3-delivery-role"
+}
