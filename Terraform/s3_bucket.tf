@@ -205,7 +205,7 @@ resource "aws_s3_bucket" "my_pipelines_first_artifact_bucket" {
 
 resource "aws_s3_bucket" "my_pipelines_second_artifact_bucket" {
   provider = aws.singapore
-  bucket        = "webdeploy-artifact-bucket-sg" # 싱가포르 리전에서 사용할 S3 버킷
+  bucket        = "sin-webdeploy-artifact-bucket" # 싱가포르 리전에서 사용할 S3 버킷
   force_destroy = true
 
   versioning {
@@ -213,7 +213,7 @@ resource "aws_s3_bucket" "my_pipelines_second_artifact_bucket" {
   }
 
   tags = {
-    Name        = "codebuild-artifact-bucket-sg"
+    Name        = "sin-codebuild-artifact-bucket"
     Environment = "production"
   }
 }
