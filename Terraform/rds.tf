@@ -50,7 +50,8 @@ resource "aws_db_instance" "mysql_multi_az" {
   monitoring_role_arn                 = aws_iam_role.rds_to_cwlogs.arn
   iam_database_authentication_enabled = false # IAM 인증 비활성화 (암호 인증 사용)
   parameter_group_name                = aws_db_parameter_group.parm.name
-  
+  kms_key_id          = "arn:aws:kms:ap-northeast-2:248189921892:key/mrk-b3f30d170a584dea8b949979e4471fdc"
+
   enabled_cloudwatch_logs_exports = ["error", "general", "slowquery", "audit"]
   availability_zone                   = null # 자동 배정
   tags                                = { Name = "MySQL Multi-AZ RDS Instance" }
@@ -71,13 +72,15 @@ resource "aws_db_instance" "mysql_read_replica" {
   identifier           = "mysql-read-replica"
   engine               = "mysql"
   instance_class       = "db.t3.micro"
-  replicate_source_db  = aws_db_instance.mysql_multi_az.identifier
+  replicate_source_db  = aws_db_instance.mysql_multi_az.arn
   publicly_accessible  = false
   db_subnet_group_name = aws_db_subnet_group.rds_subnet_group.name
   vpc_security_group_ids = [aws_security_group.rds_sg.id]
   skip_final_snapshot = true
   monitoring_interval                 = 60 
   monitoring_role_arn                 = aws_iam_role.rds_to_cwlogs.arn
+  storage_encrypted = true
+  kms_key_id          = "arn:aws:kms:ap-northeast-2:248189921892:key/mrk-b3f30d170a584dea8b949979e4471fdc"
 
   tags = {
     Name = "MySQL Read Replica"

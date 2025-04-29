@@ -40,9 +40,9 @@ resource "aws_subnet" "sin_subnet" {
     ws1    = { cidr_block = "10.1.15.0/24", availability_zone = var.sin_zone["a"], map_public_ip_on_launch = false }   #앱 서버 1
     # ws2    = { cidr_block = "10.1.16.0/24", availability_zone = var.sin_zone["c"], map_public_ip_on_launch = false }   #앱 서버 2
     api1   = { cidr_block = "10.1.100.0/24", availability_zone = var.sin_zone["a"], map_public_ip_on_launch = false } #백 서버 1
-    # api2   = { cidr_block = "10.1.101.0/24", availability_zone = var.sin_zone["c"], map_public_ip_on_launch = false } #백 서버 2
+    api2   = { cidr_block = "10.1.101.0/24", availability_zone = var.sin_zone["c"], map_public_ip_on_launch = false } #백 서버 2
     rds1   = { cidr_block = "10.1.50.0/24", availability_zone = var.sin_zone["a"], map_public_ip_on_launch = false }  #DB 서버 1
-    # rds2   = { cidr_block = "10.1.51.0/24", availability_zone = var.sin_zone["c"], map_public_ip_on_launch = false }  #DB 서버 2
+    rds2   = { cidr_block = "10.1.51.0/24", availability_zone = var.sin_zone["c"], map_public_ip_on_launch = false }  #DB 서버 2
  }
 
   vpc_id                  = aws_vpc.sin_vpc.id
@@ -131,17 +131,17 @@ resource "aws_route_table_association" "sin_routetable_association" {
     rds1 = { route_table_id = aws_route_table.sin_routetable["back1"].id, subnet_id = aws_subnet.sin_subnet["rds1"].id }
     # rds2 = { route_table_id = aws_route_table.sin_routetable["back2"].id, subnet_id=aws_subnet.sin_subnet["rds2"].id}
   }
-  route_table_id = each.value.sin_route_table_id
-  subnet_id      = each.value.sin_subnet_id
+  route_table_id = each.value.route_table_id
+  subnet_id      = each.value.subnet_id
 }
 # ALB 부분--------------------------------------------------------------------------------------------------
 # ALB
 resource "aws_lb" "sin_alb" {
   provider = aws.singapore
-  name               = "sin_alb"
+  name               = "sin-alb"
   internal           = false
   load_balancer_type = "application"
-  security_groups    = [aws_security_group.alb_sg.id]
+  security_groups    = [aws_security_group.sin_alb_sg.id]
   subnets = [
     aws_subnet.sin_subnet["app1"].id,
     aws_subnet.sin_subnet["app2"].id
@@ -160,7 +160,7 @@ resource "aws_lb" "sin_alb" {
 
 resource "aws_lb" "sin_private_alb" {
   provider = aws.singapore
-  name               = "sin_priv-alb"
+  name               = "sin-priv-alb"
   internal           = true
   load_balancer_type = "application"
   security_groups    = [aws_security_group.sin_alb_sg.id]
@@ -183,7 +183,7 @@ resource "aws_lb_target_group" "sin_web_tg" {
     create_before_destroy = true
   }
 
-  name_prefix = "sin-web-tg"
+  name_prefix = "web-tg"
   port        = 80
   protocol    = "HTTP"
   vpc_id      = aws_vpc.sin_vpc.id
@@ -207,7 +207,7 @@ resource "aws_lb_target_group" "sin_web_tg" {
 
 resource "aws_lb_target_group" "sin_api_tg" {
   provider = aws.singapore
-  name_prefix = "sin-api-tg"
+  name_prefix = "api-tg"
   port        = 80
   protocol    = "HTTP"
   vpc_id      = aws_vpc.sin_vpc.id
@@ -230,7 +230,7 @@ resource "aws_lb_target_group" "sin_api_tg" {
 
 resource "aws_lb_target_group" "sin_websocket_tg" {
   provider = aws.singapore
-  name_prefix = "sin-ws-tg"
+  name_prefix = "ws-tg"
   port        = 3001
   protocol    = "HTTP"
   vpc_id      =aws_vpc.sin_vpc.id
@@ -275,7 +275,7 @@ resource "aws_lb_listener" "sin_alb_https" {
   protocol          = "HTTPS"
 
   ssl_policy        = "ELBSecurityPolicy-2016-08"
-  certificate_arn   = aws_acm_certificate_validation.alb_cert.certificate_arn
+  certificate_arn   = aws_acm_certificate_validation.sin_alb_cert.certificate_arn
 
   default_action {
     type             = "forward"
@@ -563,7 +563,7 @@ resource "aws_security_group" "sin_websocket_sg" {
 resource "aws_launch_template" "sin_template" {
   provider = aws.singapore
   name_prefix   = "sin-web-server"
-  image_id      = data.aws_ami.ubuntu.id
+  image_id      =  "ami-0c1907b6d738188e5"  #data.aws_ami.ubuntu.id
   instance_type = "t3a.small"
   iam_instance_profile {
     name = aws_iam_instance_profile.ec2_instance_profile.name
@@ -672,7 +672,7 @@ resource "aws_cloudwatch_metric_alarm" "sin_cpu_low" {
 
 resource "aws_instance" "sin_nat_instance1" {
   provider = aws.singapore
-  ami                    = data.aws_ami.amazon_linux.id
+  ami                    = "ami-05ab12222a9f39021"#data.aws_ami.amazon_linux.id
   instance_type          = "t3.micro"
   subnet_id              = aws_subnet.sin_subnet["nat1"].id
   vpc_security_group_ids = [aws_security_group.sin_default_sg.id]
@@ -693,33 +693,33 @@ resource "aws_instance" "sin_nat_instance1" {
 }
 
 
-resource "aws_instance" "sin_nat_instance2" {
-  provider = aws.singapore
-  ami                    = data.aws_ami.amazon_linux.id
-  instance_type          = "t3.micro"
-  subnet_id              = aws_subnet.sin_subnet["nat2"].id
-  vpc_security_group_ids = [aws_security_group.sin_default_sg.id]
-  key_name               = var.singapore_key_name
-  source_dest_check      = false
-  associate_public_ip_address = true
-  private_ip = "10.1.21.100"
+# resource "aws_instance" "sin_nat_instance2" {
+#   provider = aws.singapore
+#   ami                    = data.aws_ami.amazon_linux.id
+#   instance_type          = "t3.micro"
+#   subnet_id              = aws_subnet.sin_subnet["nat2"].id
+#   vpc_security_group_ids = [aws_security_group.sin_default_sg.id]
+#   key_name               = var.singapore_key_name
+#   source_dest_check      = false
+#   associate_public_ip_address = true
+#   private_ip = "10.1.21.100"
 
-  credit_specification {
-    cpu_credits = "standard"
-  }
+#   credit_specification {
+#     cpu_credits = "standard"
+#   }
 
-  user_data = file("userdatas/nat.sh")
+#   user_data = file("userdatas/nat.sh")
 
-  tags = {
-    Name = "SINGAPORE-NAT-INSTANCE-2"
-  }
-}
+#   tags = {
+#     Name = "SINGAPORE-NAT-INSTANCE-2"
+#   }
+# }
 
 # WebSocket용 인스턴스 
 # 송현섭
 resource "aws_instance" "sin_websocket_1" {
   provider = aws.singapore
-  ami                    = data.aws_ami.amazon_linux.id
+  ami                    = "ami-05ab12222a9f39021"
   instance_type          = "t3.micro"
   subnet_id              = aws_subnet.sin_subnet["ws1"].id
   vpc_security_group_ids = [aws_security_group.sin_websocket_sg.id]
@@ -734,84 +734,35 @@ resource "aws_instance" "sin_websocket_1" {
   }
 }
 
-resource "aws_instance" "sin_websocket_2" {
-  provider = aws.singapore
-  ami                    = data.aws_ami.amazon_linux.id
-  instance_type          = "t3.micro"
-  subnet_id              = aws_subnet.sin_subnet["ws2"].id
-  vpc_security_group_ids = [aws_security_group.sin_websocket_sg.id]
-  key_name               = var.singapore_key_name # SSH용 키 페어
-  iam_instance_profile = aws_iam_instance_profile.api_server_profile.name
-  private_ip = "10.1.16.100"
+# resource "aws_instance" "sin_websocket_2" {
+#   provider = aws.singapore
+#   ami                    = data.aws_ami.amazon_linux.id
+#   instance_type          = "t3.micro"
+#   subnet_id              = aws_subnet.sin_subnet["ws2"].id
+#   vpc_security_group_ids = [aws_security_group.sin_websocket_sg.id]
+#   key_name               = var.singapore_key_name # SSH용 키 페어
+#   iam_instance_profile = aws_iam_instance_profile.api_server_profile.name
+#   private_ip = "10.1.16.100"
   
-  user_data = data.template_file.websocket_server.rendered
+#   user_data = data.template_file.websocket_server.rendered
 
-  tags = {
-    Name = "Singapore-WebSocketServer2"
-  }
-}
+#   tags = {
+#     Name = "Singapore-WebSocketServer2"
+#   }
+# }
 
 
 
 resource "aws_instance" "sin_api_server_1" {
   provider = aws.singapore
   depends_on             = [aws_instance.sin_nat_instance1]
-  ami                    = data.aws_ami.amazon_linux.id
+  ami                    = "ami-05ab12222a9f39021"
   instance_type          = "t3a.small" //var.instance_type
   subnet_id              = aws_subnet.sin_subnet["api1"].id
   vpc_security_group_ids = [aws_security_group.sin_dotnet_sg.id]
   key_name               = var.singapore_key_name
   iam_instance_profile   = aws_iam_instance_profile.api_server_profile.name
   private_ip             = "10.1.100.100"
-
-  credit_specification {
-    cpu_credits = "standard"
-  }
-
-  user_data = <<-EOT
-#!/bin/bash
-    
-set -e
-
-sudo tee -a /etc/environment > /dev/null <<EOL
-DB_ENDPOINT="${split(":", aws_db_instance.mysql_multi_az.endpoint)[0]}"
-DB_ENDPOINT_RO="${split(":", aws_db_instance.mysql_read_replica.endpoint)[0]}"
-DB_USERNAME="${var.db_username}"
-DB_PASSWORD="${var.db_password}"
-COGNITO_USER_POOL="${aws_cognito_user_pool.user_pool.id}"
-COGNITO_APP_CLIENT="${aws_cognito_user_pool_client.app_client.id}"
-API_SERVER_DNS="${var.api_dns}"
-
-S3_BUCKET="${aws_s3_bucket.long_user_data_bucket.bucket}"
-S3_LOG_BUCKET="${aws_s3_bucket.log_bucket.bucket}"
-LOCAL_PATH="/var/www/dotnet-api/MyApi"
-EOL
-
-source /etc/environment
-
-export S3_BUCKET="${aws_s3_bucket.long_user_data_bucket.bucket}"
-export LOCAL_PATH="/var/www/dotnet-api/MyApi"
-
-sudo aws s3 cp s3://$S3_BUCKET/userdatas/api_server.sh /tmp/api_server.sh
-sudo chmod +x /tmp/api_server.sh
-sudo /tmp/api_server.sh
-EOT
-
-  tags = {
-    Name = "Singapore-DotNet-API-SERVER1"
-  }
-}
-
-resource "aws_instance" "sin_api_server_2" {
-  provider = aws.singapore
-  depends_on             = [aws_instance.sin_nat_instance1]
-  ami                    = data.aws_ami.amazon_linux.id
-  instance_type          = "t3a.small" //var.instance_type
-  subnet_id              = aws_subnet.sin_subnet["api2"].id
-  vpc_security_group_ids = [aws_security_group.sin_dotnet_sg.id]
-  key_name               = var.singapore_key_name
-  iam_instance_profile   = aws_iam_instance_profile.api_server_profile.name
-  private_ip             = "10.1.101.100"
 
   credit_specification {
     cpu_credits = "standard"
@@ -847,9 +798,58 @@ sudo /tmp/api_server.sh
 EOT
 
   tags = {
-    Name = "Singapore-DotNet-API-SERVER2"
+    Name = "Singapore-DotNet-API-SERVER1"
   }
 }
+
+# resource "aws_instance" "sin_api_server_2" {
+#   provider = aws.singapore
+#   depends_on             = [aws_instance.sin_nat_instance1]
+#   ami                    = data.aws_ami.amazon_linux.id
+#   instance_type          = "t3a.small" //var.instance_type
+#   subnet_id              = aws_subnet.sin_subnet["api2"].id
+#   vpc_security_group_ids = [aws_security_group.sin_dotnet_sg.id]
+#   key_name               = var.singapore_key_name
+#   iam_instance_profile   = aws_iam_instance_profile.api_server_profile.name
+#   private_ip             = "10.1.101.100"
+
+#   credit_specification {
+#     cpu_credits = "standard"
+#   }
+
+#   user_data = <<-EOT
+# #!/bin/bash
+    
+# set -e
+
+# sudo tee -a /etc/environment > /dev/null <<EOL
+# DB_ENDPOINT="${split(":", aws_db_instance.mysql_multi_az.endpoint)[0]}"
+# DB_ENDPOINT_RO="${split(":", aws_db_instance.sin_mysql_read_replica.endpoint)[0]}"
+# DB_USERNAME="${var.db_username}"
+# DB_PASSWORD="${var.db_password}"
+# COGNITO_USER_POOL="${aws_cognito_user_pool.user_pool.id}"
+# COGNITO_APP_CLIENT="${aws_cognito_user_pool_client.app_client.id}"
+# API_SERVER_DNS="${var.api_dns}"
+
+# S3_BUCKET="${aws_s3_bucket.long_user_data_bucket.bucket}"
+# S3_LOG_BUCKET="${aws_s3_bucket.log_bucket.bucket}"
+# LOCAL_PATH="/var/www/dotnet-api/MyApi"
+# EOL
+
+# source /etc/environment
+
+# export S3_BUCKET="${aws_s3_bucket.long_user_data_bucket.bucket}"
+# export LOCAL_PATH="/var/www/dotnet-api/MyApi"
+
+# sudo aws s3 cp s3://$S3_BUCKET/userdatas/api_server.sh /tmp/api_server.sh
+# sudo chmod +x /tmp/api_server.sh
+# sudo /tmp/api_server.sh
+# EOT
+
+#   tags = {
+#     Name = "Singapore-DotNet-API-SERVER2"
+#   }
+# }
 
 # RDS 읽기 복제본 부분-------------------------------------------------------------------------------------
 # RDS 파라미터 그룹 생성
@@ -885,14 +885,16 @@ resource "aws_db_parameter_group" "sin_parm" {
 
 resource "aws_db_instance" "sin_mysql_read_replica" {
   provider = aws.singapore
-  identifier           = "mysql-read-replica"
+  identifier           = "sin-mysql-read-replica"
   engine               = "mysql"
   instance_class       = "db.t3.micro"
-  replicate_source_db  = aws_db_instance.sin_mysql_multi_az.identifier  # 반드시 마스터의 identifier를 지정
+  replicate_source_db  = aws_db_instance.mysql_multi_az.arn  # 반드시 마스터의 identifier를 지정
   publicly_accessible  = false
   db_subnet_group_name = aws_db_subnet_group.sin_rds_subnet_group.name
   vpc_security_group_ids = [aws_security_group.sin_rds_sg.id]
   skip_final_snapshot = true
+  storage_encrypted = true
+  kms_key_id          = "arn:aws:kms:ap-southeast-1:248189921892:key/mrk-b3f30d170a584dea8b949979e4471fdc"
 
   tags = {
     Name = "Singapore-MySQL Read Replica"
