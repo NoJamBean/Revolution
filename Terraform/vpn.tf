@@ -12,7 +12,7 @@ resource "aws_vpn_gateway" "vpn_gateway" {
 
 # aws - customer gateway
 resource "aws_customer_gateway" "azure_cgw" {
-  bgp_asn    = 65000     # Azure쪽 BGP ASN (일단 기본값)
+  # bgp_asn    = 65000     # Azure쪽 BGP ASN (일단 기본값)
   ip_address = "1.2.3.4" # 더미 IP (나중에 실제 Azure VPN Gateway 퍼블릭 IP로 수정 예정)
   type       = "ipsec.1"
 
@@ -30,12 +30,19 @@ resource "aws_vpn_connection" "vpn_connection" {
   customer_gateway_id = aws_customer_gateway.azure_cgw.id
   type                = "ipsec.1"
 
-  static_routes_only = true # Static Routing 모드로 설정
+  static_routes_only = true
+
+  tunnel1_preshared_key = "MyToToRoSecretSharedKey123!"
+  tunnel1_inside_cidr   = "169.254.21.0/30"
+
+  tunnel2_preshared_key = "MyToToRoSecretSharedKey123!"
+  tunnel2_inside_cidr   = "169.254.22.0/30"
 
   tags = {
     Name = "vpn-aws-to-azure"
   }
 }
+
 
 
 

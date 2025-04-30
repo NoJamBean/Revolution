@@ -17,6 +17,15 @@ resource "azurerm_subnet" "subnet" {
   address_prefixes     = ["10.2.1.0/24"]
 }
 
+
+# vpn gateway용 서브넷
+resource "azurerm_subnet" "gateway_subnet" {
+  name                 = "GatewaySubnet"
+  resource_group_name  = azurerm_resource_group.main.name
+  virtual_network_name = azurerm_virtual_network.vnet.name
+  address_prefixes     = ["10.2.254.0/27"]
+}
+
 resource "azurerm_service_plan" "asp" {
   name                = "asp-appserviceplan"
   location            = azurerm_resource_group.main.location
@@ -26,16 +35,16 @@ resource "azurerm_service_plan" "asp" {
 }
 
 resource "azurerm_app_service" "app_service" {
-  name                     = "app-service-webapp"
-  location                 = azurerm_resource_group.main.location
-  resource_group_name      = azurerm_resource_group.main.name
-  app_service_plan_id      = azurerm_service_plan.asp.id
+  name                = "app-service-webapp"
+  location            = azurerm_resource_group.main.location
+  resource_group_name = azurerm_resource_group.main.name
+  app_service_plan_id = azurerm_service_plan.asp.id
   app_settings = {
-    "WEBSITES_ENABLE_APP_SERVICE_STORAGE"     = "false"
-    "DOCKER_REGISTRY_SERVER_URL"              = "https://index.docker.io"
-    "WEBSITES_CONTAINER_START_TIME_LIMIT"     = "1800"
-    "WEBSITES_PORT"                           = "3000"
-    "PORT"                                    = "3000" # Next.js 기본 포트
+    "WEBSITES_ENABLE_APP_SERVICE_STORAGE" = "false"
+    "DOCKER_REGISTRY_SERVER_URL"          = "https://index.docker.io"
+    "WEBSITES_CONTAINER_START_TIME_LIMIT" = "1800"
+    "WEBSITES_PORT"                       = "3000"
+    "PORT"                                = "3000" # Next.js 기본 포트
   }
 
   site_config {
