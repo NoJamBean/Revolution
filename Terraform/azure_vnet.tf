@@ -8,6 +8,14 @@ resource "azurerm_virtual_network" "vnet" {
   address_space       = ["10.2.0.0/16"] # Azure쪽 대역 (AWS에서 Static Route 등록했던 그거)
   location            = azurerm_resource_group.main.location
   resource_group_name = azurerm_resource_group.main.name
+
+  dns_servers = [
+    "ns-1536.awsdns-00.co.uk.",
+    "ns-0.awsdns-00.com.,",
+    "ns-1024.awsdns-00.org.",
+    "ns-512.awsdns-00.net.",
+    "8.8.8.8"
+  ]
 }
 
 resource "azurerm_subnet" "subnet" {
