@@ -48,16 +48,34 @@ jobs:
           docker build -t ${{ secrets.DOCKER_USERNAME }}/nextjs-app:latest .
           docker push ${{ secrets.DOCKER_USERNAME }}/nextjs-app:latest
 
+
+  deploy:
+    runs-on: ubuntu-22.04
+    needs: build  # `build` 작업이 성공적으로 완료된 후에 `deploy` 작업을 실행하도록 설정
+
+    steps:
+      - name: Login to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          
+      - name: Login to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
       - name: Deploy to Azure Container App
         uses: azure/webapps-deploy@v2
         with:
           app-name: app-service-webapp
           resource-group: rg-webserver
-          # slot-name: production
           images: ${{ secrets.DOCKER_USERNAME }}/nextjs-app:latest
           docker-registry-url: index.docker.io
           docker-registry-username: ${{ secrets.DOCKER_USERNAME }}
           docker-registry-password: ${{ secrets.DOCKER_PASSWORD }}
+
+
 #  Code Deploy 방식 - [이전 방식]
 #     - name: Build
 #       working-directory: Web/webapp
