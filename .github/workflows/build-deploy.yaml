@@ -51,7 +51,7 @@ jobs:
 
   deploy:
     runs-on: ubuntu-22.04
-    needs: build  # `build` 작업이 성공적으로 완료된 후에 `deploy` 작업을 실행하도록 설정
+    needs: build
 
     steps:
       - name: Login to Azure
