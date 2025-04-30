@@ -65,40 +65,40 @@ resource "aws_route53_zone_association" "private_zone_association" {
 #   depends_on = [aws_lb.alb, aws_lb.sin_alb]
 # }
 
-resource "aws_route53_record" "web_alb_a_record" {
-  zone_id = data.aws_route53_zone.public.zone_id
-  name    = "www.${var.public_domain_name}"
-  type    = "A"
+# resource "aws_route53_record" "web_alb_a_record" {
+#   zone_id = data.aws_route53_zone.public.zone_id
+#   name    = "www.${var.public_domain_name}"
+#   type    = "A"
 
-  set_identifier = "korea"  # 'korea'만 남김
+#   set_identifier = "korea"  # 'korea'만 남김
 
-  geolocation_routing_policy {
-    country = "KR"  # 'KR'만 남김
-  }
+#   geolocation_routing_policy {
+#     country = "KR"  # 'KR'만 남김
+#   }
 
-  failover_routing_policy {
-    type = "PRIMARY"  # 첫 번째 리전이 primary
-  }
+#   failover_routing_policy {
+#     type = "PRIMARY"  # 첫 번째 리전이 primary
+#   }
 
-  alias {
-    name                   = aws_lb.alb.dns_name
-    zone_id                = aws_lb.alb.zone_id
-    evaluate_target_health = true
-  }
+#   alias {
+#     name                   = aws_lb.alb.dns_name
+#     zone_id                = aws_lb.alb.zone_id
+#     evaluate_target_health = true
+#   }
 
-  health_check_id = aws_route53_health_check.korea_health_check.id
+#   health_check_id = aws_route53_health_check.korea_health_check.id
 
-  depends_on = [aws_lb.alb]
-}
+#   depends_on = [aws_lb.alb]
+# }
 
-resource "aws_route53_health_check" "korea_health_check" {
-  fqdn = "www.${var.public_domain_name}" # 트래픽을 확인할 DNS 이름
-  type = "HTTP"
-  resource_path = "/" # 건강 상태를 확인할 경로
+# resource "aws_route53_health_check" "korea_health_check" {
+#   fqdn = "www.${var.public_domain_name}" # 트래픽을 확인할 DNS 이름
+#   type = "HTTP"
+#   resource_path = "/" # 건강 상태를 확인할 경로
 
-  failure_threshold = 3
-  request_interval  = 30
-}
+#   failure_threshold = 3
+#   request_interval  = 30
+# }
 
 # resource "aws_route53_health_check" "singapore_health_check" {
 #   fqdn = "www.${var.public_domain_name}"
@@ -108,6 +108,17 @@ resource "aws_route53_health_check" "korea_health_check" {
 #   failure_threshold = 3
 #   request_interval  = 30
 # }
+
+resource "aws_route53_record" "web_app_service_cname_record" {
+  zone_id = data.aws_route53_zone.public.zone_id
+  name    = "www.${var.public_domain_name}"  # 기존 도메인 이름
+  type    = "CNAME"
+  
+  ttl     = 60  # TTL 설정
+  records = ["app-service-webapp.azurewebsites.net"]  # Azure App Service의 DNS 이름 (기본 DNS 이름)
+
+  depends_on = [aws_route53_zone]
+}
 
 resource "aws_route53_record" "nat" {
   zone_id = data.aws_route53_zone.public.zone_id
@@ -244,30 +255,3 @@ resource "aws_route53_record" "db_sin" {
     country = "SG"  # 싱가포르에 대한 설정
   }
 }
-
-# resource "aws_route53_resolver_endpoint" "endpoint_1" {
-#   name                = "dns-endpoint"
-#   direction           = "INBOUND"  # Azure에서 AWS로의 쿼리 전달
-#   security_group_ids = [aws_security_group.sg.id]
-#   resolver_endpoint_type = "IPV4"
-
-#   ip_address {
-#     subnet_id = aws_subnet.sn1.id
-#   }
-
-#   ip_address {
-#     subnet_id = aws_subnet.sn2.id
-#     ip        = "10.0.64.4"
-#   }
-# }
-
-# resource "aws_route53_resolver_rule" "rule_1" {
-#   name        = "dns-rule"
-#   domain_name = "backend.internal"
-#   rule_type = "FORWARD"
-#   resolver_endpoint_id = aws_route53_resolver_endpoint.endpoint_1.id
-
-#   target_ip {
-#     ip = "Azure DNS Resolver IP"
-#   }
-# }
