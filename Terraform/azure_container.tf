@@ -32,6 +32,18 @@ resource "azurerm_app_service" "app_service" {
   }
 }
 
+# # SSL 인증서 생성 (Azure 무료 인증서)
+# resource "azurerm_app_service_managed_certificate" "ssl" {
+#   custom_hostname_binding_id = azurerm_app_service_custom_hostname_binding.custom_domain.id
+# }
+
+# # 생성된 인증서를 웹앱에 바인딩
+# resource "azurerm_app_service_ssl_binding" "ssl_binding" {
+#   hostname_binding_id = azurerm_app_service_custom_hostname_binding.custom_domain.id
+#   certificate_id      = azurerm_app_service_managed_certificate.ssl.id
+#   ssl_state           = "SniEnabled"
+# }
+
 resource "azurerm_app_service_custom_hostname_binding" "custom_domain" {
   hostname            = "www.1bean.shop"
   app_service_name    = azurerm_app_service.app_service.name
