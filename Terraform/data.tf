@@ -63,3 +63,15 @@ data "aws_caller_identity" "current" {}
 # data "aws_iam_role" "lambda_execution_role_3" {
 #   name = "firehose-s3-delivery-role"
 # }
+
+#ACM
+data "aws_acm_certificate" "alb_cert" {
+  arn = var.acm_arn  # 인증서 ARN을 입력하세요
+
+  most_recent = true  # 가장 최근의 인증서를 선택
+}
+
+# 인증서 검증 정보 가져오기 (선택 사항)
+data "aws_acm_certificate_validation" "alb_cert_validation" {
+  certificate_arn = data.aws_acm_certificate.alb_cert.arn
+}

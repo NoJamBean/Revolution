@@ -25,6 +25,10 @@ variable "dockerhub_password" {
   default = "dckr_pat_-rttjRaQs18PiA08JfGU8kXqQwo"
   sensitive = true
   }
+variable "acm_arn"{ 
+  default = "arn:aws:acm:ap-northeast-2:248189921892:certificate/25ce65ee-1992-49ed-bb57-8501fc778d0c"
+ sensitive = true
+ }
 
 variable "zone" {
   type = map(string)
@@ -51,13 +55,5 @@ variable "egress_rules" {
     all = { port = 0, protocol = "-1", cidr = ["0.0.0.0/0"] }
   }
 }
-
-
-# # 배포 시 git repo 접근 권한용 토큰값
-# variable "seop_github_token" {
-#   description = "GitHub PAT"
-#   type        = string
-#   sensitive   = true
-# }
 
 
