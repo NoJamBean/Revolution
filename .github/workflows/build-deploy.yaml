@@ -48,14 +48,39 @@ jobs:
           docker build -t ${{ secrets.DOCKER_USERNAME }}/nextjs-app:latest .
           docker push ${{ secrets.DOCKER_USERNAME }}/nextjs-app:latest
 
-      - name: Deploy to Azure Container App
-        uses: azure/container-apps-deploy-action@v1
+
+  deploy:
+    runs-on: ubuntu-22.04
+    needs: build
+
+    steps:
+      - name: Login to Azure
+        uses: azure/login@v1
         with:
-          resource-group: your-resource-group-name
-          name: your-container-app-name
-          image: ${{ secrets.DOCKER_USERNAME }}/nextjs-app:latest
-          registry-username: ${{ secrets.DOCKER_USERNAME }}
-          registry-password: ${{ secrets.DOCKER_PASSWORD }}
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          
+      - name: Login to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Deploy to Azure Web App Staging Slot
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: app-service-webapp
+          resource-group-name: rg-webapp
+          images: ${{ secrets.DOCKER_USERNAME }}/nextjs-app:latest
+          slot-name: staging  # Green 환경 (새로운 버전 배포)
+
+      - name: Swap Slots (Blue -> Green)
+        uses: azure/webapps-swap-slot@v1
+        with:
+          app-name: app-service-webapp
+          resource-group-name: rg-webapp
+          slot-name: staging  # 기존 production 슬롯을 staging으로 전환
+
+
 #  Code Deploy 방식 - [이전 방식]
 #     - name: Build
 #       working-directory: Web/webapp

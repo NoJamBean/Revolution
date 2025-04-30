@@ -20,15 +20,15 @@ variable "public_domain_name" { default = "1bean.shop" }      # 원하는 도메
 variable "api_dns" { default = "api.backend.internal" }
 variable "rds_dns" { default = "db.backend.internal" }
 variable "github_branch" { default = "web" }
-variable "dockerhub_username" { default = "kindread11"}
+variable "dockerhub_username" { default = "wonbinjung"}
 variable "dockerhub_password" {
-  default = "dckr_pat_-rttjRaQs18PiA08JfGU8kXqQwo"
+  default = "dckr_pat_S073IKIP1yPDNPf_mNCVWJN19VM"
   sensitive = true
-  }
-variable "acm_arn"{ 
+}
+variable "acm_arn"{
   default = "arn:aws:acm:ap-northeast-2:248189921892:certificate/25ce65ee-1992-49ed-bb57-8501fc778d0c"
- sensitive = true
- }
+  sensitive = true
+}
 
 variable "zone" {
   type = map(string)
