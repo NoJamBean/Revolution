@@ -22,14 +22,11 @@ resource "azurerm_virtual_network_gateway" "vpn_gateway" {
     name                          = "vnetGatewayConfig"
     public_ip_address_id          = azurerm_public_ip.vpn_gateway_pip.id
     private_ip_address_allocation = "Dynamic"
-    subnet_id                     = azurerm_subnet.subnet.id
+    subnet_id                     = azurerm_subnet.gateway_subnet.id
   }
 
   sku = "VpnGw1" # 가격/성능 선택 (VpnGw1이 소규모에 적당함)
 }
-
-
-
 
 # azure - local gateway
 resource "azurerm_local_network_gateway" "aws_cgw" {

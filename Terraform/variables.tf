@@ -20,6 +20,11 @@ variable "public_domain_name" { default = "1bean.shop" }      # 원하는 도메
 variable "api_dns" { default = "api.backend.internal" }
 variable "rds_dns" { default = "db.backend.internal" }
 variable "github_branch" { default = "web" }
+variable "dockerhub_username" { default = "kindread11"}
+variable "dockerhub_password" {
+  default = "dckr_pat_-rttjRaQs18PiA08JfGU8kXqQwo"
+  sensitive = true
+  }
 
 variable "zone" {
   type = map(string)
