@@ -169,7 +169,7 @@ resource "aws_route53_record" "db" {
 #cert_validation
 resource "aws_route53_record" "alb_cert_validation" {
   for_each = {
-    for dvo in aws_acm_certificate.alb_cert.domain_validation_options : dvo.domain_name => {
+    for dvo in data.aws_acm_certificate.alb_cert.domain_validation_options : dvo.domain_name => {
       name   = dvo.resource_record_name
       type   = dvo.resource_record_type
       record = dvo.resource_record_value
@@ -244,3 +244,30 @@ resource "aws_route53_record" "db_sin" {
     country = "SG"  # 싱가포르에 대한 설정
   }
 }
+
+# resource "aws_route53_resolver_endpoint" "endpoint_1" {
+#   name                = "dns-endpoint"
+#   direction           = "INBOUND"  # Azure에서 AWS로의 쿼리 전달
+#   security_group_ids = [aws_security_group.sg.id]
+#   resolver_endpoint_type = "IPV4"
+
+#   ip_address {
+#     subnet_id = aws_subnet.sn1.id
+#   }
+
+#   ip_address {
+#     subnet_id = aws_subnet.sn2.id
+#     ip        = "10.0.64.4"
+#   }
+# }
+
+# resource "aws_route53_resolver_rule" "rule_1" {
+#   name        = "dns-rule"
+#   domain_name = "backend.internal"
+#   rule_type = "FORWARD"
+#   resolver_endpoint_id = aws_route53_resolver_endpoint.endpoint_1.id
+
+#   target_ip {
+#     ip = "Azure DNS Resolver IP"
+#   }
+# }

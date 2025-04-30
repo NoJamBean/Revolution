@@ -107,6 +107,7 @@ builder.Services.AddCors(options =>
             if (origin == "http://nat.1bean.shop") return true;
             if (origin.Contains("www.1bean.shop")) return true;
             if (origin.Contains("backend.internal")) return true;
+            if (origin.Contains("azurewebsites.net")) return true;
             // 필요하다면 더 추가
             return false;
         })
