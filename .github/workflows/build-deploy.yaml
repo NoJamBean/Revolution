@@ -69,11 +69,8 @@ jobs:
         uses: azure/webapps-deploy@v2
         with:
           app-name: app-service-webapp
-          resource-group: rg-webserver
+          resource-group-name: rg-webapp
           images: ${{ secrets.DOCKER_USERNAME }}/nextjs-app:latest
-          docker-registry-url: index.docker.io
-          docker-registry-username: ${{ secrets.DOCKER_USERNAME }}
-          docker-registry-password: ${{ secrets.DOCKER_PASSWORD }}
 
 
 #  Code Deploy 방식 - [이전 방식]
