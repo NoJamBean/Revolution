@@ -6,25 +6,28 @@ resource "azurerm_service_plan" "asp" {
   os_type             = "Linux" # 또는 "Windows"
 }
 
-resource "azurerm_app_service" "app_service" {
+resource "azurerm_linux_web_app" "app_service" {
   name                     = "app-service-webapp"
   location                 = azurerm_resource_group.main.location
   resource_group_name      = azurerm_resource_group.main.name
-  app_service_plan_id      = azurerm_service_plan.asp.id
+  service_plan_id          = azurerm_service_plan.asp.id
   app_settings = {
     "WEBSITES_ENABLE_APP_SERVICE_STORAGE"     = "false"
-    "DOCKER_REGISTRY_SERVER_URL"              = "https://index.docker.io"
-    "DOCKER_REGISTRY_SERVER_USERNAME"         = var.dockerhub_username
-    "DOCKER_REGISTRY_SERVER_PASSWORD"         = var.dockerhub_password
     "WEBSITES_CONTAINER_START_TIME_LIMIT"     = "1800"
     "WEBSITES_PORT"                           = "3000"
     "PORT"                                    = "3000" # Next.js 기본 포트
   }
 
   site_config {
-    linux_fx_version = "DOCKER|kindread11/totoro:latest"
     always_on        = true
     app_command_line = "" # CMD는 Dockerfile에 정의됨
+
+    application_stack {
+      docker_image_name        = "wonbinjung/nextjs-app:latest"  # Docker Hub 이미지
+      docker_registry_url      = "https://index.docker.io"       # Docker Hub URL
+      docker_registry_username = var.dockerhub_username          # Docker Hub 사용자명
+      docker_registry_password = var.dockerhub_password          # Docker Hub 비밀번호
+    }
   }
 
   https_only = true  # 기본 도메인에서 HTTPS를 강제 적용
@@ -35,19 +38,13 @@ resource "azurerm_app_service" "app_service" {
 }
 
 # SSL 인증서 생성 (Azure 무료 인증서)
-resource "azurerm_app_service_managed_certificate" "ssl" {
-  custom_hostname_binding_id = azurerm_app_service_custom_hostname_binding.custom_domain.id
-}
+# resource "azurerm_app_service_managed_certificate" "ssl" {
+#   custom_hostname_binding_id = azurerm_app_service.app_service.id  # 기본 도메인에 대한 바인딩 ID
+# }
 
-# 생성된 인증서를 웹앱에 바인딩
-resource "azurerm_app_service_ssl_binding" "ssl_binding" {
-  hostname_binding_id = azurerm_app_service_custom_hostname_binding.custom_domain.id
-  certificate_id      = azurerm_app_service_managed_certificate.ssl.id
-  ssl_state           = "SniEnabled"
-}
-
-resource "azurerm_app_service_custom_hostname_binding" "custom_domain" {
-  hostname            = "www.1bean.shop"
-  app_service_name    = azurerm_app_service.app_service.name
-  resource_group_name = azurerm_resource_group.main.name
-}
+# # 생성된 인증서를 웹앱에 바인딩
+# resource "azurerm_app_service_ssl_binding" "ssl_binding" {
+#   hostname_binding_id = azurerm_app_service.app_service.id  # 기본 도메인에 대한 바인딩 ID
+#   certificate_id      = azurerm_app_service_managed_certificate.ssl.id
+#   ssl_state           = "SniEnabled"  # SNI 기반 SSL 사용
+# }

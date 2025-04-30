@@ -49,13 +49,15 @@ jobs:
           docker push ${{ secrets.DOCKER_USERNAME }}/nextjs-app:latest
 
       - name: Deploy to Azure Container App
-        uses: azure/container-apps-deploy-action@v1
+        uses: azure/webapps-deploy@v2
         with:
-          resource-group: your-resource-group-name
-          name: your-container-app-name
-          image: ${{ secrets.DOCKER_USERNAME }}/nextjs-app:latest
-          registry-username: ${{ secrets.DOCKER_USERNAME }}
-          registry-password: ${{ secrets.DOCKER_PASSWORD }}
+          app-name: app-service-webapp
+          resource-group: rg-webserver
+          # slot-name: production
+          images: ${{ secrets.DOCKER_USERNAME }}/nextjs-app:latest
+          docker-registry-url: index.docker.io
+          docker-registry-username: ${{ secrets.DOCKER_USERNAME }}
+          docker-registry-password: ${{ secrets.DOCKER_PASSWORD }}
 #  Code Deploy 방식 - [이전 방식]
 #     - name: Build
 #       working-directory: Web/webapp
