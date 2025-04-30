@@ -37,6 +37,17 @@ resource "azurerm_linux_web_app" "app_service" {
   }
 }
 
+# Staging 슬롯 생성
+resource "azurerm_web_app_slot" "staging_slot" {
+  name                = "staging"
+  location            = azurerm_resource_group.main.location
+  resource_group_name = azurerm_resource_group.main.name
+  app_service_plan_id = azurerm_app_service_plan.asp.id
+  app_service_name    = azurerm_linux_web_app.app_service.name
+
+  site_config {}
+}
+
 # SSL 인증서 생성 (Azure 무료 인증서)
 # resource "azurerm_app_service_managed_certificate" "ssl" {
 #   custom_hostname_binding_id = azurerm_app_service.app_service.id  # 기본 도메인에 대한 바인딩 ID
