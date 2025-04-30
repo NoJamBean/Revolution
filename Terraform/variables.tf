@@ -25,7 +25,7 @@ variable "dockerhub_password" {
   default = "dckr_pat_S073IKIP1yPDNPf_mNCVWJN19VM"
   sensitive = true
 }
-variable "acm_arn"{ 
+variable "acm_arn"{
   default = "arn:aws:acm:ap-northeast-2:248189921892:certificate/25ce65ee-1992-49ed-bb57-8501fc778d0c"
   sensitive = true
 }
