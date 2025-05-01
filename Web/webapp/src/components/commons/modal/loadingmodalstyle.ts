@@ -11,6 +11,7 @@ export const LoadingModalOverlay = styled.div<{ isLoading: boolean }>`
   justify-content: center;
   align-items: center;
   z-index: 9999;
+  isolation: isolate;
 
   backdrop-filter: blur(7px);
   background-color: rgba(0, 0, 0, 0.3); /* ✅ 반투명 블랙 깔고 */
