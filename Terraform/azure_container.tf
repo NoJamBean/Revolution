@@ -39,7 +39,7 @@ resource "azurerm_linux_web_app" "app_service" {
 
 # Staging 슬롯 생성
 resource "azurerm_linux_web_app_slot" "staging_slot" {
-  name                = "staging"
+  name                = azurerm_linux_web_app.app_service.name
   app_service_id = azurerm_linux_web_app.app_service.id
 
   site_config {
