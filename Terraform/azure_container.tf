@@ -41,26 +41,26 @@ resource "azurerm_linux_web_app" "app_service" {
 }
 
 # Staging 슬롯 생성
-# resource "azurerm_linux_web_app_slot" "staging_slot" {
-#   name                = "staging"
-#   app_service_id = azurerm_linux_web_app.app_service.id
+resource "azurerm_linux_web_app_slot" "staging_slot" {
+  name                = "staging"
+  app_service_id = azurerm_linux_web_app.app_service.id
 
-#   site_config {
-#     always_on        = true
-#     app_command_line = "" # CMD는 Dockerfile에 정의됨
+  site_config {
+    always_on        = true
+    app_command_line = "" # CMD는 Dockerfile에 정의됨
 
-#     application_stack {
-#       docker_image_name        = "wonbinjung/nextjs-app:latest"  # Docker Hub 이미지
-#       docker_registry_url      = "https://index.docker.io"       # Docker Hub URL
-#       docker_registry_username = var.dockerhub_username          # Docker Hub 사용자명
-#       docker_registry_password = var.dockerhub_password          # Docker Hub 비밀번호
-#     }
-#   }
+    application_stack {
+      docker_image_name        = "wonbinjung/nextjs-app:latest"  # Docker Hub 이미지
+      docker_registry_url      = "https://index.docker.io"       # Docker Hub URL
+      docker_registry_username = var.dockerhub_username          # Docker Hub 사용자명
+      docker_registry_password = var.dockerhub_password          # Docker Hub 비밀번호
+    }
+  }
 
-#   tags = {
-#     environment = "staging"  # 배포 환경을 'staging'으로 지정
-#   }
-# }
+  tags = {
+    environment = "staging"  # 배포 환경을 'staging'으로 지정
+  }
+}
 
 # SSL 인증서 생성 (Azure 무료 인증서)
 # resource "azurerm_app_service_managed_certificate" "ssl" {
