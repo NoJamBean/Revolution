@@ -26,7 +26,7 @@ COPY . .
 RUN yarn build
 
 # 애플리케이션이 사용하는 포트 오픈
-EXPOSE 5000
+EXPOSE 3000
 
 # 컨테이너 시작 시 실행할 명령어
 CMD ["yarn", "start"]

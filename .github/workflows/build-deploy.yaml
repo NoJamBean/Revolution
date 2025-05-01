@@ -42,55 +42,6 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-            # 5. Docker 설치 및 설정
-      - name: Install Docker and Docker Compose
-        run: |
-          sudo apt-get update -y
-          sudo apt-get install -y \
-            ca-certificates \
-            curl \
-            gnupg \
-            lsb-release \
-            ruby \
-            wget \
-            nginx
-          
-          # Docker 공식 GPG 키 등록
-          sudo install -m 0755 -d /etc/apt/keyrings
-          curl -fsSL https://download.docker.com/linux/ubuntu/gpg | \
-            sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-          sudo chmod a+r /etc/apt/keyrings/docker.gpg
-
-          # Docker 저장소 추가
-          echo \
-            "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] \
-            https://download.docker.com/linux/ubuntu \
-            $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-
-          sudo apt-get update -y
-          sudo apt-get install -y docker-ce docker-ce-cli containerd.io
-
-          # Docker Compose 플러그인 설치
-          sudo mkdir -p /home/ubuntu/.docker/cli-plugins/
-          curl -SL "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" \
-            -o /home/ubuntu/.docker/cli-plugins/docker-compose
-          sudo chmod +x /home/ubuntu/.docker/cli-plugins/docker-compose
-          sudo chown -R $user:$user /home/ubuntu/.docker
-
-          # Docker 서비스 시작
-          sudo systemctl enable docker
-          sudo systemctl start docker
-
-      # 6. CodeDeploy Agent 설치
-      - name: Install CodeDeploy Agent
-        run: |
-          cd /home/ubuntu
-          wget https://aws-codedeploy-ap-northeast-2.s3.amazonaws.com/latest/install
-          chmod +x ./install
-          sudo ./install auto  # sudo를 명시적으로 추가하여 권한 문제 방지
-          sudo systemctl start codedeploy-agent
-          sudo systemctl enable codedeploy-agent
-
       # 7. Nginx 설정
       - name: Install and Configure Nginx
         run: |
@@ -149,8 +100,9 @@ jobs:
               }
           }
           EOL
-
+          sudo -t
           sudo systemctl restart nginx
+          journalctl -xe
 
 
 
