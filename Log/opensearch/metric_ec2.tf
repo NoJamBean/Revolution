@@ -13,7 +13,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "ec2_metrics_bucket_lifecycle" 
     id     = "ec2-metrics-bucket-rule"
     status = "Enabled"
     filter {
-      prefix = "*"
+      prefix     = "ec2-metrics/"
     }
     transition {
       days          = 30

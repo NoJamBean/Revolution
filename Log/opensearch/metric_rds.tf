@@ -13,7 +13,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "rds_metrics_bucket_lifecycle" 
     id     = "rds-metrics-bucket-rule"
     status = "Enabled"
     filter {
-      prefix = "*"
+      prefix     = "rds-metrics/"
     }
     transition {
       days          = 30
@@ -63,7 +63,7 @@ resource "aws_iam_policy" "firehose_s3_policy" {
           "${aws_s3_bucket.rds_metrics_bucket.arn}",
           "${aws_s3_bucket.rds_metrics_bucket.arn}/*",
           "${aws_s3_bucket.ec2_metrics_bucket.arn}",
-          "${aws_s3_bucket.ec2_metrics_bucket.arn}/*",
+          "${aws_s3_bucket.ec2_metrics_bucket.arn}/*"
         ]
       }
     ]
