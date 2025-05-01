@@ -21,6 +21,7 @@ export const ModalProvider = ({ children }: { children: any }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalContent, setModalContent] = useState(() => null);
   const [modalType, setModalType] = useState('Login');
+  const [hasMounted, setHasMounted] = useState(false);
 
   // 애니메이션 계산용 state
   const [isLoading, setIsLoading] = useState(false);
@@ -95,6 +96,10 @@ export const ModalProvider = ({ children }: { children: any }) => {
     }
   }, [isModalVisible]);
 
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
+
   return (
     <ModalContext.Provider
       value={{
@@ -111,7 +116,7 @@ export const ModalProvider = ({ children }: { children: any }) => {
     >
       {children}
       {isModalVisible && <Modal content={modalContent} />}
-      {isVisible && <LoadingModal content={modalContent} />}
+      {hasMounted && isVisible && <LoadingModal content={modalContent} />}
     </ModalContext.Provider>
   );
 };
