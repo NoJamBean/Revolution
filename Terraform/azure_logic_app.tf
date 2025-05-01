@@ -1,5 +1,5 @@
 locals {
-  timestamp_value = timestamp()
+  timestamp_value = replace(timestamp(), ":", "-")
 }
 
 resource "azurerm_logic_app_workflow" "main" {
