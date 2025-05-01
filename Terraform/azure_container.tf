@@ -12,7 +12,7 @@ resource "azurerm_linux_web_app" "app_service" {
   resource_group_name      = azurerm_resource_group.main.name
   service_plan_id          = azurerm_service_plan.asp.id
   app_settings = {
-    # auto_swap_slot = "staging"
+    auto_swap_slot = "staging"
     "WEBSITES_ENABLE_APP_SERVICE_STORAGE"     = "false"
     "WEBSITES_CONTAINER_START_TIME_LIMIT"     = "1800"
     "WEBSITES_PORT"                           = "3000"
