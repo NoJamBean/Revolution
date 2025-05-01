@@ -42,7 +42,17 @@ resource "azurerm_linux_web_app_slot" "staging_slot" {
   name                = "staging"
   app_service_id = azurerm_linux_web_app.app_service.id
 
-  site_config {}
+  site_config {
+    always_on        = false
+    app_command_line = "" # CMD는 Dockerfile에 정의됨
+
+    application_stack {
+      docker_image_name        = "wonbinjung/nextjs-app:latest"  # Docker Hub 이미지
+      docker_registry_url      = "https://index.docker.io"       # Docker Hub URL
+      docker_registry_username = var.dockerhub_username          # Docker Hub 사용자명
+      docker_registry_password = var.dockerhub_password          # Docker Hub 비밀번호
+    }
+  }
 }
 
 # SSL 인증서 생성 (Azure 무료 인증서)
