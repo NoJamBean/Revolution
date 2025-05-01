@@ -97,7 +97,7 @@ jobs:
           sudo apt install -y nginx
           sudo systemctl enable nginx
           sudo systemctl start nginx
-          
+          sudo lsof -i :80
           sudo tee /etc/nginx/conf.d/webserver.conf > /dev/null <<EOL
           server {
               listen 80;
