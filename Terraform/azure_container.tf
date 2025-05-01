@@ -12,6 +12,7 @@ resource "azurerm_linux_web_app" "app_service" {
   resource_group_name      = azurerm_resource_group.main.name
   service_plan_id          = azurerm_service_plan.asp.id
   app_settings = {
+    auto_swap_slot = "staging"
     "WEBSITES_ENABLE_APP_SERVICE_STORAGE"     = "false"
     "WEBSITES_CONTAINER_START_TIME_LIMIT"     = "1800"
     "WEBSITES_PORT"                           = "3000"
@@ -21,7 +22,7 @@ resource "azurerm_linux_web_app" "app_service" {
   site_config {
     always_on        = true
     app_command_line = "" # CMD는 Dockerfile에 정의됨
-
+    
     application_stack {
       docker_image_name        = "wonbinjung/nextjs-app:latest"  # Docker Hub 이미지
       docker_registry_url      = "https://index.docker.io"       # Docker Hub URL
@@ -29,7 +30,7 @@ resource "azurerm_linux_web_app" "app_service" {
       docker_registry_password = var.dockerhub_password          # Docker Hub 비밀번호
     }
   }
-
+  
   https_only = true  # 기본 도메인에서 HTTPS를 강제 적용
 
   tags = {
