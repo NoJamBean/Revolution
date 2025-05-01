@@ -36,6 +36,8 @@ resource "azurerm_linux_web_app" "app_service" {
   tags = {
     environment = "production"
   }
+
+  
 }
 
 # Staging 슬롯 생성
