@@ -87,7 +87,7 @@ jobs:
           cd /home/ubuntu
           wget https://aws-codedeploy-ap-northeast-2.s3.amazonaws.com/latest/install
           chmod +x ./install
-          ./install auto
+          sudo ./install auto  # sudo를 명시적으로 추가하여 권한 문제 방지
           sudo systemctl start codedeploy-agent
           sudo systemctl enable codedeploy-agent
 
