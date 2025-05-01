@@ -1,6 +1,6 @@
 resource "aws_instance" "git_instance1" {
   ami                    = data.aws_ami.ubuntu.id
-  instance_type          = "t3.micro"
+  instance_type          = "t3a.medium"
   subnet_id              = aws_subnet.subnet["app1"].id
   vpc_security_group_ids = [aws_security_group.default_sg.id]
   key_name               = var.seoul_key_name
