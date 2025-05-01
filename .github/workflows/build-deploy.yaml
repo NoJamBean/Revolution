@@ -69,7 +69,9 @@ jobs:
         uses: azure/webapps-deploy@v2
         with:
           app-name: app-service-webapp
-          publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE }}  # GitHub Secrets에서 배포 프로필을 사용
+          resource-group-name: rg-webapp
+          images: ${{ secret.DOCKER_USERNAME }}/nextjs-app:latest
+          # publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE }}  # GitHub Secrets에서 배포 프로필을 사용
           slot-name: app-service-webapp-staging  # Green 환경 (새로운 버전 배포)
 
       # - name: Swap Slots (Blue -> Green)
