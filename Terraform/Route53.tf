@@ -117,7 +117,7 @@ resource "aws_route53_record" "web_app_service_cname_record" {
   ttl     = 60  # TTL 설정
   records = ["app-service-webapp.azurewebsites.net"]  # Azure App Service의 DNS 이름 (기본 DNS 이름)
 
-  depends_on = [aws_route53_zone]
+  # depends_on = [aws_route53_zone]
 }
 
 resource "aws_route53_record" "nat" {
@@ -178,20 +178,20 @@ resource "aws_route53_record" "db" {
 }
 
 #cert_validation
-resource "aws_route53_record" "alb_cert_validation" {
-  for_each = {
-    for dvo in data.aws_acm_certificate.alb_cert.domain_validation_options : dvo.domain_name => {
-      name   = dvo.resource_record_name
-      type   = dvo.resource_record_type
-      record = dvo.resource_record_value
-    }
-  }
-  zone_id = data.aws_route53_zone.public.zone_id
-  name    = each.value.name
-  type    = each.value.type
-  records = [each.value.record]
-  ttl     = 60
-}
+# resource "aws_route53_record" "alb_cert_validation" {
+#   for_each = {
+#     for dvo in data.aws_acm_certificate.alb_cert.domain_validation_options : dvo.domain_name => {
+#       name   = dvo.resource_record_name
+#       type   = dvo.resource_record_type
+#       record = dvo.resource_record_value
+#     }
+#   }
+#   zone_id = data.aws_route53_zone.public.zone_id
+#   name    = each.value.name
+#   type    = each.value.type
+#   records = [each.value.record]
+#   ttl     = 60
+# }
 
 
 #싱가포르 도메인
@@ -213,45 +213,45 @@ resource "aws_route53_record" "alb_cert_validation" {
 #   depends_on = [ aws_lb.sin_alb ]
 # }
 
-resource "aws_route53_record" "alb_sin" {
-  provider = aws.singapore
-  zone_id = data.aws_route53_zone.private.id
-  name    = "alb.backend.internal"
-  type    = "A"
+# resource "aws_route53_record" "alb_sin" {
+#   provider = aws.singapore
+#   zone_id = data.aws_route53_zone.private.id
+#   name    = "alb.backend.internal"
+#   type    = "A"
 
-  set_identifier = "singapore"
-  geolocation_routing_policy {
-    country = "SG"  # 싱가포르에 대한 설정
-  }
-  alias {
-    name                   = aws_lb.sin_private_alb.dns_name
-    zone_id                = aws_lb.sin_private_alb.zone_id
-    evaluate_target_health = true
-  }
-}
+#   set_identifier = "singapore"
+#   geolocation_routing_policy {
+#     country = "SG"  # 싱가포르에 대한 설정
+#   }
+#   alias {
+#     name                   = aws_lb.sin_private_alb.dns_name
+#     zone_id                = aws_lb.sin_private_alb.zone_id
+#     evaluate_target_health = true
+#   }
+# }
 
-resource "aws_route53_record" "api_sin" {
-  provider = aws.singapore
-  zone_id = data.aws_route53_zone.private.id
-  name    = "api"
-  type    = "A"
-  ttl     = "300"
-  records = [aws_instance.sin_api_server_1.private_ip]
-  set_identifier = "singapore"
-  geolocation_routing_policy {
-    country = "SG"  # 싱가포르에 대한 설정
-  }
-}
+# resource "aws_route53_record" "api_sin" {
+#   provider = aws.singapore
+#   zone_id = data.aws_route53_zone.private.id
+#   name    = "api"
+#   type    = "A"
+#   ttl     = "300"
+#   records = [aws_instance.sin_api_server_1.private_ip]
+#   set_identifier = "singapore"
+#   geolocation_routing_policy {
+#     country = "SG"  # 싱가포르에 대한 설정
+#   }
+# }
 
-resource "aws_route53_record" "db_sin" {
-  provider = aws.singapore
-  zone_id = data.aws_route53_zone.private.id
-  name    = "db"
-  type    = "CNAME"
-  ttl     = "300"
-  records = [split(":", aws_db_instance.sin_mysql_read_replica.endpoint)[0]]
-  set_identifier = "singapore"
-  geolocation_routing_policy {
-    country = "SG"  # 싱가포르에 대한 설정
-  }
-}
+# resource "aws_route53_record" "db_sin" {
+#   provider = aws.singapore
+#   zone_id = data.aws_route53_zone.private.id
+#   name    = "db"
+#   type    = "CNAME"
+#   ttl     = "300"
+#   records = [split(":", aws_db_instance.sin_mysql_read_replica.endpoint)[0]]
+#   set_identifier = "singapore"
+#   geolocation_routing_policy {
+#     country = "SG"  # 싱가포르에 대한 설정
+#   }
+# }
