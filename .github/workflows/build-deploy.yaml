@@ -42,6 +42,119 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
+            # 5. Docker 설치 및 설정
+      - name: Install Docker and Docker Compose
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y \
+            ca-certificates \
+            curl \
+            gnupg \
+            lsb-release \
+            ruby \
+            wget \
+            nginx
+          
+          # Docker 공식 GPG 키 등록
+          install -m 0755 -d /etc/apt/keyrings
+          curl -fsSL https://download.docker.com/linux/ubuntu/gpg | \
+            gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+          chmod a+r /etc/apt/keyrings/docker.gpg
+
+          # Docker 저장소 추가
+          echo \
+            "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] \
+            https://download.docker.com/linux/ubuntu \
+            $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+          sudo apt-get update -y
+          sudo apt-get install -y docker-ce docker-ce-cli containerd.io
+
+          # Docker Compose 플러그인 설치
+          mkdir -p /home/ubuntu/.docker/cli-plugins/
+          curl -SL "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" \
+            -o /home/ubuntu/.docker/cli-plugins/docker-compose
+          chmod +x /home/ubuntu/.docker/cli-plugins/docker-compose
+          chown -R ubuntu:ubuntu /home/ubuntu/.docker
+
+          # Docker 서비스 시작
+          sudo systemctl enable docker
+          sudo systemctl start docker
+
+      # 6. CodeDeploy Agent 설치
+      - name: Install CodeDeploy Agent
+        run: |
+          cd /home/ubuntu
+          wget https://aws-codedeploy-ap-northeast-2.s3.amazonaws.com/latest/install
+          chmod +x ./install
+          ./install auto
+          sudo systemctl start codedeploy-agent
+          sudo systemctl enable codedeploy-agent
+
+      # 7. Nginx 설정
+      - name: Install and Configure Nginx
+        run: |
+          sudo apt install -y nginx
+          sudo systemctl enable nginx
+          sudo systemctl start nginx
+          
+          sudo tee /etc/nginx/conf.d/webserver.conf > /dev/null <<EOL
+          server {
+              listen 80;
+              server_name www.1bean.shop;
+
+              location = /api/log {
+                  proxy_pass http://localhost:3000;
+                  proxy_set_header Host \$host;
+                  proxy_set_header X-Real-IP \$remote_addr;
+                  proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+                  proxy_set_header X-Forwarded-Proto \$scheme;
+              }
+
+              location /api/ {
+                  proxy_pass http://alb.backend.internal/api/;
+                  proxy_set_header Host alb.backend.internal;
+                  proxy_set_header X-Real-IP \$remote_addr;
+                  proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+                  proxy_set_header X-Forwarded-Proto \$scheme;
+              }
+
+              location /ws/ {
+                  proxy_pass http://alb.backend.internal/ws/;
+                  proxy_http_version 1.1;
+                  proxy_set_header Upgrade \$http_upgrade;
+                  proxy_set_header Connection "upgrade";
+                  proxy_set_header Host alb.backend.internal;
+                  proxy_set_header X-Real-IP \$remote_addr;
+                  proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+                  proxy_set_header X-Forwarded-Proto \$scheme;
+              }
+
+              location = /ws {
+                  proxy_pass http://alb.backend.internal/ws;
+                  proxy_http_version 1.1;
+                  proxy_set_header Upgrade \$http_upgrade;
+                  proxy_set_header Connection "upgrade";
+                  proxy_set_header Host alb.backend.internal;
+                  proxy_set_header X-Real-IP \$remote_addr;
+                  proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+                  proxy_set_header X-Forwarded-Proto \$scheme;
+              }
+
+              location / {
+                  proxy_pass http://localhost:3000;
+                  proxy_set_header Host \$host;
+                  proxy_set_header X-Real-IP \$remote_addr;
+                  proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+                  proxy_set_header X-Forwarded-Proto \$scheme;
+              }
+          }
+          EOL
+
+          sudo systemctl restart nginx
+
+
+
       - name: Build and Push Docker image
         working-directory: Web/webapp
         run: |
