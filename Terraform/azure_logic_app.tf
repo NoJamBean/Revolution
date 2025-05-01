@@ -11,5 +11,6 @@ resource "azurerm_logic_app_workflow" "main" {
     "app_service_name"     = azurerm_linux_web_app.app_service.name,
     "metric_names"         = "CpuPercentage,Requests",
     "bucket_name"          = "bet-application-total-logs"
+    "s3_key_prefix"        = "azure/metrics_${timestamp()}.json"
   })
 }
