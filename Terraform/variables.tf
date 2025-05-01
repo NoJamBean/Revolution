@@ -20,13 +20,13 @@ variable "public_domain_name" { default = "1bean.shop" }        # 원하는 도�
 variable "api_dns" { default = "api.backend.internal" }
 variable "rds_dns" { default = "db.backend.internal" }
 variable "github_branch" { default = "web" }
-variable "dockerhub_username" { default = "wonbinjung"}
+variable "dockerhub_username" { default = "wonbinjung" }
 variable "dockerhub_password" {
-  default = "dckr_pat_S073IKIP1yPDNPf_mNCVWJN19VM"
+  default   = "dckr_pat_S073IKIP1yPDNPf_mNCVWJN19VM"
   sensitive = true
 }
-variable "acm_arn"{
-  default = "arn:aws:acm:ap-northeast-2:248189921892:certificate/25ce65ee-1992-49ed-bb57-8501fc778d0c"
+variable "acm_arn" {
+  default   = "arn:aws:acm:ap-northeast-2:248189921892:certificate/25ce65ee-1992-49ed-bb57-8501fc778d0c"
   sensitive = true
 }
 
@@ -57,10 +57,10 @@ variable "egress_rules" {
 }
 
 
-variable "azure_vpn_ip" {
-  description = "Azure VPN Gateway Public IP"
-  type        = string
-}
+# variable "azure_vpn_ip" {
+#   description = "Azure VPN Gateway Public IP"
+#   type        = string
+# }
 
 
 
