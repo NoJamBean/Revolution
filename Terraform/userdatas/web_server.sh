@@ -111,7 +111,7 @@
 # sudo systemctl restart nginx
 
 
-
+USER_NAME=ubuntu
 # Create a folder
 mkdir actions-runner && cd actions-runner
 # Download the latest runner package
