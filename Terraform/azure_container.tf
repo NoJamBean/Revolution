@@ -43,7 +43,7 @@ resource "azurerm_linux_web_app_slot" "staging_slot" {
   app_service_id = azurerm_linux_web_app.app_service.id
 
   site_config {
-    always_on        = false
+    always_on        = true
     app_command_line = "" # CMD는 Dockerfile에 정의됨
 
     application_stack {
@@ -52,6 +52,10 @@ resource "azurerm_linux_web_app_slot" "staging_slot" {
       docker_registry_username = var.dockerhub_username          # Docker Hub 사용자명
       docker_registry_password = var.dockerhub_password          # Docker Hub 비밀번호
     }
+  }
+
+  tags = {
+    environment = "staging"  # 배포 환경을 'staging'으로 지정
   }
 }
 
