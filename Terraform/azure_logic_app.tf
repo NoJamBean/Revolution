@@ -1,3 +1,7 @@
+locals {
+  timestamp_value = timestamp()
+}
+
 resource "azurerm_logic_app_workflow" "main" {
   name                = "main-logic-app"
   location            = azurerm_resource_group.main.location
@@ -11,6 +15,6 @@ resource "azurerm_logic_app_workflow" "main" {
     app_service_name     = azurerm_linux_web_app.app_service.name,
     metric_names         = "CpuPercentage,Requests",
     bucket_name          = "bet-application-total-logs",
-    s3_key_prefix        = "azure/metrics_${timestamp()}.json"  # timestamp를 포함한 파일 이름
+    s3_key_prefix        = "azure/metrics_${local.timestamp_value}.json"  # timestamp 값을 locals에서 가져오기
   }
 }
