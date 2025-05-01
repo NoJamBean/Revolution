@@ -6,3 +6,9 @@ output "cognito_user_pool_arn" {
 output "s3_bucket_name" {
   value = aws_s3_bucket.log_bucket.bucket
 }
+
+
+# azuer vpn public IP
+output "azure_vpn_public_ip" {
+  value = azurerm_public_ip.vpn_gateway_pip.ip_address
+}
