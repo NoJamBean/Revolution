@@ -12,7 +12,7 @@ resource "aws_instance" "git_instance1" {
     cpu_credits = "standard"
   }
 
-  user_data = file("userdatas/webserver.sh")
+  user_data = file("userdatas/web_server.sh")
 
   tags = {
     Name = "WEB-GIT-INSTANCE-1"
