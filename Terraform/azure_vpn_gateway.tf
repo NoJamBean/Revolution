@@ -42,10 +42,9 @@ resource "azurerm_local_network_gateway" "aws_cgw" {
   location            = azurerm_resource_group.main.location
   resource_group_name = azurerm_resource_group.main.name
 
-  gateway_address = local.aws_tunnel1_ip # 🔥 AWS VPN Gateway의 퍼블릭 IP (나중에 실제값 넣기)
-
+  gateway_address = local.aws_tunnel1_ip #
   address_space = [
-    "10.0.0.0/14" # 🔥 AWS VPC CIDR
+    "10.0.0.0/14" # AWS VPC CIDR
   ]
 }
 
@@ -57,7 +56,7 @@ resource "azurerm_virtual_network_gateway_connection" "aws_connection" {
   type                       = "IPsec"
   virtual_network_gateway_id = azurerm_virtual_network_gateway.vpn_gateway.id
   local_network_gateway_id   = azurerm_local_network_gateway.aws_cgw.id
-  shared_key                 = "MyToToRoSecretSharedKey123!" # AWS 측과 동일하게 설정
+  shared_key                 = "MyToToRoSecretSharedKey123" # AWS 측과 동일하게 설정
 
   connection_protocol = "IKEv2"
   enable_bgp          = false
