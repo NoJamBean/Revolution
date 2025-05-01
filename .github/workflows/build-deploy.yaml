@@ -101,7 +101,7 @@ jobs:
           sudo tee /etc/nginx/conf.d/webserver.conf > /dev/null <<EOL
           server {
               listen 80;
-              server_name www.1bean.shop;
+              server_name localhost;
 
               location = /api/log {
                   proxy_pass http://localhost:3000;
