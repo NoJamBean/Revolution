@@ -10,7 +10,6 @@ export default function Loading() {
         </S.ImgBox>
         <S.Loading_Context>잠시만 기다려주세요</S.Loading_Context>
       </S.LoadingContent>
-      //{' '}
     </S.Wrapper>
   );
 }

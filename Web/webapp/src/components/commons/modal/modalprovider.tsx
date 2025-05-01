@@ -21,7 +21,7 @@ export const ModalProvider = ({ children }: { children: any }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalContent, setModalContent] = useState(() => null);
   const [modalType, setModalType] = useState('Login');
-  const [hasMounted, setHasMounted] = useState(false);
+  const [isLayoutReady, setIsLayoutReady] = useState(false);
 
   // 애니메이션 계산용 state
   const [isLoading, setIsLoading] = useState(false);
@@ -97,7 +97,16 @@ export const ModalProvider = ({ children }: { children: any }) => {
   }, [isModalVisible]);
 
   useEffect(() => {
-    setHasMounted(true);
+    const checkLayoutReady = () => {
+      const el = document.getElementById('layout-wrapper');
+      if (el) {
+        setIsLayoutReady(true);
+      } else {
+        requestAnimationFrame(checkLayoutReady); // 다음 프레임까지 기다림
+      }
+    };
+
+    checkLayoutReady();
   }, []);
 
   return (
@@ -116,7 +125,7 @@ export const ModalProvider = ({ children }: { children: any }) => {
     >
       {children}
       {isModalVisible && <Modal content={modalContent} />}
-      {hasMounted && isVisible && <LoadingModal content={modalContent} />}
+      {isLayoutReady && isVisible && <LoadingModal content={modalContent} />}
     </ModalContext.Provider>
   );
 };
