@@ -12,7 +12,9 @@ resource "aws_s3_bucket_lifecycle_configuration" "rds_metrics_bucket_lifecycle" 
   rule {
     id     = "rds-metrics-bucket-rule"
     status = "Enabled"
-    filter {}
+    filter {
+      prefix = "*"
+    }
     transition {
       days          = 30
       storage_class = "STANDARD_IA"
@@ -59,7 +61,9 @@ resource "aws_iam_policy" "firehose_s3_policy" {
         ],
         Resource = [
           "${aws_s3_bucket.rds_metrics_bucket.arn}",
-          "${aws_s3_bucket.rds_metrics_bucket.arn}/*"
+          "${aws_s3_bucket.rds_metrics_bucket.arn}/*",
+          "${aws_s3_bucket.ec2_metrics_bucket.arn}",
+          "${aws_s3_bucket.ec2_metrics_bucket.arn}/*",
         ]
       }
     ]
@@ -119,7 +123,10 @@ resource "aws_iam_policy" "metric_stream_firehose_policy" {
           "firehose:PutRecord",
           "firehose:PutRecordBatch"
         ],
-        Resource = "${aws_kinesis_firehose_delivery_stream.rds_metrics_stream.arn}"
+        Resource = [
+          "${aws_kinesis_firehose_delivery_stream.rds_metrics_stream.arn}",
+          "${aws_kinesis_firehose_delivery_stream.ec2_metrics_stream.arn}"
+        ]
       }
     ]
   })

@@ -15,7 +15,9 @@ resource "aws_s3_bucket_lifecycle_configuration" "cloudtrail_bucket_lifecycle" {
   rule {
     id     = "${var.cloudtrail_s3_bucket_name}-rule"
     status = "Enabled"
-    filter {}
+    filter {
+      prefix = "AWSLogs/"
+    }
     transition {
       days          = 30
       storage_class = "STANDARD_IA"
