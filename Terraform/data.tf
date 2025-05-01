@@ -66,12 +66,15 @@ data "aws_caller_identity" "current" {}
 
 #ACM
 data "aws_acm_certificate" "alb_cert" {
-  arn = var.acm_arn  # 인증서 ARN을 입력하세요
+  # arn = var.acm_arn  # 인증서 ARN을 입력하세요
+  domain = "www.1bean.shop"
 
   most_recent = true  # 가장 최근의 인증서를 선택
+  statuses = ["ISSUED"]
+  types       = ["AMAZON_ISSUED"]
 }
 
 # 인증서 검증 정보 가져오기 (선택 사항)
-data "aws_acm_certificate_validation" "alb_cert_validation" {
-  certificate_arn = data.aws_acm_certificate.alb_cert.arn
-}
+# data "aws_acm_certificate_validation" "alb_cert_validation" {
+#   certificate_arn = data.aws_acm_certificate.alb_cert.arn
+# }
