@@ -13,3 +13,4 @@ resource "azurerm_logic_app_workflow" "main" {
     bucket_name          = "bet-application-total-logs",
     s3_key_prefix        = "azure/metrics_${timestamp()}.json"  # timestamp를 포함한 파일 이름
   }
+}
