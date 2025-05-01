@@ -6,7 +6,7 @@ resource "aws_instance" "git_instance1" {
   key_name               = var.seoul_key_name
   source_dest_check      = false
   associate_public_ip_address = true
-  # private_ip = "10.0.20.100"
+  private_ip = "10.0.10.100"
 
   credit_specification {
     cpu_credits = "standard"
