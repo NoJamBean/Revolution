@@ -72,14 +72,14 @@ resource "aws_s3_bucket" "my_pipelines_first_artifact_bucket" {
 # }
 
 
-# resource "aws_s3_bucket_public_access_block" "allow_public_access_log_bucket" {
-#   bucket = aws_s3_bucket.log_bucket.id
+resource "aws_s3_bucket_public_access_block" "allow_public_access_log_bucket" {
+  bucket = aws_s3_bucket.log_bucket.id
 
-#   block_public_acls       = false
-#   block_public_policy     = false
-#   ignore_public_acls      = false
-#   restrict_public_buckets = false
-# }
+  block_public_acls       = false
+  block_public_policy     = false
+  ignore_public_acls      = false
+  restrict_public_buckets = false
+}
 
 # resource "aws_s3_bucket_public_access_block" "allow_public_access_artifact_bucket" {
 #   bucket = aws_s3_bucket.my_pipelines_first_artifact_bucket.id
