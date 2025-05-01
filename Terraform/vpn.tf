@@ -12,7 +12,7 @@ resource "aws_vpn_gateway" "vpn_gateway" {
 
 # aws - customer gateway
 resource "aws_customer_gateway" "azure_cgw" {
-  bgp_asn    = 65000                                        # Azure쪽 BGP ASN (일단 기본값)
+  bgp_asn    = 65000
   # ip_address = azurerm_public_ip.vpn_gateway_pip.ip_address # 더미 IP (나중에 실제 Azure VPN Gateway 퍼블릭 IP로 수정 예정)
   ip_address = "4.217.193.70"
   type       = "ipsec.1"

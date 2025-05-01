@@ -9,6 +9,6 @@ output "s3_bucket_name" {
 
 
 # azuer vpn public IP
-# output "azure_vpn_public_ip" {
-#   value = azurerm_public_ip.vpn_gateway_pip.ip_address
-# }
+output "azure_vpn_public_ip" {
+  value = azurerm_public_ip.vpn_gateway_pip.ip_address
+}
