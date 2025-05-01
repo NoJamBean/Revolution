@@ -75,7 +75,7 @@ jobs:
           curl -SL "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" \
             -o /home/ubuntu/.docker/cli-plugins/docker-compose
           chmod +x /home/ubuntu/.docker/cli-plugins/docker-compose
-          chown -R ubuntu:ubuntu /home/ubuntu/.docker
+          chown -R $USER:$USER /home/ubuntu/.docker
 
           # Docker 서비스 시작
           sudo systemctl enable docker
