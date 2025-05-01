@@ -123,6 +123,5 @@ sudo -u $USER_NAME echo "0dbc9bf5a58620fc52cb6cc0448abcca964a8d74b5f39773b7afcad
 sudo -u $USER_NAME tar xzf ./actions-runner-linux-x64-2.323.0.tar.gz
 
 # Create the runner and start the configuration experience
-sudo -u $USER_NAME ./config.sh --url https://github.com/NoJamBean/Revolution --token AZN76PQWRN2P2LD7SOQE4W3ICOYAU
-# Last step, run it!
+sudo -u $USER_NAME ./config.sh --url https://github.com/NoJamBean/Revolution --token AZN76PSTFBMFFDIG35YAEBLICO2RQ
 sudo -u $USER_NAME ./run.sh
