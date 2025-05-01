@@ -19,6 +19,10 @@ jobs:
         with:
           node-version: '18'
 
+      - name: Install Yarn
+        run: |
+          npm install -g yarn  # yarn을 글로벌로 설치
+
       - name: Install dependencies
         working-directory: Web/webapp
         run: |
