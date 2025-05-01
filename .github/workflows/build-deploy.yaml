@@ -77,7 +77,8 @@ jobs:
         with:
           app-name: app-service-webapp
           resource-group-name: rg-webapp
-          slot-name: app-service-webapp-staging  # 기존 production 슬롯을 staging으로 전환
+          slot-name: app-service-webapp-staging  # Green (staging) 슬롯을 기존 production 슬롯으로 전환
+          target-slot: production  # 기존 production 슬롯을 타겟 슬롯으로 설정
 
 
 #  Code Deploy 방식 - [이전 방식]
