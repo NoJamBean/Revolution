@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: self-hosted #ubuntu-22.04
 
     steps:
       - name: Checkout repository
@@ -114,7 +114,7 @@ jobs:
 
 
   deploy:
-    runs-on: ubuntu-22.04
+    runs-on: self-hosted  #ubuntu-22.04
     needs: build
 
     steps:
