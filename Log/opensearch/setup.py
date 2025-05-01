@@ -58,8 +58,7 @@ def get_terraform_outputs(output_names):
         print(f"알 수 없는 오류 발생: {e}", file=sys.stderr)
         return None
 
-
-def create_opensearch_index_template(pattern_title):
+def create_application_index_template(pattern_title):
     api_path = f"_index_template/web_logs_template"
     url = f"https://{opensearch_endpoint}/{api_path}"
     headers = {
@@ -217,8 +216,7 @@ def create_or_update_ingest_pipeline(pipeline_name):
         print(f"알 수 없는 오류 발생: {e}")
         return None
 
-
-def create_opensearch_index_template(template_name, payload):
+def create_cloudtrail_index_template(template_name, payload):
     api_path = f"_index_template/{template_name}"
     if not opensearch_endpoint.startswith(('http://', 'https://')):
         url = f"https://{opensearch_endpoint}/{api_path}"
@@ -292,7 +290,7 @@ if __name__ == "__main__":
     )
     INDEX_PATTERN_TITLE = ["web-*"]
     for index_pattern in INDEX_PATTERN_TITLE:
-        result = create_opensearch_index_template(
+        result = create_application_index_template(
             pattern_title=index_pattern,
         )
         if result:
@@ -388,7 +386,7 @@ if __name__ == "__main__":
 
     }
 
-    result = create_opensearch_index_template(
+    result = create_cloudtrail_index_template(
         template_name=cloudtrail_template_name,
         payload=cloudtrail_payload
     )
