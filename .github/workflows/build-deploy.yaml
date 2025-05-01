@@ -71,7 +71,7 @@ jobs:
           app-name: app-service-webapp
           resource-group-name: rg-webapp
           images: ${{ secrets.DOCKER_USERNAME }}/nextjs-app:latest
-          slot-name: app-service-webapp-staging  # Green 환경 (새로운 버전 배포)
+          slot-name: app-service-webapp/staging     # Green 환경 (새로운 버전 배포)
           # publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE }}  # GitHub Secrets에서 배포 프로필을 사용
           
 
