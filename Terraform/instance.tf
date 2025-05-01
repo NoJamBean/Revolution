@@ -1,4 +1,4 @@
-resource "aws_instance" "nat_instance1" {
+resource "aws_instance" "git_instance1" {
   ami                    = data.aws_ami.ubuntu.id
   instance_type          = "t3.micro"
   subnet_id              = aws_subnet.subnet["app1"].id
