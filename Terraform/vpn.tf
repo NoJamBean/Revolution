@@ -32,10 +32,10 @@ resource "aws_vpn_connection" "vpn_connection" {
 
   static_routes_only = true
 
-  tunnel1_preshared_key = "MyToToRoSecretSharedKey123!"
+  tunnel1_preshared_key = "MyToToRoSecretSharedKey123"
   tunnel1_inside_cidr   = "169.254.21.0/30"
 
-  tunnel2_preshared_key = "MyToToRoSecretSharedKey123!"
+  tunnel2_preshared_key = "MyToToRoSecretSharedKey123"
   tunnel2_inside_cidr   = "169.254.22.0/30"
 
   tags = {

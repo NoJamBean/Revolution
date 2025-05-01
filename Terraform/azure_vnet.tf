@@ -10,10 +10,10 @@ resource "azurerm_virtual_network" "vnet" {
   resource_group_name = azurerm_resource_group.main.name
 
   dns_servers = [
-    "ns-1536.awsdns-00.co.uk.",
-    "ns-0.awsdns-00.com.,",
-    "ns-1024.awsdns-00.org.",
-    "ns-512.awsdns-00.net.",
+    # "ns-1536.awsdns-00.co.uk.",
+    # "ns-0.awsdns-00.com.,",
+    # "ns-1024.awsdns-00.org.",
+    # "ns-512.awsdns-00.net.",
     "8.8.8.8"
   ]
 }
