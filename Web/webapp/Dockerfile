@@ -25,8 +25,6 @@ COPY . .
 # Next.js 빌드
 RUN yarn build
 
-RUN echo "nameserver 10.0.0.2" >> /etc/resolv.conf
-
 # 애플리케이션이 사용하는 포트 오픈
 EXPOSE 3000
 
