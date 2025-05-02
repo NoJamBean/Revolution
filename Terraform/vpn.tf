@@ -8,8 +8,6 @@ resource "aws_vpn_gateway" "vpn_gateway" {
   }
 }
 
-
-
 # aws - customer gateway
 resource "aws_customer_gateway" "azure_cgw" {
   bgp_asn    = 65000
@@ -21,9 +19,6 @@ resource "aws_customer_gateway" "azure_cgw" {
     Name = "azure-customer-gateway"
   }
 }
-
-
-
 
 # vpn connection
 resource "aws_vpn_connection" "vpn_connection" {

@@ -34,38 +34,33 @@ resource "azurerm_virtual_network_gateway" "vpn_gateway" {
 
 locals {
   tunnels ={
-    aws_tunnel1_ip = tostring(aws_vpn_connection.vpn_connection.tunnel1_address)
-    aws_tunnel2_ip = tostring(aws_vpn_connection.vpn_connection.tunnel2_address)
+    aws_tunnel1_ip = aws_vpn_connection.vpn_connection.tunnel1_address
+    aws_tunnel2_ip = aws_vpn_connection.vpn_connection.tunnel2_address
   }
 }
 
 # azure - local gateway
 resource "azurerm_local_network_gateway" "aws_cgw" {
-  for_each = local.tunnels
-  name                = "aws-cgw-${each.key}"
+  # for_each = local.tunnels
+  name                = "aws-cgw"
   location            = azurerm_resource_group.main.location
   resource_group_name = azurerm_resource_group.main.name
 
-  gateway_address = each.value #
+  gateway_address = aws_customer_gateway.azure_cgw.ip_address  #each.value #
   address_space = [
     "10.0.0.0/16" # AWS VPC CIDR
   ]
-  bgp_settings {
-    asn                  = 65000  # BGP ASN 설정
-    bgp_peering_address   = aws_vpn_connection.vpn_connection.tunnel1_address   # "4.230.31.128"  # BGP 피어링 주소 (AWS VPN의 내부 IP)
-    peer_weight           = 0  # BGP 피어링의 가중치 (선택 사항)
-  }
 }
 
 resource "azurerm_virtual_network_gateway_connection" "aws_connection" {
-  for_each            = azurerm_local_network_gateway.aws_cgw
+  for_each            = local.tunnels
   name                = "aws-connection-${each.key}"
   location            = azurerm_resource_group.main.location
   resource_group_name = azurerm_resource_group.main.name
 
   type                       = "IPsec"
   virtual_network_gateway_id = azurerm_virtual_network_gateway.vpn_gateway.id
-  local_network_gateway_id   = each.value.id
+  local_network_gateway_id   = azurerm_local_network_gateway.aws_cgw.id
   shared_key                 = "MyToToRoSecretSharedKey123" # AWS 측과 동일하게 설정
 
   connection_protocol = "IKEv2"
@@ -82,3 +77,8 @@ resource "azurerm_virtual_network_gateway_connection" "aws_connection" {
     sa_datasize      = 102400000
   }
 }
+
+# resource "azurerm_virtual_network_gateway_connection_route" "to_aws_vpc" {
+#   virtual_network_gateway_connection_id = azurerm_virtual_network_gateway_connection.aws_connection.id
+#   destination_cidr_block               = "10.0.0.0/16"  # AWS VPC의 CIDR 블록 (AWS 측 네트워크)
+# }
