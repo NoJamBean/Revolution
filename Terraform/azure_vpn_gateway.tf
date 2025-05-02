@@ -18,7 +18,7 @@ resource "azurerm_virtual_network_gateway" "vpn_gateway" {
   vpn_type = "RouteBased" # (PolicyBased 말고 RouteBased 사용)
 
   active_active = false
-  enable_bgp    = false
+  enable_bgp    = true
 
   ip_configuration {
     name                          = "vnetGatewayConfig"
@@ -33,29 +33,39 @@ resource "azurerm_virtual_network_gateway" "vpn_gateway" {
 
 
 locals {
-  aws_tunnel1_ip = tostring(aws_vpn_connection.vpn_connection.tunnel1_address)
+  tunnels ={
+    aws_tunnel1_ip = tostring(aws_vpn_connection.vpn_connection.tunnel1_address)
+    aws_tunnel2_ip = tostring(aws_vpn_connection.vpn_connection.tunnel2_address)
+  }
 }
 
 # azure - local gateway
 resource "azurerm_local_network_gateway" "aws_cgw" {
-  name                = "aws-cgw"
+  for_each = local.tunnels
+  name                = "aws-cgw-${each.key}"
   location            = azurerm_resource_group.main.location
   resource_group_name = azurerm_resource_group.main.name
 
-  gateway_address = local.aws_tunnel1_ip #
+  gateway_address = each.value #
   address_space = [
     "10.0.0.0/14" # AWS VPC CIDR
   ]
+  bgp_settings {
+    asn                  = 65000  # BGP ASN 설정
+    bgp_peering_address   = "4.217.193.70"  # BGP 피어링 주소 (AWS VPN의 내부 IP)
+    peer_weight           = 0  # BGP 피어링의 가중치 (선택 사항)
+  }
 }
 
 resource "azurerm_virtual_network_gateway_connection" "aws_connection" {
-  name                = "aws-connection"
+  for_each            = azurerm_local_network_gateway.aws_cgw
+  name                = "aws-connection-${each.key}"
   location            = azurerm_resource_group.main.location
   resource_group_name = azurerm_resource_group.main.name
 
   type                       = "IPsec"
   virtual_network_gateway_id = azurerm_virtual_network_gateway.vpn_gateway.id
-  local_network_gateway_id   = azurerm_local_network_gateway.aws_cgw.id
+  local_network_gateway_id   = each.value.id
   shared_key                 = "MyToToRoSecretSharedKey123" # AWS 측과 동일하게 설정
 
   connection_protocol = "IKEv2"

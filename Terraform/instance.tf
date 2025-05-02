@@ -1,3 +1,24 @@
+resource "aws_instance" "git_instance1" {
+  ami                    = data.aws_ami.ubuntu.id
+  instance_type          = "t3a.medium"
+  subnet_id              = aws_subnet.subnet["app1"].id
+  vpc_security_group_ids = [aws_security_group.default_sg.id]
+  key_name               = var.seoul_key_name
+  source_dest_check      = false
+  associate_public_ip_address = true
+  private_ip = "10.0.10.100"
+
+  credit_specification {
+    cpu_credits = "standard"
+  }
+
+  user_data = file("userdatas/web_server.sh")
+
+  tags = {
+    Name = "WEB-GIT-INSTANCE-1"
+  }
+}
+
 resource "aws_instance" "nat_instance1" {
   ami                    = data.aws_ami.amazon_linux.id
   instance_type          = "t3.micro"

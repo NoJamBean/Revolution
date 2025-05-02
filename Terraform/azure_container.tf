@@ -12,11 +12,38 @@ resource "azurerm_linux_web_app" "app_service" {
   resource_group_name      = azurerm_resource_group.main.name
   service_plan_id          = azurerm_service_plan.asp.id
   app_settings = {
+    auto_swap_slot = "staging"
     "WEBSITES_ENABLE_APP_SERVICE_STORAGE"     = "false"
     "WEBSITES_CONTAINER_START_TIME_LIMIT"     = "1800"
     "WEBSITES_PORT"                           = "3000"
     "PORT"                                    = "3000" # Next.js 기본 포트
   }
+
+  site_config {
+    always_on        = true
+    app_command_line = "" # CMD는 Dockerfile에 정의됨
+    
+    application_stack {
+      docker_image_name        = "wonbinjung/nextjs-app:latest"  # Docker Hub 이미지
+      docker_registry_url      = "https://index.docker.io"       # Docker Hub URL
+      docker_registry_username = var.dockerhub_username          # Docker Hub 사용자명
+      docker_registry_password = var.dockerhub_password          # Docker Hub 비밀번호
+    }
+  }
+  
+  https_only = true  # 기본 도메인에서 HTTPS를 강제 적용
+
+  tags = {
+    environment = "production"
+  }
+
+  
+}
+
+# Staging 슬롯 생성
+resource "azurerm_linux_web_app_slot" "staging_slot" {
+  name                = "staging"
+  app_service_id = azurerm_linux_web_app.app_service.id
 
   site_config {
     always_on        = true
@@ -30,28 +57,8 @@ resource "azurerm_linux_web_app" "app_service" {
     }
   }
 
-  https_only = true  # 기본 도메인에서 HTTPS를 강제 적용
-
   tags = {
-    environment = "production"
-  }
-}
-
-# Staging 슬롯 생성
-resource "azurerm_linux_web_app_slot" "staging_slot" {
-  name                = "staging"
-  app_service_id = azurerm_linux_web_app.app_service.id
-
-  site_config {
-    always_on        = false
-    app_command_line = "" # CMD는 Dockerfile에 정의됨
-
-    application_stack {
-      docker_image_name        = "wonbinjung/nextjs-app:latest"  # Docker Hub 이미지
-      docker_registry_url      = "https://index.docker.io"       # Docker Hub URL
-      docker_registry_username = var.dockerhub_username          # Docker Hub 사용자명
-      docker_registry_password = var.dockerhub_password          # Docker Hub 비밀번호
-    }
+    environment = "staging"  # 배포 환경을 'staging'으로 지정
   }
 }
 
