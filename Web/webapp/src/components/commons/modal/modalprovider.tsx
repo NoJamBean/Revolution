@@ -124,7 +124,9 @@ export const ModalProvider = ({ children }: { children: any }) => {
       }}
     >
       {children}
-      {isModalVisible && <Modal content={modalContent} />}
+      {isModalVisible && modalType !== 'Loading' && (
+        <Modal content={modalContent} />
+      )}
       {isLayoutReady && isVisible && <LoadingModal content={modalContent} />}
     </ModalContext.Provider>
   );
