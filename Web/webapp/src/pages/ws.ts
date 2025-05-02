@@ -12,7 +12,7 @@ const proxy = createProxyServer({
 });
 
 export default function handler(req: NextApiRequest, res: NextApiResponse) {
-  // WebSocket 업그레이드 핸들링
+  // WebSocket 업그레이드 요청을 처리
   if (req.headers['upgrade'] === 'websocket') {
     // WebSocket 요청인 경우, proxy.ws()로 처리
     proxy.ws(req, res, {
@@ -41,9 +41,3 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
     });
   }
 }
-
-// WebSocket 업그레이드 이벤트 핸들링
-proxy.on('upgrade', (req, socket, head) => {
-  // WebSocket 업그레이드 요청을 proxy.ws()로 전달
-  proxy.ws(req, socket, head);
-});
