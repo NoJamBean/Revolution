@@ -38,6 +38,22 @@ resource "aws_vpn_connection" "vpn_connection" {
   }
 }
 
+resource "aws_vpn_gateway_attachment" "this" {
+     vpc_id = aws_vpc.vpc.id
+     vpn_gateway_id = aws_vpn_gateway.vpn_gateway.id
+}
+
+resource "aws_vpn_gateway_route_propagation" "this" {
+     vpn_gateway_id = aws_vpn_gateway.vpn_gateway.id
+     route_table_id = aws_route_table.routetable["back1"].id
+}
+
+resource "aws_vpn_gateway_route_propagation" "this2" {
+     vpn_gateway_id = aws_vpn_gateway.vpn_gateway.id
+     route_table_id = aws_route_table.routetable["back2"].id
+}
+
+
 # vpn routes
 resource "aws_vpn_connection_route" "to_azure_vnet" {
   vpn_connection_id      = aws_vpn_connection.vpn_connection.id

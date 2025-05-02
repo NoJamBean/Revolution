@@ -5,8 +5,8 @@ export const LoadingModalOverlay = styled.div<{ isLoading: boolean }>`
   position: fixed;
   top: 0;
   left: 0;
-  width: 100vw; /* ✅ 뷰포트 기준 100% */
-  height: 100vh; /* ✅ 뷰포트 기준 100% */
+  width: 100vw;
+  height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -52,17 +52,18 @@ export const LoadingModalContent = styled.div<{
   modalType: any;
   isLoading: boolean;
 }>`
-  /* width: ${({ modalType }) =>
-    modalType === 'Login' ? '600px' : '450px'}; */
-  height: 400px;
+  width: 100%;
+  height: auto; /* 콘텐츠 높이에 맞게 자동으로 조정 */
+  max-width: 500px; /* 최대 너비 제한 */
+  padding: 20px; /* 여백 추가 */
   background-color: #343b4a;
-  animation: ${({ isLoading }) => (isLoading ? fadeIn : fadeOut)} 0.5s ease
-    forwards;
-  width: 260px;
-  height: 300px;
+  animation: ${({ isLoading }) => (isLoading ? fadeIn : fadeOut)} 0.5s ease forwards;
   display: flex;
   flex-direction: column;
   border-radius: 10px;
+  align-items: center;
+  justify-content: center;
+  text-align: center; /* 텍스트 중앙 정렬 */
 `;
 
 export const LoadingContent = styled.div`
@@ -70,14 +71,40 @@ export const LoadingContent = styled.div`
   height: 100%;
   background-color: #343b4a;
   border-radius: 10px;
-  /* flex-grow: 1; */
+  justify-content: center;
+  align-items: center; /* 콘텐츠 중앙 정렬 */
 `;
 
-export const ButtonWrap = styled.div`
-  /* border: 3px solid green; */
-`;
+// export const LoadingModalContent = styled.div<{
+//   modalType: any;
+//   isLoading: boolean;
+// }>`
+//   /* width: ${({ modalType }) =>
+//     modalType === 'Login' ? '600px' : '450px'}; */
+//   height: 400px;
+//   background-color: #343b4a;
+//   animation: ${({ isLoading }) => (isLoading ? fadeIn : fadeOut)} 0.5s ease
+//     forwards;
+//   width: 260px;
+//   height: 300px;
+//   display: flex;
+//   flex-direction: column;
+//   border-radius: 10px;
+// `;
 
-export const Button = styled.div`
-  width: 100px;
-  border: 3px solid gold;
-`;
+// export const LoadingContent = styled.div`
+//   display: flex;
+//   height: 100%;
+//   background-color: #343b4a;
+//   border-radius: 10px;
+//   /* flex-grow: 1; */
+// `;
+
+// export const ButtonWrap = styled.div`
+//   /* border: 3px solid green; */
+// `;
+
+// export const Button = styled.div`
+//   width: 100px;
+//   border: 3px solid gold;
+// `;
