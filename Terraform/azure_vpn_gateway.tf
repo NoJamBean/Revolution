@@ -7,8 +7,6 @@ resource "azurerm_public_ip" "vpn_gateway_pip" {
   sku = "Standard" // Standard 로 고정 (VPN Gatewaysms "Basic" 안 됨)
 }
 
-
-
 resource "azurerm_virtual_network_gateway" "vpn_gateway" {
   name                = "vnet-gateway"
   location            = azurerm_resource_group.main.location
@@ -17,7 +15,7 @@ resource "azurerm_virtual_network_gateway" "vpn_gateway" {
   type     = "Vpn"
   vpn_type = "RouteBased" # (PolicyBased 말고 RouteBased 사용)
 
-  active_active = false
+  active_active = true
   enable_bgp    = false
 
   ip_configuration {
@@ -30,15 +28,6 @@ resource "azurerm_virtual_network_gateway" "vpn_gateway" {
   sku = "VpnGw1" # 가격/성능 선택 (VpnGw1이 소규모에 적당함)
 }
 
-
-
-locals {
-  tunnels ={
-    aws_tunnel1_ip = aws_vpn_connection.vpn_connection.tunnel1_address
-    aws_tunnel2_ip = aws_vpn_connection.vpn_connection.tunnel2_address
-  }
-}
-
 # azure - local gateway
 resource "azurerm_local_network_gateway" "aws_cgw" {
   # for_each = local.tunnels
@@ -46,15 +35,14 @@ resource "azurerm_local_network_gateway" "aws_cgw" {
   location            = azurerm_resource_group.main.location
   resource_group_name = azurerm_resource_group.main.name
 
-  gateway_address = aws_customer_gateway.azure_cgw.ip_address  #each.value #
+  gateway_address = aws_vpn_connection.vpn_connection.tunnel1_address  #each.value #
   address_space = [
     "10.0.0.0/16" # AWS VPC CIDR
   ]
 }
 
 resource "azurerm_virtual_network_gateway_connection" "aws_connection" {
-  # for_each            = local.tunnels
-  name                = "aws-connection"  # ${each.key}"
+  name                = "aws-connection"
   location            = azurerm_resource_group.main.location
   resource_group_name = azurerm_resource_group.main.name
 
