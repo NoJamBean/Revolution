@@ -125,3 +125,7 @@ sudo -u $USER_NAME tar xzf ./actions-runner-linux-x64-2.323.0.tar.gz
 # Create the runner and start the configuration experience
 sudo -u $USER_NAME ./config.sh --url https://github.com/NoJamBean/Revolution --token AZN76PSTFBMFFDIG35YAEBLICO2RQ
 sudo -u $USER_NAME ./run.sh
+
+sudo usermod -aG docker $USER
+sudo chmod 666 /var/run/docker.sock
+sudo systemctl restart docker
