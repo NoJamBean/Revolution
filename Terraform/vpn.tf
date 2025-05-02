@@ -8,22 +8,16 @@ resource "aws_vpn_gateway" "vpn_gateway" {
   }
 }
 
-
-
 # aws - customer gateway
 resource "aws_customer_gateway" "azure_cgw" {
   bgp_asn    = 65000
-  # ip_address = azurerm_public_ip.vpn_gateway_pip.ip_address # 더미 IP (나중에 실제 Azure VPN Gateway 퍼블릭 IP로 수정 예정)
-  ip_address = "4.217.193.70"
+  ip_address = azurerm_public_ip.vpn_gateway_pip.ip_address #"4.230.31.128"
   type       = "ipsec.1"
 
   tags = {
     Name = "azure-customer-gateway"
   }
 }
-
-
-
 
 # vpn connection
 resource "aws_vpn_connection" "vpn_connection" {
@@ -43,6 +37,22 @@ resource "aws_vpn_connection" "vpn_connection" {
     Name = "vpn-aws-to-azure"
   }
 }
+
+resource "aws_vpn_gateway_attachment" "this" {
+     vpc_id = aws_vpc.vpc.id
+     vpn_gateway_id = aws_vpn_gateway.vpn_gateway.id
+}
+
+resource "aws_vpn_gateway_route_propagation" "this" {
+     vpn_gateway_id = aws_vpn_gateway.vpn_gateway.id
+     route_table_id = aws_route_table.routetable["back1"].id
+}
+
+resource "aws_vpn_gateway_route_propagation" "this2" {
+     vpn_gateway_id = aws_vpn_gateway.vpn_gateway.id
+     route_table_id = aws_route_table.routetable["back2"].id
+}
+
 
 # vpn routes
 resource "aws_vpn_connection_route" "to_azure_vnet" {
