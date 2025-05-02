@@ -73,6 +73,22 @@ namespace MyApi.Controllers
 
                 newGame.Id = userId;
 
+                var user = await _userReadContext.Users.FirstOrDefaultAsync(u => u.Id == userId);
+                if (user == null)
+                {
+                    return NotFound(new { message = "사용자를 찾을 수 없습니다." });
+                }
+
+                // 베팅 금액이 소지금액보다 큰지 확인
+                if (newGame.Price > user.Balance)
+                {
+                    return Conflict(new
+                    {
+                        code = "INSUFFICIENT_FUNDS",
+                        message = "소지금액보다 더 큰 금액을 베팅할 수 없습니다."
+                    });
+                }
+
                 bool exists = await _gameReadContext.GameInfos
                     .AnyAsync(g => g.Id == newGame.Id && g.MatchId == newGame.MatchId);
 
@@ -84,6 +100,13 @@ namespace MyApi.Controllers
                         message = "이미 존재하는 게임입니다."
                     });
                 }
+
+                // 베팅 금액만큼 소지금액 차감
+                user.Balance -= newGame.Price;
+
+                // 변경된 소지금액을 DB에 저장
+                _userDbContext.Users.Update(user);
+                await _userDbContext.SaveChangesAsync();
 
                 _gameContext.GameInfos.Add(newGame);
                 await _gameContext.SaveChangesAsync();
