@@ -5,19 +5,11 @@ export const LoadingModalOverlay = styled.div<{ isLoading: boolean }>`
   position: fixed;
   top: 0;
   left: 0;
-<<<<<<< HEAD
-  width: 100vw;
-  height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-=======
   width: 100vw; /* ✅ 뷰포트 기준 100% */
   height: 100vh; /* ✅ 뷰포트 기준 100% */
   display: flex !important;
   justify-content: center !important;
   align-items: center !important;
->>>>>>> web
   z-index: 9999;
   isolation: isolate;
 
@@ -26,12 +18,6 @@ export const LoadingModalOverlay = styled.div<{ isLoading: boolean }>`
 
   /* ✅ 버그 막기 위해 transform 제거 */
   will-change: backdrop-filter, background-color;
-
-  /* ✅ ::before 꼬라지 방지 */
-  &::before {
-    content: none;
-    display: none;
-  }
 `;
 
 const fadeIn = keyframes`
@@ -60,16 +46,15 @@ export const LoadingModalContent = styled.div<{
   modalType: any;
   isLoading: boolean;
 }>`
-  width: 100%;
   height: auto; /* 콘텐츠 높이에 맞게 자동으로 조정 */
   max-width: 500px; /* 최대 너비 제한 */
-  padding: 20px; /* 여백 추가 */
   background-color: #343b4a;
-  animation: ${({ isLoading }) => (isLoading ? fadeIn : fadeOut)} 0.5s ease forwards;
+  animation: ${({ isLoading }) => (isLoading ? fadeIn : fadeOut)} 0.5s ease
+    forwards;
   display: flex;
   flex-direction: column;
   border-radius: 10px;
-  position: static;
+  position: absolute;
   margin: 0;
 `;
 
