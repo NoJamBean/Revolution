@@ -12,3 +12,10 @@ output "s3_bucket_name" {
 output "azure_vpn_public_ip" {
   value = azurerm_public_ip.vpn_gateway_pip.ip_address
 }
+
+output "aws_vpn_pip" {
+  value = aws_customer_gateway.azure_cgw.ip_address
+}
+output "azure_vpn_pip" {
+  value = azurerm_public_ip.vpn_gateway_pip.ip_address
+}

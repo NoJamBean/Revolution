@@ -48,11 +48,11 @@ resource "azurerm_local_network_gateway" "aws_cgw" {
 
   gateway_address = each.value #
   address_space = [
-    "10.0.0.0/14" # AWS VPC CIDR
+    "10.0.0.0/16" # AWS VPC CIDR
   ]
   bgp_settings {
     asn                  = 65000  # BGP ASN 설정
-    bgp_peering_address   = "4.230.31.128"  # BGP 피어링 주소 (AWS VPN의 내부 IP)
+    bgp_peering_address   = aws_customer_gateway.azure_cgw.ip_address   # "4.230.31.128"  # BGP 피어링 주소 (AWS VPN의 내부 IP)
     peer_weight           = 0  # BGP 피어링의 가중치 (선택 사항)
   }
 }
@@ -69,7 +69,7 @@ resource "azurerm_virtual_network_gateway_connection" "aws_connection" {
   shared_key                 = "MyToToRoSecretSharedKey123" # AWS 측과 동일하게 설정
 
   connection_protocol = "IKEv2"
-  enable_bgp          = false
+  enable_bgp          = true
 
   ipsec_policy {
     dh_group         = "DHGroup2"
