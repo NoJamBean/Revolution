@@ -71,22 +71,22 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Deploy to Azure Web App Staging Slot
-        uses: azure/webapps-deploy@v2
+        uses: azure/webapps-deploy@v3
         with:
           app-name: app-service-webapp
           resource-group-name: rg-webapp
           images: ${{ secrets.DOCKER_USERNAME }}/nextjs-app:latest
-          slot-name: staging     # Green 환경 (새로운 버전 배포)
+          slot-name: production     # Green 환경 (새로운 버전 배포)
           # publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE }}  # GitHub Secrets에서 배포 프로필을 사용
           
 
-      - name: Swap Slots (Blue -> Green)
-        uses: azure/webapps-swap-slot@v2
-        with:
-          app-name: app-service-webapp
-          resource-group-name: rg-webapp
-          slot-name: staging  # Green (staging) 슬롯을 기존 production 슬롯으로 전환
-          target-slot: production
+      # - name: Swap Slots (Blue -> Green)
+      #   uses: azure/webapps-swap-slot@v2
+      #   with:
+      #     app-name: app-service-webapp
+      #     resource-group-name: rg-webapp
+      #     slot-name: staging  # Green (staging) 슬롯을 기존 production 슬롯으로 전환
+      #     target-slot: production
 
 
 #  Code Deploy 방식 - [이전 방식]
