@@ -5,11 +5,19 @@ export const LoadingModalOverlay = styled.div<{ isLoading: boolean }>`
   position: fixed;
   top: 0;
   left: 0;
+<<<<<<< HEAD
   width: 100vw;
   height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
+=======
+  width: 100vw; /* ✅ 뷰포트 기준 100% */
+  height: 100vh; /* ✅ 뷰포트 기준 100% */
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+>>>>>>> web
   z-index: 9999;
   isolation: isolate;
 
@@ -61,9 +69,8 @@ export const LoadingModalContent = styled.div<{
   display: flex;
   flex-direction: column;
   border-radius: 10px;
-  align-items: center;
-  justify-content: center;
-  text-align: center; /* 텍스트 중앙 정렬 */
+  position: static;
+  margin: 0;
 `;
 
 export const LoadingContent = styled.div`
