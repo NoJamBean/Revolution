@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    runs-on: self-hosted #ubuntu-22.04
+    runs-on: ubuntu-22.04
 
     steps:
       - name: Checkout repository
@@ -47,66 +47,66 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       # 7. Nginx 설정
-      - name: Install and Configure Nginx
-        run: |
-          sudo apt install -y nginx
-          sudo systemctl enable nginx
-          sudo systemctl start nginx
-          sudo tee /etc/nginx/conf.d/webserver.conf > /dev/null <<EOL
-          server {
-              listen 5000;
-              server_name localhost;
+      # - name: Install and Configure Nginx
+      #   run: |
+      #     sudo apt install -y nginx
+      #     sudo systemctl enable nginx
+      #     sudo systemctl start nginx
+      #     sudo tee /etc/nginx/conf.d/webserver.conf > /dev/null <<EOL
+      #     server {
+      #         listen 5000;
+      #         server_name localhost;
 
-              location = /api/log {
-                  proxy_pass http://localhost:3000;
-                  proxy_set_header Host \$host;
-                  proxy_set_header X-Real-IP \$remote_addr;
-                  proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-                  proxy_set_header X-Forwarded-Proto \$scheme;
-              }
+      #         location = /api/log {
+      #             proxy_pass http://localhost:3000;
+      #             proxy_set_header Host \$host;
+      #             proxy_set_header X-Real-IP \$remote_addr;
+      #             proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+      #             proxy_set_header X-Forwarded-Proto \$scheme;
+      #         }
 
-              location /api/ {
-                  proxy_pass http://alb.backend.internal/api/;
-                  proxy_set_header Host alb.backend.internal;
-                  proxy_set_header X-Real-IP \$remote_addr;
-                  proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-                  proxy_set_header X-Forwarded-Proto \$scheme;
-              }
+      #         location /api/ {
+      #             proxy_pass http://alb.backend.internal/api/;
+      #             proxy_set_header Host alb.backend.internal;
+      #             proxy_set_header X-Real-IP \$remote_addr;
+      #             proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+      #             proxy_set_header X-Forwarded-Proto \$scheme;
+      #         }
 
-              location /ws/ {
-                  proxy_pass http://alb.backend.internal/ws/;
-                  proxy_http_version 1.1;
-                  proxy_set_header Upgrade \$http_upgrade;
-                  proxy_set_header Connection "upgrade";
-                  proxy_set_header Host alb.backend.internal;
-                  proxy_set_header X-Real-IP \$remote_addr;
-                  proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-                  proxy_set_header X-Forwarded-Proto \$scheme;
-              }
+      #         location /ws/ {
+      #             proxy_pass http://alb.backend.internal/ws/;
+      #             proxy_http_version 1.1;
+      #             proxy_set_header Upgrade \$http_upgrade;
+      #             proxy_set_header Connection "upgrade";
+      #             proxy_set_header Host alb.backend.internal;
+      #             proxy_set_header X-Real-IP \$remote_addr;
+      #             proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+      #             proxy_set_header X-Forwarded-Proto \$scheme;
+      #         }
 
-              location = /ws {
-                  proxy_pass http://alb.backend.internal/ws;
-                  proxy_http_version 1.1;
-                  proxy_set_header Upgrade \$http_upgrade;
-                  proxy_set_header Connection "upgrade";
-                  proxy_set_header Host alb.backend.internal;
-                  proxy_set_header X-Real-IP \$remote_addr;
-                  proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-                  proxy_set_header X-Forwarded-Proto \$scheme;
-              }
+      #         location = /ws {
+      #             proxy_pass http://alb.backend.internal/ws;
+      #             proxy_http_version 1.1;
+      #             proxy_set_header Upgrade \$http_upgrade;
+      #             proxy_set_header Connection "upgrade";
+      #             proxy_set_header Host alb.backend.internal;
+      #             proxy_set_header X-Real-IP \$remote_addr;
+      #             proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+      #             proxy_set_header X-Forwarded-Proto \$scheme;
+      #         }
 
-              location / {
-                  proxy_pass http://localhost:3000;
-                  proxy_set_header Host \$host;
-                  proxy_set_header X-Real-IP \$remote_addr;
-                  proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-                  proxy_set_header X-Forwarded-Proto \$scheme;
-              }
-          }
-          EOL
-          sudo nginx -t
-          sudo systemctl restart nginx
-          sudo journalctl -xe
+      #         location / {
+      #             proxy_pass http://localhost:3000;
+      #             proxy_set_header Host \$host;
+      #             proxy_set_header X-Real-IP \$remote_addr;
+      #             proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+      #             proxy_set_header X-Forwarded-Proto \$scheme;
+      #         }
+      #     }
+      #     EOL
+      #     sudo nginx -t
+      #     sudo systemctl restart nginx
+      #     sudo journalctl -xe
 
 
 
@@ -118,7 +118,7 @@ jobs:
 
 
   deploy:
-    runs-on: self-hosted  #ubuntu-22.04
+    runs-on: ubuntu-22.04
     needs: build
 
     steps:
