@@ -34,13 +34,14 @@ export const ModalProvider = ({ children }: { children: any }) => {
 
   const openModal = (content: any) => {
     console.log('모달을 체크합니다', content.name);
-
     if (content.name === 'Loading') {
-      setIsLoading(true);
+      // 이전 Modal 강제 종료
+      setIsModalOpen(false);
+      setIsModalVisible(false);
       setModalContent(() => content);
       setModalType(content.name);
       setModalTypeForAnim(content.name);
-
+      setIsLoading(true);
       return;
     }
 
@@ -124,9 +125,9 @@ export const ModalProvider = ({ children }: { children: any }) => {
       }}
     >
       {children}
-      {isModalVisible && modalType !== 'Loading' && (
-        <Modal content={modalContent} />
-      )}
+      {isModalVisible &&
+        modalType !== 'Loading' &&
+        modalContent !== Loading && <Modal content={modalContent} />}
       {isLayoutReady && isVisible && <LoadingModal content={modalContent} />}
     </ModalContext.Provider>
   );
