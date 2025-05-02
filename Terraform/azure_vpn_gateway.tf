@@ -18,7 +18,7 @@ resource "azurerm_virtual_network_gateway" "vpn_gateway" {
   vpn_type = "RouteBased" # (PolicyBased 말고 RouteBased 사용)
 
   active_active = false
-  enable_bgp    = true
+  enable_bgp    = false
 
   ip_configuration {
     name                          = "vnetGatewayConfig"
@@ -53,8 +53,8 @@ resource "azurerm_local_network_gateway" "aws_cgw" {
 }
 
 resource "azurerm_virtual_network_gateway_connection" "aws_connection" {
-  for_each            = local.tunnels
-  name                = "aws-connection-${each.key}"
+  # for_each            = local.tunnels
+  name                = "aws-connection"  # ${each.key}"
   location            = azurerm_resource_group.main.location
   resource_group_name = azurerm_resource_group.main.name
 
@@ -77,8 +77,3 @@ resource "azurerm_virtual_network_gateway_connection" "aws_connection" {
     sa_datasize      = 102400000
   }
 }
-
-# resource "azurerm_virtual_network_gateway_connection_route" "to_aws_vpc" {
-#   virtual_network_gateway_connection_id = azurerm_virtual_network_gateway_connection.aws_connection.id
-#   destination_cidr_block               = "10.0.0.0/16"  # AWS VPC의 CIDR 블록 (AWS 측 네트워크)
-# }
