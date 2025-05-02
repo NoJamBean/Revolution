@@ -52,7 +52,7 @@ resource "azurerm_local_network_gateway" "aws_cgw" {
   ]
   bgp_settings {
     asn                  = 65000  # BGP ASN 설정
-    bgp_peering_address   = "4.217.193.70"  # BGP 피어링 주소 (AWS VPN의 내부 IP)
+    bgp_peering_address   = "4.230.31.128"  # BGP 피어링 주소 (AWS VPN의 내부 IP)
     peer_weight           = 0  # BGP 피어링의 가중치 (선택 사항)
   }
 }
