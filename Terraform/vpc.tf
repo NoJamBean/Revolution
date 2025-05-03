@@ -112,6 +112,16 @@ resource "aws_route" "nat_instance_route" {
   network_interface_id   = each.value.eni
 }
 
+resource "aws_route" "to_azure" {
+  for_each = {
+    rt1 = aws_route_table.routetable["back1"].id
+    rt2 = aws_route_table.routetable["back2"].id
+  }
+  route_table_id         = each.value
+  destination_cidr_block = "10.2.0.0/16"       # Azure VNet CIDR
+  gateway_id         = aws_vpn_gateway.vpn_gateway.id
+}
+
 #트랜짓게이트웨이를 통해 싱가포르로
 # resource "aws_route" "back_to_singapore" {
 #   for_each = {

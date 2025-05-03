@@ -7,6 +7,11 @@ resource "azurerm_public_ip" "vpn_gateway_pip" {
   sku = "Standard" // Standard 로 고정 (VPN Gatewaysms "Basic" 안 됨)
 }
 
+resource "azurerm_app_service_virtual_network_swift_connection" "swift" {
+  app_service_id = azurerm_linux_web_app.app_service.id
+  subnet_id      = azurerm_subnet.subnet.id  # Microsoft.Web/serverFarms 위임된 서브넷
+}
+
 resource "azurerm_virtual_network_gateway" "vpn_gateway" {
   name                = "vnet-gateway"
   location            = azurerm_resource_group.main.location
@@ -31,7 +36,7 @@ resource "azurerm_virtual_network_gateway" "vpn_gateway" {
   #   private_ip_address_allocation = "Dynamic"
   #   subnet_id                     = azurerm_subnet.gateway_subnet.id
   # }
-
+  
   sku = "VpnGw1" # 가격/성능 선택 (VpnGw1이 소규모에 적당함)
 }
 
@@ -48,7 +53,7 @@ resource "azurerm_local_network_gateway" "aws_cgw" {
   name                = "aws-cgw-${each.key}"
   location            = azurerm_resource_group.main.location
   resource_group_name = azurerm_resource_group.main.name
-
+  
   gateway_address = each.value
   address_space = ["10.0.0.0/16"]
 }

@@ -255,3 +255,21 @@ resource "aws_route53_record" "db" {
 #     country = "SG"  # 싱가포르에 대한 설정
 #   }
 # }
+
+
+
+resource "aws_route53_resolver_endpoint" "inbound" {
+  name       = "r53-inbound"
+  direction  = "INBOUND"
+  security_group_ids = [aws_security_group.default_sg.id]
+  # vpc_id     = aws_vpc.vpc.id
+
+  ip_address {
+    subnet_id = aws_subnet.subnet["api1"].id
+    ip        = "10.0.100.10"
+  }
+  ip_address {
+    subnet_id = aws_subnet.subnet["ws1"].id
+    ip        = "10.0.15.10"
+  }
+}
