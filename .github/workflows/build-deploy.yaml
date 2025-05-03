@@ -33,7 +33,7 @@ jobs:
         working-directory: Web/webapp
         run: |
           echo "NEXT_PUBLIC_SPORTS_API_KEY=202f212e49d55e7bc005f7225c10cfec" >> .env
-          echo "NEXT_PUBLIC_BACKEND_ENDPOINT=https://app-service-webapp.azurewebsites.net" >> .env
+          echo "NEXT_PUBLIC_BACKEND_ENDPOINT=http://alb.backend.internal" >> .env
           echo "PORT=3000" >> .env
           echo "NODE_ENV=development" >> .env
 
