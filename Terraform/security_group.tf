@@ -14,6 +14,8 @@ resource "aws_security_group" "default_sg" {
       http      = { from_port = 80, to_port = 80, protocol = "tcp", cidr_blocks = ["0.0.0.0/0"] }
       https     = { from_port = 443, to_port = 443, protocol = "tcp", cidr_blocks = ["0.0.0.0/0"] }
       webserver = { from_port = 3000, to_port = 3000, protocol = "tcp", cidr_blocks = ["10.0.0.0/14"] }
+      dns1 = { from_port = 53, to_port = 53, protocol = "tcp", cidr_blocks = ["10.0.0.0/14"] }
+      dns2 = { from_port = 53, to_port = 53, protocol = "udp", cidr_blocks = ["10.0.0.0/14"] }
       icmp      = { from_port = -1, to_port = -1, protocol = "icmp", cidr_blocks = ["10.0.0.0/14"] }
     }
 

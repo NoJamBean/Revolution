@@ -18,6 +18,7 @@ resource "azurerm_linux_web_app" "app_service" {
     "WEBSITES_PORT"                           = "3000"
     "PORT"                                    = "3000" # Next.js 기본 포트
     "WEBSITES_VNET_ROUTE_ALL"                 = "1" # 모든 트래픽이 VNet을 통해 라우팅되도록 설정
+    "WEBSITE_DNS_SERVER"                     = "10.0.100.10,10.0.15.10"
   }
 
   site_config {

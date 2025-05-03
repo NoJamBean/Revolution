@@ -109,29 +109,29 @@ resource "aws_route53_zone_association" "private_zone_association" {
 #   request_interval  = 30
 # }
 
-resource "aws_route53_record" "web_app_service_cname_record" {
-  zone_id = data.aws_route53_zone.public.zone_id
-  name    = "www.${var.public_domain_name}"  # 기존 도메인 이름
-  type    = "CNAME"
+# resource "aws_route53_record" "web_app_service_cname_record" {
+#   zone_id = data.aws_route53_zone.public.zone_id
+#   name    = "www.${var.public_domain_name}"  # 기존 도메인 이름
+#   type    = "CNAME"
   
-  ttl     = 60  # TTL 설정
-  records = ["app-service-webapp.azurewebsites.net"]  # Azure App Service의 DNS 이름 (기본 DNS 이름)
+#   ttl     = 60  # TTL 설정
+#   records = ["app-service-webapp.azurewebsites.net"]  # Azure App Service의 DNS 이름 (기본 DNS 이름)
 
-  # depends_on = [aws_route53_zone]
-}
+#   # depends_on = [aws_route53_zone]
+# }
 
-resource "aws_route53_record" "nat" {
-  zone_id = data.aws_route53_zone.public.zone_id
-  name    = "nat"
-  type    = "A"
-  ttl     = "300"
-  records = [aws_instance.nat_instance1.public_ip]
-  set_identifier = "default"
-  geolocation_routing_policy {
-    # default로 지정
-    country = "KR"
-  }
-}
+# resource "aws_route53_record" "nat" {
+#   zone_id = data.aws_route53_zone.public.zone_id
+#   name    = "nat"
+#   type    = "A"
+#   ttl     = "300"
+#   records = [aws_instance.nat_instance1.public_ip]
+#   set_identifier = "default"
+#   geolocation_routing_policy {
+#     # default로 지정
+#     country = "KR"
+#   }
+# }
 
 #Private Records
 resource "aws_route53_record" "alb" {
