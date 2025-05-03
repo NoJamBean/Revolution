@@ -105,8 +105,8 @@ namespace MyApi.Controllers
                 user.Balance -= newGame.Price;
 
                 // 변경된 소지금액을 DB에 저장
-                _userDbContext.Users.Update(user);
-                await _userDbContext.SaveChangesAsync();
+                _userContext.Users.Update(user);
+                await _userContext.SaveChangesAsync();
 
                 _gameContext.GameInfos.Add(newGame);
                 await _gameContext.SaveChangesAsync();
