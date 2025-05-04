@@ -1,4 +1,11 @@
-# 1. IAM 역할 생성
+resource "aws_iam_user" "logicapp_s3_user" {
+  name = "logicapp-s3-user"
+}
+
+resource "aws_iam_access_key" "logicapp_key" {
+  user = aws_iam_user.logicapp_s3_user.name
+}
+
 resource "aws_iam_role" "api_server_role" {
   name = "api_server_role"
 
@@ -146,6 +153,19 @@ resource "aws_iam_role" "codepipeline_role" {
 }
 
 //Policy
+resource "aws_iam_policy" "logicapp_s3_policy" {
+  name        = "LogicAppS3PutPolicy"
+  description = "Allow Logic Apps to put objects into logs bucket"
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Action   = ["s3:PutObject"]
+      Effect   = "Allow"
+      Resource = "arn:aws:s3:::${aws_s3_bucket.long_user_data_bucket.bucket}/*"
+    }]
+  })
+}
+
 # CodeBuild S3 접근 허용
 resource "aws_iam_policy" "codebuild_s3_read_policy" {
   name        = "CodeBuildS3ReadAccess"
@@ -363,6 +383,10 @@ resource "aws_iam_policy" "ec2_ssm_policy" {
 }
 
 #Attachment
+resource "aws_iam_user_policy_attachment" "attach" {
+  user       = aws_iam_user.logicapp_s3_user.name
+  policy_arn = aws_iam_policy.logicapp_s3_policy.arn
+}
 
 resource "aws_iam_policy_attachment" "s3_full_access" {
   name       = "s3-full-access-attachment"

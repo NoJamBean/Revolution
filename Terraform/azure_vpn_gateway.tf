@@ -15,11 +15,6 @@ resource "azurerm_public_ip" "vpn_gateway_pip2" {
   sku                 = "Standard"
 }
 
-resource "azurerm_app_service_virtual_network_swift_connection" "swift" {
-  app_service_id = azurerm_linux_web_app.app_service.id
-  subnet_id      = azurerm_subnet.subnet.id  # Microsoft.Web/serverFarms 위임된 서브넷
-}
-
 resource "azurerm_virtual_network_gateway" "vpn_gateway" {
   name                = "vnet-gateway"
   location            = azurerm_resource_group.main.location

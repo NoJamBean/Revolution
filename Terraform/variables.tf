@@ -55,14 +55,3 @@ variable "egress_rules" {
     all = { port = 0, protocol = "-1", cidr = ["0.0.0.0/0"] }
   }
 }
-
-
-# variable "azure_vpn_ip" {
-#   description = "Azure VPN Gateway Public IP"
-#   type        = string
-# }
-
-
-
-
-
