@@ -272,7 +272,7 @@ namespace MyApi.Controllers
 
                 var hashedPassword = _passwordHasher.HashPassword(user.Password);
                 DateTime koreaTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("Asia/Seoul"));
-
+                user.Balance = 50000
                 var newUser = new User
                 {
                     Id = user.Id,

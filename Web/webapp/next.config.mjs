@@ -5,14 +5,14 @@ const nextConfig = {
     emotion: true,
   },
 
-  async rewrites() {
-    return [
-      {
-        source: '/ws/:path*',
-        destination: '/api/ws/:path*',
-      },
-    ];
-  },
+  // async rewrites() {
+  //   return [
+  //     {
+  //       source: '/ws/:path*',
+  //       destination: '/api/ws/:path*',
+  //     },
+  //   ];
+  // },
 };
 
 export default nextConfig;
