@@ -48,7 +48,7 @@ export default function Chat() {
     // socket 연결 시작
     if (!isChatConnected) {
       console.log('연결안되있슴요');
-      socket = io('wss://alb.backend.internal', {
+      socket = io(`${process.env.NEXT_PUBLIC_BACKEND_ENDPOINT}`, {
         path: '/ws',
         transports: ['websocket'],
       });
