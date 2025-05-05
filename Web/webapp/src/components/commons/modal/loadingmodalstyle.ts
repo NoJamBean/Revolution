@@ -49,14 +49,8 @@ export const LoadingModalContent = styled.div<{
   height: auto; /* 콘텐츠 높이에 맞게 자동으로 조정 */
   max-width: 500px; /* 최대 너비 제한 */
   background-color: #343b4a;
-  animation: ${({ isLoading }) => {
-      console.log(
-        '실행됨? isLoadingisLoadingisLoadingisLoadingisLoadingisLoading:',
-        isLoading
-      );
-      return isLoading ? fadeIn : fadeOut;
-    }}
-    0.5s ease forwards;
+  animation: ${({ isLoading }) => (isLoading ? fadeIn : fadeOut)} 0.5s ease
+    forwards;
   display: flex;
   flex-direction: column;
   border-radius: 10px;

@@ -19,28 +19,25 @@ const ModalContext = createContext<ModalContextType | undefined>(undefined);
 
 export const ModalProvider = ({ children }: { children: any }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalContent, setModalContent] = useState(() => null);
-  const [modalType, setModalType] = useState('Login');
+  const [modalContent, setModalContent] =
+    useState<React.ComponentType<any> | null>(null);
+  const [modalType, setModalType] = useState('');
+  const [modalTypeForAnim, setModalTypeForAnim] = useState<string | null>(null);
   const [isLayoutReady, setIsLayoutReady] = useState(false);
 
-  // 애니메이션 계산용 state
   const [isLoading, setIsLoading] = useState(false);
-  const [modalTypeForAnim, setModalTypeForAnim] = useState<
-    'Login' | 'Signup' | null
-  >(null);
-
   const [isVisible, setIsVisible] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
 
   const openModal = (content: any) => {
-    console.log('모달을 체크합니다', content.name);
-    if (content.name === 'Loading') {
-      // 이전 Modal 강제 종료
+    const isLoadingComponent = content === Loading;
+
+    if (isLoadingComponent) {
       setIsModalOpen(false);
       setIsModalVisible(false);
-      setModalContent(() => content);
-      setModalType(content.name);
-      setModalTypeForAnim(content.name);
+      setModalContent(() => Loading);
+      setModalType('Loading');
+      setModalTypeForAnim('Loading');
       setIsLoading(true);
       return;
     }
@@ -48,8 +45,8 @@ export const ModalProvider = ({ children }: { children: any }) => {
     setIsModalOpen(true);
     setIsModalVisible(true);
     setModalContent(() => content);
-    setModalType(content.name);
-    setModalTypeForAnim(content.name);
+    setModalType(content.name || '');
+    setModalTypeForAnim(content.name || '');
 
     document.body.style.overflow = 'hidden';
   };
@@ -58,55 +55,46 @@ export const ModalProvider = ({ children }: { children: any }) => {
     setIsModalOpen(false);
     setIsLoading(false);
 
-    // 모달 제거 지연시키기 (애니메이션 이후 동작)
     setTimeout(() => {
       setIsModalVisible(false);
-      setModalContent(() => null);
-
-      setModalType('Login');
+      setModalContent(null);
+      setModalType('');
       setModalTypeForAnim(null);
     }, 500);
-
-    console.log('여기서 봅니다요~~~~~', isLoading);
 
     document.body.style.overflow = '';
   };
 
   const changeModalContent = (content: any) => {
     setModalContent(() => content);
-    setModalType(content.name);
-    setModalTypeForAnim(content.name);
+    setModalType(content.name || '');
+    setModalTypeForAnim(content.name || '');
   };
 
-  // loading modal
   useEffect(() => {
     if (isLoading) {
-      setIsVisible(true); // 로딩 시작 → 보여주기
+      setIsVisible(true);
     } else {
       const timeout = setTimeout(() => {
-        setIsVisible(false); // 로딩 끝나고 애니 후 제거
+        setIsVisible(false);
         setModalTypeForAnim(null);
-      }, 500); // 애니메이션 시간과 맞춤
+      }, 500);
       return () => clearTimeout(timeout);
     }
   }, [isLoading]);
 
   useEffect(() => {
     if (isModalVisible) {
-      setIsModalOpen(true); // 다음 렌더에서 opacity/transform 트리거
+      setIsModalOpen(true);
     }
   }, [isModalVisible]);
 
   useEffect(() => {
     const checkLayoutReady = () => {
       const el = document.getElementById('layout-wrapper');
-      if (el) {
-        setIsLayoutReady(true);
-      } else {
-        requestAnimationFrame(checkLayoutReady); // 다음 프레임까지 기다림
-      }
+      if (el) setIsLayoutReady(true);
+      else requestAnimationFrame(checkLayoutReady);
     };
-
     checkLayoutReady();
   }, []);
 
@@ -125,15 +113,16 @@ export const ModalProvider = ({ children }: { children: any }) => {
       }}
     >
       {children}
-      {isModalVisible &&
-        modalType !== 'Loading' &&
-        modalContent !== Loading && <Modal content={modalContent} />}
-      {isLayoutReady && isVisible && <LoadingModal content={modalContent} />}
+      {isModalVisible && modalType !== 'Loading' && modalContent && (
+        <Modal content={modalContent} />
+      )}
+      {isLayoutReady && isLoading && modalType === 'Loading' && (
+        <LoadingModal content={Loading} />
+      )}
     </ModalContext.Provider>
   );
 };
 
-// 모달 hook export
 export const useModal = (): ModalContextType => {
   const context = useContext(ModalContext);
   if (!context) {

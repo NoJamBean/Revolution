@@ -40,15 +40,20 @@ export default function Chat() {
     const roomId = router.query.id as string;
     const userName = userInfoData?.nickname;
 
+    console.log(roomId, userName);
+
     if (!roomId || !userName || isChatConnected) return;
 
-    console.log('일로넘어가냐?', userName);
+    console.log('일로넘어가냐?', isChatConnected);
     // socket 연결 시작
     if (!isChatConnected) {
-      socket = io(process.env.NEXT_PUBLIC_BACKEND_ENDPOINT!, {
+      console.log('연결안되있슴요');
+      socket = io('wss://alb.backend.internal', {
         path: '/ws',
         transports: ['websocket'],
       });
+
+      console.log('이것이 소켓이다로로로로로로로로로로로롤롱', socket);
 
       socket.on('connect', () => {
         console.log('🟢 WebSocket 연결됨:', socket.id);
@@ -82,7 +87,7 @@ export default function Chat() {
         );
 
         //
-        console.log(messagesResult?.data, 'dataatatataat');
+        console.log(messagesResult?.data, '1111111111111111111');
         const prevMessages = messagesResult?.data;
         setMessages(prevMessages);
       } catch (error) {
@@ -93,6 +98,7 @@ export default function Chat() {
     loadMessages();
 
     return () => {
+      console.log('여기를 좀 테스트하자', socket);
       if (socket) {
         setIsChatConnected(false);
         socket.disconnect();

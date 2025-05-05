@@ -25,6 +25,7 @@ resource "azurerm_linux_web_app" "app_service" {
     vnet_route_all_enabled = true
     always_on        = true
     app_command_line = "" # CMD는 Dockerfile에 정의됨
+    websockets_enabled = true
     
     application_stack {
       docker_image_name        = "wonbinjung/nextjs-app:latest"  # Docker Hub 이미지
@@ -33,7 +34,9 @@ resource "azurerm_linux_web_app" "app_service" {
       docker_registry_password = var.dockerhub_password          # Docker Hub 비밀번호
     }
   }
+
   virtual_network_subnet_id = azurerm_subnet.subnet.id
+  
   https_only = true  # 기본 도메인에서 HTTPS를 강제 적용
 
   tags = {
