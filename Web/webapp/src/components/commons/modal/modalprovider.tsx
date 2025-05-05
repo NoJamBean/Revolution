@@ -30,7 +30,7 @@ export const ModalProvider = ({ children }: { children: any }) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
 
   const openModal = (content: any) => {
-    const isLoadingComponent = content === Loading;
+    const isLoadingComponent = content?.name === 'Loading';
 
     if (isLoadingComponent) {
       setIsModalOpen(false);
@@ -113,9 +113,13 @@ export const ModalProvider = ({ children }: { children: any }) => {
       }}
     >
       {children}
+
+      {/* 일반 모달 */}
       {isModalVisible && modalType !== 'Loading' && modalContent && (
         <Modal content={modalContent} />
       )}
+
+      {/* 로딩 모달 */}
       {isLayoutReady && isLoading && modalType === 'Loading' && (
         <LoadingModal content={Loading} />
       )}
