@@ -1,57 +1,52 @@
 // server.js
-const express = require('express');
-const { createProxyMiddleware } = require('http-proxy-middleware');
-const { createProxyServer } = require('http-proxy');
-const next = require('next');
-const http = require('http');
+import next from 'next';
+import express from 'express';
+import { createProxyServer } from 'http-proxy';
 
 const dev = process.env.NODE_ENV !== 'production';
 const app = next({ dev });
 const handle = app.getRequestHandler();
-
-const expressApp = express();
-
-// ✅ 1. API 프록시: /api → AWS internal ALB
-expressApp.use(
-  '/api',
-  createProxyMiddleware({
-    target: 'http://alb.backend.internal',
-    changeOrigin: true,
-    pathRewrite: { '^/api': '/api' },
-    onProxyReq: (proxyReq, req, res) => {
-      proxyReq.setHeader('Host', 'alb.backend.internal');
-      proxyReq.setHeader('X-Real-IP', req.socket.remoteAddress || '');
-      proxyReq.setHeader('X-Forwarded-For', req.socket.remoteAddress || '');
-      proxyReq.setHeader(
-        'X-Forwarded-Proto',
-        req.headers['x-forwarded-proto'] || 'http'
-      );
-    },
-  })
-);
-
-// ✅ 2. WebSocket 프록시: /ws → AWS internal WebSocket 서버
-const wsProxy = createProxyServer({
-  target: 'http://alb.backend.internal/ws',
+const proxy = createProxyServer({
   changeOrigin: true,
   ws: true,
-  headers: {
-    Host: 'alb.backend.internal',
-  },
 });
 
-// ✅ 3. 나머지 Next.js 요청 처리
-expressApp.all('*', (req, res) => handle(req, res));
+await app.prepare();
+const server = express();
 
-// ✅ 4. 서버 + WS 핸들링
-const server = http.createServer(expressApp);
-
+// 1) WebSocket 업그레이드 (upgrade 이벤트)
 server.on('upgrade', (req, socket, head) => {
   if (req.url.startsWith('/ws')) {
-    wsProxy.ws(req, socket, head);
+    proxy.ws(req, socket, head, {
+      target: 'http://alb.backend.internal/ws',
+    });
   }
 });
 
+// 2) /api/log 은 Next.js API
+server.all('/api/log', (req, res) => {
+  return handle(req, res);
+});
+
+// 3) 그 외 모든 /api/* 요청은 ALB 백엔드로 프록시
+server.all('/api/:path*', (req, res) => {
+  proxy.web(req, res, {
+    target: 'http://alb.backend.internal',   // path 포함 자동 매핑됨
+  });
+});
+
+// 4) HTTP 폴링 등 /ws* 요청도 ALB
+server.all('/ws*', (req, res) => {
+  proxy.web(req, res, {
+    target: 'http://alb.backend.internal/ws',
+  });
+});
+
+// 5) 그 외 Next.js 페이지·API 정적·SSR
+server.all('*', (req, res) => {
+  return handle(req, res);
+});
+
 server.listen(3000, () => {
-  console.log('🚀 서버 실행됨: http://localhost:3000');
+  console.log('> Custom server ready on http://localhost:3000');
 });
