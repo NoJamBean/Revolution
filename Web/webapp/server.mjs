@@ -17,8 +17,8 @@ async function main() {
 
   // API 라우팅
   app.all('/api/log', (req, res) => handle(req, res));
-  app.all('/api/*', (req, res) => proxy.web(req, res, { target: 'http://alb.backend.internal' }));
-  app.all('/ws/*', (req, res) => proxy.web(req, res, { target: 'http://alb.backend.internal/ws' }));
+  app.use('/api', (req, res) => proxy.web(req, res, { target: 'http://alb.backend.internal' }));
+  app.use('/ws', (req, res) => proxy.web(req, res, { target: 'http://alb.backend.internal/ws' }));
   app.all('*', (req, res) => handle(req, res));
 
   const server = http.createServer(app);
