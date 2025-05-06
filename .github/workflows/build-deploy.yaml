@@ -76,18 +76,18 @@ jobs:
           app-name: app-service-webapp
           resource-group-name: rg-webapp
           images: ${{ secrets.DOCKER_USERNAME }}/nextjs-app:latest
-          slot-name: staging     # Green 환경 (새로운 버전 배포)
+          slot-name: production     # Green 환경 (새로운 버전 배포)
 
-      - name: Swap Slots (staging → production)
-        uses: azure/cli@v1
-        with:
-          azcliversion: latest
-          inlineScript: |
-            az webapp deployment slot swap \
-              --name app-service-webapp \
-              --resource-group rg-webapp \
-              --slot staging \
-              --target-slot production
+      # - name: Swap Slots (staging → production)
+      #   uses: azure/cli@v1
+      #   with:
+      #     azcliversion: latest
+      #     inlineScript: |
+      #       az webapp deployment slot swap \
+      #         --name app-service-webapp \
+      #         --resource-group rg-webapp \
+      #         --slot staging \
+      #         --target-slot production
 
 
 #  Code Deploy 방식 - [이전 방식]
