@@ -17,20 +17,27 @@ async function main() {
 
   // API 라우팅
   app.all('/api/log', (req, res) => handle(req, res));
+
   app.use('/api', (req, res) => {
-    proxy.web(req, res, { target: 'http://alb.backend.internal' }, (err) => {
+    proxy.web(req, res, {
+      target: 'http://alb.backend.internal',
+      prependPath: false,
+    }, (err) => {
       console.error('API proxy error:', err.message);
       res.status(502).send('Bad Gateway');
     });
   });
-  
+
   app.use('/ws', (req, res) => {
-    proxy.web(req, res, { target: 'http://alb.backend.internal/ws' }, (err) => {
+    proxy.web(req, res, {
+      target: 'http://alb.backend.internal',
+      prependPath: false,
+    }, (err) => {
       console.error('WS proxy error:', err.message);
       res.status(502).send('Bad Gateway');
     });
   });
-  
+
   app.use((req, res) => handle(req, res));
 
   const server = http.createServer(app);
