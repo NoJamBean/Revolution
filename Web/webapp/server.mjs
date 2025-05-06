@@ -1,7 +1,8 @@
 import next from 'next';
 import express from 'express';
 import http from 'http';
-import { createProxyServer } from 'http-proxy';
+import httpProxy from 'http-proxy';
+const { createProxyServer } = httpProxy;
 
 const dev = process.env.NODE_ENV !== 'production';
 const PORT = process.env.PORT || 3000;
