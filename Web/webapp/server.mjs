@@ -19,7 +19,7 @@ async function main() {
   app.all('/api/log', (req, res) => handle(req, res));
   app.use('/api', (req, res) => proxy.web(req, res, { target: 'http://alb.backend.internal' }));
   app.use('/ws', (req, res) => proxy.web(req, res, { target: 'http://alb.backend.internal/ws' }));
-  app.all('*', (req, res) => handle(req, res));
+  app.get('*', (req, res) => handle(req, res));
 
   const server = http.createServer(app);
 
