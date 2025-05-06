@@ -42,6 +42,6 @@ server.on('upgrade', (req, socket, head) => {
 
 // 7) 포트 열기
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
