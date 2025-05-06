@@ -36,8 +36,6 @@ nextApp.prepare().then(() => {
   app.use('/ws', (req, res) => {
     proxy.web(req, res, {
       target: 'http://alb.backend.internal/ws',
-      ignorePath: false,
-      prependPath: false,
     }, (err) => {
       console.error('WS proxy error:', err.message);
       res.status(502).send('Bad Gateway');
@@ -57,8 +55,6 @@ nextApp.prepare().then(() => {
     if (req.url.startsWith('/ws')) {
       proxy.ws(req, socket, head, {
         target: 'http://alb.backend.internal/ws',
-        ignorePath: false,
-        prependPath: false,
       });
     }
   });
