@@ -1,5 +1,3 @@
-// utils/logger.ts
-
 interface LogEntry {
   eventSource: string;
   awsRegion: string;
@@ -22,15 +20,22 @@ export const logBuffer: { Records: LogEntry[] } = {
 export function addLog(entry: LogEntry) {
   logBuffer.Records.push(entry);
 
-  console.log('[api/log] 최종 로그:', JSON.stringify(logBuffer, null, 2));
+  console.log('\n\n[📥 LOG ADD] 로그 추가됨 ------------------------');
+  console.log('[📦 현재 logBuffer 상태]');
+  console.dir(logBuffer, { depth: null });
+  console.log('--------------------------------------------------\n\n');
 }
 
 export function flushLogs(): { Records: LogEntry[] } {
-  console.trace('[flushLogs] 호출됨');
+  console.log('\n\n[🚚 flushLogs] 로그 업로드 준비됨 ----------------');
+  console.log(`[✅ Records 개수]: ${logBuffer.Records.length}`);
+  console.dir(logBuffer.Records, { depth: null });
 
-  const copy = [...logBuffer.Records];
+  const flushed = [...logBuffer.Records];
   logBuffer.Records.length = 0;
 
-  console.log('얼마들어있음 지금??', logBuffer);
-  return { Records: copy };
+  console.log('[🧹 버퍼 초기화 완료]');
+  console.log('--------------------------------------------------\n\n');
+
+  return { Records: flushed };
 }

@@ -1,41 +1,42 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { addLog } from '../../commons/utils/logger';
 import { initLogUploader } from '@/src/commons/utils/initLogUploader';
-import { random } from '@/src/commons/utils/temporaryIp';
 
-// ✅ 서버 실행 시 1번만 타이머 시작하도록 제어
+// ✅ 서버 시작 시 로그 업로더 타이머 시작
 let uploaderStarted = false;
 if (!uploaderStarted) {
   uploaderStarted = true;
   initLogUploader();
 }
 
-export default function handler(req: NextApiRequest, res: NextApiResponse) {
-  const rawLog = req.body;
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
+  try {
+    const rawLog = req.body;
 
-  const sourceIPAddress = Array.isArray(req.headers['x-forwarded-for'])
-    ? req.headers['x-forwarded-for'][0]
-    : typeof req.headers['x-forwarded-for'] === 'string'
-    ? req.headers['x-forwarded-for']
-    : typeof req.socket.remoteAddress === 'string'
-    ? req.socket.remoteAddress
-    : '';
+    const sourceIPAddress = Array.isArray(req.headers['x-forwarded-for'])
+      ? req.headers['x-forwarded-for'][0]
+      : typeof req.headers['x-forwarded-for'] === 'string'
+      ? req.headers['x-forwarded-for']
+      : typeof req.socket.remoteAddress === 'string'
+      ? req.socket.remoteAddress
+      : '';
 
-  const userAgent = req.headers['user-agent'] || '';
+    const userAgent = req.headers['user-agent'] || '';
 
-  //random ip 할당함수 (임시용)
-  const getRandomIp = (arr: any) => {
-    const randomIdx = Math.floor(Math.random() * arr.length);
+    const completeLog = {
+      ...rawLog,
+      sourceIPAddress,
+      userAgent,
+    };
 
-    return arr[randomIdx];
-  };
+    addLog(completeLog);
 
-  const completeLog = {
-    ...rawLog,
-    sourceIPAddress: getRandomIp(random),
-    userAgent,
-  };
-
-  addLog(completeLog);
-  res.status(200).json({ status: 'ok' });
+    res.status(200).json({ status: 'ok' });
+  } catch (err) {
+    console.error('[❌ /api/log 에러 발생]', err);
+    res.status(500).json({ error: '로그 처리 실패' });
+  }
 }

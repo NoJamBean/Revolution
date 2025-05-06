@@ -47,6 +47,11 @@ RUN apt-get update && apt-get install -y curl gnupg \
 # yarn 설치 (선택사항: npm 대신 yarn 사용 시)
 RUN npm install -g yarn
 
+# 🔽 환경변수 주입 (Azure에서 전달받은 자격증명 인식용)
+ENV AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+ENV AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+ENV AWS_REGION=ap-northeast-2
+
 # 의존성 설치용 파일 복사
 COPY package.json yarn.lock ./
 

@@ -36,28 +36,23 @@ export default function Chat() {
 
   useEffect(() => {
     const rawToken = localStorage.getItem('auth_token');
-
     const roomId = router.query.id as string;
     const userName = userInfoData?.nickname;
 
-    console.log(roomId, userName);
+    console.log(userName, 'UserName');
 
+    // 조건 미충족이면 일단 기다림 (return 안 함)
     if (!roomId || !userName || isChatConnected) return;
 
-    console.log('일로넘어가냐?', isChatConnected);
-    // socket 연결 시작
-    if (!isChatConnected) {
-      console.log('연결안되있슴요');
+    // 🔥 조건 충족 시에만 실행되는 핵심 로직 블록
+    const connectAndLoad = async () => {
+      // 1. WebSocket 연결
       socket = io(`${process.env.NEXT_PUBLIC_BACKEND_ENDPOINT}`, {
         path: '/ws',
         transports: ['websocket'],
       });
 
-      console.log('이것이 소켓이다로로로로로로로로로로로롤롱', socket);
-
       socket.on('connect', () => {
-        console.log('🟢 WebSocket 연결됨:', socket.id);
-
         socket.emit('joinRoom', {
           roomId,
           userName,
@@ -65,19 +60,15 @@ export default function Chat() {
         });
 
         setIsChatConnected(true);
-        console.log(`➡️ ${userName}님이 ${roomId} 방에 입장`);
       });
 
       socket.on('chatMessage', (msg) => {
-        console.log('📨 수신:', msg);
-        setMessages((prev) => [...prev, msg]); // 객체 그대로 저장
+        setMessages((prev) => [...prev, msg]);
       });
-    }
 
-    // 기존의 채팅 데이터 내역 불러오기
-    const loadMessages = async () => {
+      // 2. 메시지 내역 요청
       try {
-        const messagesResult = await axios.get(
+        const res = await axios.get(
           `${process.env.NEXT_PUBLIC_BACKEND_ENDPOINT}/api/chat/message/list/${roomId}`,
           {
             headers: {
@@ -85,26 +76,22 @@ export default function Chat() {
             },
           }
         );
-
-        //
-        console.log(messagesResult?.data, '1111111111111111111');
-        const prevMessages = messagesResult?.data;
-        setMessages(prevMessages);
+        setMessages(res?.data || []);
       } catch (error) {
-        console.log(error, '에러!');
+        console.error('[채팅 내역 로딩 실패]', error);
       }
     };
 
-    loadMessages();
+    connectAndLoad();
 
+    // 정리
     return () => {
-      console.log('여기를 좀 테스트하자', socket);
       if (socket) {
         setIsChatConnected(false);
         socket.disconnect();
       }
     };
-  }, [router.query.id, userInfoData]);
+  }, [router.query.id, userInfoData?.nickname]);
 
   useEffect(() => {
     const initToken = async () => {
@@ -139,20 +126,16 @@ export default function Chat() {
   // 메시지 전송
   const handleSendMessage = () => {
     const roomId = router.query.id as string;
-    // const userName = userInfoData?.nickname;
 
     if (socket && message.trim()) {
       socket.emit('chatMessage', {
         roomId,
         userId: userInfoData?.nickname,
-        // userName,
         content: message,
       });
       setMessage('');
     }
   };
-
-  console.log('사용자정보들 다 조회하기', messages, userInfoData);
 
   return (
     <S.Wrapper>
