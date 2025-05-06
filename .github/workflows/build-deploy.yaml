@@ -70,6 +70,19 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
+      - name: Set AWS credentials as App Settings
+        uses: azure/appservice-settings@v1
+        with:
+          app-name: app-service-webapp
+          resource-group-name: rg-webapp
+          slot-name: production
+          app-settings-json: >
+            [
+              { "name": "AWS_ACCESS_KEY_ID", "value": "${{ secrets.AWS_ACCESS_KEY_ID }}", "slotSetting": false },
+              { "name": "AWS_SECRET_ACCESS_KEY", "value": "${{ secrets.AWS_SECRET_ACCESS_KEY }}", "slotSetting": false },
+              { "name": "AWS_REGION", "value": "ap-northeast-2", "slotSetting": false }
+            ]
+
       - name: Deploy to Azure Web App Staging Slot
         uses: azure/webapps-deploy@v3
         with:
@@ -82,12 +95,7 @@ jobs:
       #   uses: azure/cli@v1
       #   with:
       #     azcliversion: latest
-      #     inlineScript: |
-      #       az webapp deployment slot swap \
-      #         --name app-service-webapp \
-      #         --resource-group rg-webapp \
-      #         --slot staging \
-      #         --target-slot production
+      #     inlineScript: az webapp deployment slot swap --name app-service-webapp --resource-group rg-webapp --slot staging --target-slot production
 
 
 #  Code Deploy 방식 - [이전 방식]
