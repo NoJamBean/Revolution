@@ -47,21 +47,33 @@ resource "azurerm_linux_web_app" "app_service" {
 # Staging 슬롯 생성
 resource "azurerm_linux_web_app_slot" "staging_slot" {
   name                = "staging"
-  app_service_id = azurerm_linux_web_app.app_service.id
+  app_service_id      = azurerm_linux_web_app.app_service.id
+  virtual_network_subnet_id = azurerm_subnet.subnet.id
+
+  app_settings = {
+    auto_swap_slot = "staging"
+    "WEBSITES_ENABLE_APP_SERVICE_STORAGE" = "false"
+    "WEBSITES_CONTAINER_START_TIME_LIMIT" = "1800"
+    "WEBSITES_PORT"                       = "3000"
+    "PORT"                                = "3000"
+    "WEBSITES_VNET_ROUTE_ALL"            = "1"
+    "WEBSITE_DNS_SERVER"                 = "10.0.100.10,10.0.15.10"
+  }
 
   site_config {
     always_on        = true
-    app_command_line = "" # CMD는 Dockerfile에 정의됨
+    app_command_line = ""
+    websockets_enabled = true
 
     application_stack {
-      docker_image_name        = "wonbinjung/nextjs-app:latest"  # Docker Hub 이미지
-      docker_registry_url      = "https://index.docker.io"       # Docker Hub URL
-      docker_registry_username = var.dockerhub_username          # Docker Hub 사용자명
-      docker_registry_password = var.dockerhub_password          # Docker Hub 비밀번호
+      docker_image_name        = "wonbinjung/nextjs-app:latest"
+      docker_registry_url      = "https://index.docker.io"
+      docker_registry_username = var.dockerhub_username
+      docker_registry_password = var.dockerhub_password
     }
   }
 
   tags = {
-    environment = "staging"  # 배포 환경을 'staging'으로 지정
+    environment = "staging"
   }
 }

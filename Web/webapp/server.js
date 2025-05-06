@@ -41,6 +41,7 @@ server.on('upgrade', (req, socket, head) => {
 });
 
 // 7) 포트 열기
-server.listen(3000, () => {
-  console.log('> Custom server ready on http://localhost:3000');
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
