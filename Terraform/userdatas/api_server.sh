@@ -3,7 +3,9 @@
 sudo source /etc/environment
 
 sudo yum update -y
-sudo yum install -y amazon-linux-extras
+sudo yum install -y amazon-linux-extras mysql
+sudo amazon-linux-extras enable nginx1
+sudo yum install -y nginx
 
 #inotify 설치
 sudo yum groupinstall "Development Tools" -y
@@ -32,12 +34,14 @@ sudo dotnet new webapi
 
 # Entity Framework Core 패키지 추가
 sudo dotnet add package AWSSDK.CognitoIdentityProvider
-sudo dotnet add package AWSSDK.S3 --version 3.7.0
+sudo dotnet add package AWSSDK.S3 --version 4.0.0
+sudo dotnet add package BCrypt.Net-Next --version 4.0.2
 sudo dotnet add package Microsoft.AspNetCore.Authentication.JwtBearer --version 6.0.26
 sudo dotnet add package Microsoft.AspNetCore.Authorization --version 6.0.0
 sudo dotnet add package Microsoft.Bcl.AsyncInterfaces --version 6.0.0
 sudo dotnet add package Microsoft.EntityFrameworkCore.Design --version 6.0.0
 sudo dotnet add package Microsoft.EntityFrameworkCore.SqlServer --version 6.0.0
+sudo dotnet add package Microsoft.Extensions.DependencyInjection --version 6.0.0
 sudo dotnet add package Pomelo.EntityFrameworkCore.MySql --version 6.0.0
 sudo dotnet add package Serilog --version 4.1.0
 sudo dotnet add package Serilog.AspNetCore --version 4.1.0
@@ -45,12 +49,9 @@ sudo dotnet add package Serilog.Sinks.Console --version 4.1.0
 sudo dotnet add package System.IO.Pipelines --version 6.0.0
 sudo dotnet add package System.Text.Json --version 6.0.0
 
-# curl -u "username:your_personal_access_token" -sL https://raw.githubusercontent.com/사용자명/저장소명/브랜치명/경로/파일명 | sudo tee /경로/파일명 > /dev/null
-
 sudo chown -R ec2-user:ec2-user ~/.dotnet
 sudo chmod -R 755 ~/.dotnet
 
-# /var/log/api 디렉토리의 소유자를 ec2-user로 변경합니다.
 sudo chown -R ec2-user:ec2-user /var/log/api
 sudo chmod -R 777 /var/log/api
 
@@ -61,17 +62,26 @@ sudo chown -R ec2-user:ec2-user /usr/share/dotnet
 sudo chmod -R 755 /usr/share/dotnet
 
 # S3에서 설정 파일 다운로드
-# sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/appsettings.json $LOCAL_PATH/appsettings.json
+sudo aws s3 cp s3://$S3_BUCKET/userdatas/rds_userdata.sh /home/ec2-user/rdsuserdata.sh --region ap-northeast-2
+sudo chmod +x /home/ec2-user/rdsuserdata.sh
+sudo /home/ec2-user/rdsuserdata.sh
 
 # S3에서 주요 프로젝트 파일 다운로드
 sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/Program.cs $LOCAL_PATH/Program.cs
-sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/UserDbContext.cs $LOCAL_PATH/Data/UserDbContext.cs
-sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/GameDbContext.cs $LOCAL_PATH/Data/GameDbContext.cs
-sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/UsersController.cs $LOCAL_PATH/Controllers/UsersController.cs
-sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/GamesController.cs $LOCAL_PATH/Controllers/GamesController.cs
-sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/CognitoService.cs $LOCAL_PATH/Service/CognitoService.cs
 
-sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/dotnet_run.sh ~/run
+sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/Controllers/ChatController.cs $LOCAL_PATH/Controllers/ChatController.cs --region ap-northeast-2
+sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/Controllers/GamesController.cs $LOCAL_PATH/Controllers/GamesController.cs --region ap-northeast-2
+sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/Controllers/HealthController.cs $LOCAL_PATH/HealthController.cs --region ap-northeast-2
+sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/Controllers/UsersController.cs $LOCAL_PATH/Controllers/UsersController.cs --region ap-northeast-2
+sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/DBContext/ChatDbContext.cs $LOCAL_PATH/Data/ChatDbContext.cs --region ap-northeast-2
+sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/DBContext/GameDbContext.cs $LOCAL_PATH/Data/GameDbContext.cs --region ap-northeast-2
+sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/DBContext/UserDbContext.cs $LOCAL_PATH/Data/UserDbContext.cs --region ap-northeast-2
+sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/Services/BcryptPasswordHasher.cs $LOCAL_PATH/Service/BcryptPasswordHasher.cs --region ap-northeast-2
+sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/Services/CognitoService.cs $LOCAL_PATH/Service/CognitoService.cs --region ap-northeast-2
+sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/Services/IPasswordHasher.cs $LOCAL_PATH/Service/IPasswordHasher.cs --region ap-northeast-2
+sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/Services/RequestLoggingMiddleware.cs $LOCAL_PATH/Service/RequestLoggingMiddleware.cs --region ap-northeast-2
+
+sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/dotnet_run.sh ~/run.sh --region ap-northeast-2
 
 # 종속성 복원 및 빌드
 cd $LOCAL_PATH
@@ -89,12 +99,17 @@ echo "[Watcher] Starting Nginx log watcher..." >> "${WATCH_LOG}"
 
 for LOG_FILE in "${LOG_FILES[@]}"; do
   (
-    S3_DEST="s3://${S3_LOG_BUCKET}/nginx/$(basename "${LOG_FILE}")"
     echo "[Watcher] Watching ${LOG_FILE} for changes..." >> "${WATCH_LOG}"
 
     while inotifywait -e modify "${LOG_FILE}"; do
-      echo "[Watcher] Change detected in ${LOG_FILE}, uploading to S3..." >> "${WATCH_LOG}"
-      aws s3 cp "${LOG_FILE}" "${S3_DEST}" >> "${WATCH_LOG}" 2>&1
+      # 한국 시간 기준 타임스탬프
+      TZ="Asia/Seoul" TIMESTAMP=$(date +"%Y%m%d-%H%M%S")
+      BASENAME=$(basename "${LOG_FILE}")
+      DEST_FILENAME="${BASENAME%.*}-${TIMESTAMP}.${BASENAME##*.}"
+      S3_DEST="s3://${S3_LOG_BUCKET}/API_Server/nginx/${DEST_FILENAME}"
+
+      echo "[Watcher] Change detected in ${LOG_FILE}, uploading to ${S3_DEST}..." >> "${WATCH_LOG}"
+      aws s3 cp "${LOG_FILE}" "${S3_DEST}" --region ap-northeast-2 >> "${WATCH_LOG}" 2>&1
     done
   ) &
 done
@@ -155,13 +170,10 @@ sudo systemctl start dotnet-api
 sudo systemctl start nginx-log-watcher
 
 # Nginx 설치 및 설정
-sudo amazon-linux-extras enable nginx1
-sudo yum install -y nginx
 sudo systemctl enable nginx
 sudo systemctl start nginx
 
 # Nginx 프록시 설정
-# INSTANCE_PRIVATE_IP=$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4)
 sudo tee /etc/nginx/conf.d/dotnet-api.conf > /dev/null <<EOL
 server {
     listen 80;
@@ -169,26 +181,10 @@ server {
 
     location / {
         proxy_pass http://localhost:5000;
-        # proxy_pass_request_headers on;
-
-        # CORS 설정 추가
-        add_header 'Access-Control-Allow-Origin' '*' always;
-        add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS' always;
-        add_header 'Access-Control-Allow-Headers' '*' always;
-        add_header 'Access-Control-Allow-Credentials' 'true' always; # Credential 허용
-
-        # OPTIONS 요청 처리 (Preflight 요청에 응답)
-        if (\$request_method = OPTIONS) {
-            add_header 'Access-Control-Allow-Origin' '*';
-            add_header 'Access-Control-Allow-Methods' 'GET, POST';
-            add_header 'Access-Control-Allow-Headers' '*';
-            add_header 'Access-Control-Allow-Credentials' 'true';
-            return 204; # No Content 응답
-        }
     }
 }
 EOL
 
 sudo systemctl restart nginx
 
-sudo chmod +x ~/run
+sudo chmod +x ~/run.sh

@@ -7,6 +7,24 @@ const globalStyle = css`
     box-sizing: border-box;
   }
 
+  body {
+    /* background-color: red; */
+    background-image: url('/sportsbg.png');
+    background-size: cover;
+    background-attachment: fixed;
+  }
+
+  html,
+  body,
+  #__next {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    position: relative;
+    overflow: visible;
+  }
+
   // 폰트
   /* @font-face {
     font-family: 'NanumSquareNeo';

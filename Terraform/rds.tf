@@ -5,12 +5,17 @@ resource "aws_db_parameter_group" "parm" {
 
   dynamic "parameter" {
     for_each = {
-      time_zone            = "Asia/Seoul"
-      character_set_client = "utf8mb4"
-      character_set_results = "utf8mb4"
-      character_set_server  = "utf8mb4"
-      collation_connection  = "utf8mb4_general_ci"
-      collation_server      = "utf8mb4_general_ci"
+      time_zone              = "Asia/Seoul"
+      character_set_client   = "utf8mb4"
+      character_set_results  = "utf8mb4"
+      character_set_server   = "utf8mb4"
+      collation_connection   = "utf8mb4_general_ci"
+      collation_server       = "utf8mb4_general_ci"
+      general_log            = "1"            # 일반 쿼리 로그 활성화
+      slow_query_log         = "1"            # 슬로우 쿼리 로그 활성화
+      log_output             = "FILE"         # 로그 출력 형식
+      long_query_time        = "1"            # 슬로우 쿼리 판별 기준 시간 (초)
+      log_queries_not_using_indexes = "1"     # 인덱스를 사용하지 않는 쿼리도 로그
     }
     content {
       name  = parameter.key
@@ -24,7 +29,7 @@ resource "aws_db_parameter_group" "parm" {
 }
 
 resource "aws_db_instance" "mysql_multi_az" {
-  identifier                          = "mysql-multi-az-instance"
+  identifier                          = "mysql-multi-az-rds-instance"
   engine                              = "mysql"
   engine_version                      = "8.0.40"
   instance_class                      = "db.t3.micro"
@@ -35,17 +40,62 @@ resource "aws_db_instance" "mysql_multi_az" {
   multi_az                            = true # 다중 AZ 활성화
   db_subnet_group_name                = aws_db_subnet_group.rds_subnet_group.name
   vpc_security_group_ids              = [aws_security_group.rds_sg.id]
-  backup_retention_period             = 0
+  backup_retention_period             = 1
   apply_immediately                   = true # 수정 즉시적용
   skip_final_snapshot                 = true
   deletion_protection                 = false
   publicly_accessible                 = false
   storage_encrypted                   = true
-  monitoring_interval                 = 0     # 모니터링 비활성화
+  monitoring_interval                 = 60 
+  monitoring_role_arn                 = aws_iam_role.rds_to_cwlogs.arn
   iam_database_authentication_enabled = false # IAM 인증 비활성화 (암호 인증 사용)
   parameter_group_name                = aws_db_parameter_group.parm.name
+  kms_key_id          = "arn:aws:kms:ap-northeast-2:248189921892:key/mrk-b3f30d170a584dea8b949979e4471fdc"
+
+  enabled_cloudwatch_logs_exports = ["error", "general", "slowquery", "audit"]
   availability_zone                   = null # 자동 배정
-  tags                                = { Name = "MySQL Multi-AZ Instance" }
+  tags                                = { Name = "MySQL Multi-AZ RDS Instance" }
+
+  lifecycle {
+    ignore_changes = [
+      maintenance_window,
+      backup_window,
+      auto_minor_version_upgrade,
+      final_snapshot_identifier,
+      ca_cert_identifier,
+      # 진짜 자주 바뀌는 속성만 추가
+    ]
+  }
+}
+
+resource "aws_db_instance" "mysql_read_replica" {
+  identifier           = "mysql-read-replica"
+  engine               = "mysql"
+  instance_class       = "db.t3.micro"
+  replicate_source_db  = aws_db_instance.mysql_multi_az.arn
+  publicly_accessible  = false
+  db_subnet_group_name = aws_db_subnet_group.rds_subnet_group.name
+  vpc_security_group_ids = [aws_security_group.rds_sg.id]
+  skip_final_snapshot = true
+  monitoring_interval                 = 60 
+  monitoring_role_arn                 = aws_iam_role.rds_to_cwlogs.arn
+  storage_encrypted = true
+  kms_key_id          = "arn:aws:kms:ap-northeast-2:248189921892:key/mrk-b3f30d170a584dea8b949979e4471fdc"
+
+  tags = {
+    Name = "MySQL Read Replica"
+  }
+
+  lifecycle {
+    ignore_changes = [
+      maintenance_window,
+      backup_window,
+      auto_minor_version_upgrade,
+      final_snapshot_identifier,
+      ca_cert_identifier,
+      # 진짜 자주 바뀌는 속성만 추가
+    ]
+  }
 }
 
 #읽기 복제본 프록시

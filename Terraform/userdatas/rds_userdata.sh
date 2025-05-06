@@ -1,65 +1,69 @@
 #!/bin/bash
 
-yum install -y mysql
-yum update -y
-
 # MySQL 명령어 실행
-mysql -h "${db_endpoint}" -u "${db_username}" -p"${db_password}" <<EOF
+mysql -h "$DB_ENDPOINT" -u "$DB_USERNAME" -p"$DB_PASSWORD" <<EOT
 CREATE DATABASE IF NOT EXISTS userDB;
 CREATE DATABASE IF NOT EXISTS gameDB;
+CREATE DATABASE IF NOT EXISTS chatDB;
 
-#Table생성
 USE userDB;
-DROP TABLE IF EXISTS gameinfoTBL;
-CREATE TABLE userTBL ( 
-    id VARCHAR(10) NOT NULL PRIMARY KEY, 
-    uuid VARCHAR(255) NOT NULL,
+CREATE TABLE IF NOT EXISTS userTBL ( 
+    id VARCHAR(10) NOT NULL PRIMARY KEY,
     nickname VARCHAR(30) NOT NULL,
     password CHAR(60) NOT NULL,
-    e_mail VARCHAR(320) NOT NULL, 
-    phone_number VARCHAR(10) NOT NULL, 
+    e_mail VARCHAR(320) NOT NULL UNIQUE, 
+    phone_number VARCHAR(13) NOT NULL, 
     balance BIGINT DEFAULT 0,
     modified_date DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
 USE gameDB;
-DROP TABLE IF EXISTS gameinfoTBL;
-CREATE TABLE gameinfoTBL ( 
+CREATE TABLE IF NOT EXISTS gameinfoTBL ( 
+    seq INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     id VARCHAR(10) NOT NULL,
-    type ENUM('soccer', 'basketball', 'baseball', 'ladder') NOT NULL, 
+    type ENUM('FOOTBALL', 'BASEBALL', 'BASKETBALL', 'ICEHOCKEY', 'HANDBALL') NOT NULL,
+    matchid VARCHAR(8) NOT NULL,
     gameDate DATETIME NOT NULL,
     home VARCHAR(20) NOT NULL,
     away VARCHAR(20) NOT NULL,
-    wdl ENUM('win', 'draw', 'lose')  NOT NULL,
+    wdl ENUM('HOME', 'DRAW', 'AWAY')  NOT NULL,
     odds DECIMAL(5,2) NOT NULL,
-    price BIGINT DEFAULT 0, 
-    status BOOLEAN DEFAULT TRUE,
-    PRIMARY KEY (id, gameDate)
+    price BIGINT DEFAULT 0 NOT NULL, 
+    status ENUM ('BEFORE', 'PLAYING', 'FINISHED') NOT NULL DEFAULT 'BEFORE',
+    modified_date DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY (id, matchid)
 );
 
-DROP TABLE IF EXISTS gameresultTBL;
-CREATE TABLE gameresultTBL ( 
+CREATE TABLE IF NOT EXISTS gameresultTBL ( 
+    seq INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     id VARCHAR(10) NOT NULL,
-    type ENUM('soccer', 'basketball', 'baseball', 'ladder') NOT NULL, 
+    type ENUM('FOOTBALL', 'BASEBALL', 'BASKETBALL', 'ICEHOCKEY', 'HANDBALL') NOT NULL, 
+    matchid VARCHAR(8) NOT NULL,
     gameDate DATETIME NOT NULL,
     home VARCHAR(20) NOT NULL,
     away VARCHAR(20) NOT NULL,
     odds DECIMAL(5,2) NOT NULL,
     price BIGINT DEFAULT 0, 
-    result ENUM('win', 'lose')  NOT NULL,
+    winner ENUM('HOME', 'DRAW', 'AWAY') NOT NULL,
+    result ENUM('WIN', 'LOSE')  NOT NULL,
     resultPrice BIGINT DEFAULT 0,
-    PRIMARY KEY (id, gameDate), 
-    FOREIGN KEY (id, gameDate) REFERENCES gameinfoTBL(id, gameDate) ON DELETE CASCADE
+    modified_date DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY (id, matchid),
+    FOREIGN KEY (id, matchid) REFERENCES gameinfoTBL(id, matchid) ON DELETE CASCADE
 );
 
-USE userDB;
-INSERT INTO userTBL (id, uuid, nickname, password, e_mail, phone_number, balance)
-VALUES ('dummyuser', "${cognito_user_id}", 'dummy', '$2y$10$abcdefghijklmnopqrstuvwx', 'dummyuser@example.com', '01012345678', 10000)
-ON DUPLICATE KEY UPDATE 
-    uuid = VALUES(uuid),
-    password = VALUES(password),
-    nickname = VALUES(nickname),
-    e_mail = VALUES(e_mail),
-    phone_number = VALUES(phone_number),
-    balance = VALUES(balance);
-EOF
+USE chatDB;
+CREATE TABLE IF NOT EXISTS roomTBL ( 
+    roomid VARCHAR(8) PRIMARY KEY,
+    modified_date DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS messageTBL (
+    roomid VARCHAR(8) NOT NULL,
+    id VARCHAR(10) NOT NULL,
+    content TEXT NOT NULL,
+    time DATETIME(6) NOT NULL,
+    PRIMARY KEY (roomid, id, time),
+    FOREIGN KEY (roomid) REFERENCES roomTBL(roomid) ON DELETE CASCADE
+);
+EOT

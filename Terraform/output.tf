@@ -1,24 +1,21 @@
-output "db_endpoint" {
-  value = split(":", aws_db_instance.mysql_multi_az.endpoint)[0]
-  sensitive = true
-}
-
-output "api_address" {
-  description = "API SERVER의 공인 IP 주소"
-  value       = "http://${aws_instance.api_server_1.public_ip}:5000/api/users/test"
-}
-
-# API Gateway의 URL 출력
-# output "api_gateway_url" {
-#   value = "https://${aws_api_gateway_rest_api.rest_api.id}.execute-api.ap-northeast-2.amazonaws.com/${aws_api_gateway_stage.api_stage.stage_name}/api/users/test"
-# }
-
-# EC2의 퍼블릭 IP 출력
-output "ec2_public_ip" {
-  description = "EC2의 퍼블릭 IP"
-  value       = aws_instance.api_server_1.public_ip
-}
-
 output "cognito_user_pool_arn" {
   value = aws_cognito_user_pool.user_pool.arn
+}
+
+# 로그 저장용 s3 버킷이름 출력
+output "s3_bucket_name" {
+  value = aws_s3_bucket.log_bucket.bucket
+}
+
+
+# azuer vpn public IP
+output "azure_vpn_public_ip" {
+  value = azurerm_public_ip.vpn_gateway_pip.ip_address
+}
+
+# output "aws_vpn_pip" {
+#   value = aws_vpn_gateway.vpn_gateway.public_ip
+# }
+output "azure_vpn_pip" {
+  value = azurerm_public_ip.vpn_gateway_pip.ip_address
 }

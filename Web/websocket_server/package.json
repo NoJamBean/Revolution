@@ -1,0 +1,14 @@
+{
+  "name": "websocket-server",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@socket.io/redis-adapter": "^8.2.1",
+    "axios": "^1.8.4",
+    "dotenv": "^16.3.1",
+    "redis": "^4.6.7",
+    "socket.io": "^4.7.2"
+  }
+}

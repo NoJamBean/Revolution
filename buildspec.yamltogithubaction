@@ -1,0 +1,53 @@
+name: Build and Package Next.js App
+
+on:
+  push:
+    branches:
+      - main  # 또는 원하는 브랜치
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: Web/webapp
+
+    steps:
+    - name: 코드 체크아웃
+      uses: actions/checkout@v3
+
+    - name: Node.js 18 설정
+      uses: actions/setup-node@v3
+      with:
+        node-version: 18
+
+    - name: 의존성 설치
+      run: yarn install
+
+    - name: 환경 변수 설정
+      run: echo "NEXT_PUBLIC_SPORTS_API_KEY=https://api.revolution.com" >> .env
+
+    - name: Next.js 빌드
+      run: |
+        echo "[BUILD] Next.js 빌드 시작"
+        sleep 30
+        yarn build
+
+    - name: 결과물 압축 준비
+      run: |
+        mkdir -p ../deploy-output
+        cp -r .next ../deploy-output/
+        cp -r public ../deploy-output/
+        cp package.json ../deploy-output/
+        cp yarn.lock ../deploy-output/
+        cp next.config.mjs ../deploy-output/
+        cp appspec.yml ../deploy-output/
+        chmod +x scripts/*.sh
+        cp -r scripts ../deploy-output/
+
+    - name: 아티팩트 업로드 (선택)
+      uses: actions/upload-artifact@v3
+      with:
+        name: deploy-output
+        path: Web/deploy-output

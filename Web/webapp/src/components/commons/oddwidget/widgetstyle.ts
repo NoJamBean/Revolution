@@ -1,42 +1,45 @@
 import styled from '@emotion/styled';
 
-export const Wrapper = styled.div`
-  border: 2px solid green;
+export const Wrapper = styled.div<{ isMain: boolean }>`
   height: 100%;
-  overflow: auto;
+  overflow-y: auto;
+  background-color: #152230;
+  border-right: ${({ isMain }) => (isMain ? '10px solid #152230' : 'none')};
 `;
 
 export const Info_Top = styled.div`
-  border: 2px solid blue;
-  height: 140px;
+  height: 200px;
   display: flex;
+  background-color: #192736;
 `;
 
 export const Info_Body = styled.div`
-  border: 3px solid red;
+  border: 3px solid #6c7a91;
+  background-color: #2a3f55;
+  color: white;
   display: flex;
   flex-direction: ${({ isMain }: { isMain: boolean }) =>
     isMain ? 'row' : 'column'};
 `;
 
 export const Info_Top_Home = styled.div`
-  height: 100%;
-  /* flex: 1; */
-  width: 43%;
   display: flex;
+  flex: 1;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  border: 3px solid blue;
+  padding: 20px;
 `;
 
 export const Team_Logo = styled.img`
-  border: 2px solid orange;
-  height: 70%;
+  width: ${({ isBet }: { isBet: boolean }) => (isBet ? '100%' : '80%')};
+  max-width: ${({ isBet }: { isBet: boolean }) => (isBet ? '100%' : '80%')};
+  height: 100%;
+  object-fit: contain;
 `;
 
 export const Team_Name = styled.div`
-  border: 2px solid orange;
+  width: 200px;
   height: 30%;
 `;
 
@@ -46,9 +49,9 @@ export const Verses = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 24px;
+  font-size: 40px;
   font-weight: 700;
-  /* border: 3px solid blue; */
+  color: white;
 `;
 
 export const Info_Top_Away = styled.div`
@@ -60,11 +63,10 @@ export const Info_Top_Away = styled.div`
   justify-content: center;
   align-items: center;
   text-align: center;
-  border: 3px solid blue;
+  padding: 20px;
 `;
 
 export const Team_Title = styled.div`
-  border: 2px solid gray;
   height: 45px;
   display: flex;
   /* 
@@ -74,7 +76,6 @@ export const Team_Title = styled.div`
 `;
 
 export const Team_Title_Logo = styled.img`
-  border: 2px solid red;
   height: 100%;
   padding: 2px;
   aspect-ratio: 1 / 1;
@@ -88,36 +89,41 @@ export const Team_Title_Name = styled.div`
   align-items: center;
   padding-left: 5px;
   font-weight: 700;
-  border: 2px solid gray;
+  color: #cbd5e1;
 `;
 
 export const HomeInfo = styled.div`
-  border: 3px solid red;
   width: 100%;
-  /* height: calc((100% - 60px) / 2); */
+`;
+
+export const DivdedTag = styled.div`
+  width: 100%;
+  height: 70px;
+  border-bottom: 2px solid #6c7a91;
+  background-color: #192736;
 `;
 
 export const AwayInfo = styled.div`
-  border: 3px solid blue;
   width: 100%;
-  /* height: calc((100% - 60px) / 2); */
+  border-left: 2px solid #6c7a91;
 `;
 
 export const Info_Section_Title = styled.div`
-  border: 2px solid gray;
   height: 30px;
   display: flex;
   justify-content: flex-start;
   align-items: center;
   padding-left: 5px;
-  background-color: lightgray;
+  background-color: #6c737d;
+  font-weight: 800;
 `;
 
 export const Info_Section = styled.div`
-  border: 2px solid gray;
+  border: 1px solid #6c7a91;
   height: 30px;
   display: flex;
   justify-content: space-between;
+  color: #cbd5e1;
   padding: 0 5px;
 `;
 
@@ -125,8 +131,7 @@ export const Section_Left = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  font-weight: 700;
-  /* border: 2px solid black; */
+  font-weight: 600;
 `;
 
 export const Section_Right = styled.div`
@@ -134,11 +139,15 @@ export const Section_Right = styled.div`
   justify-content: flex-end;
   align-items: center;
   /* width: 160px; */
+  background-color: #192736;
+  border-radius: 10px;
+  padding: 3px 5px;
+  color: #e2e8f0;
+  font-weight: 700;
 
   span {
     display: inline-block;
     margin-left: 5px;
-    border: 2px solid orange;
   }
 `;
 

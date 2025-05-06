@@ -6,12 +6,20 @@ type ModalProps = {
 };
 
 export default function Modal({ content: Content }: ModalProps) {
-  const { modalType, isModalOpen, modalContent: Component } = useModal();
+  const {
+    modalType,
+    modalTypeForAnim,
+    isModalOpen,
+    modalContent: Component,
+  } = useModal();
 
   return (
     <S.ModalOverlay>
-      <S.ModalContent modalType={modalType}>
-        <S.Content>{Component ? <Component /> : null}</S.Content>
+      <S.ModalContent
+        modalType={modalTypeForAnim || 'Signup'}
+        isModalOpen={isModalOpen}
+      >
+        <S.Content>{Component && <Component />}</S.Content>
       </S.ModalContent>
     </S.ModalOverlay>
   );
