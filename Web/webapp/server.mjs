@@ -15,6 +15,10 @@ async function main() {
   const app = express();
   const proxy = createProxyServer({ changeOrigin: true, ws: true });
 
+  proxy.on('proxyReq', (proxyReq, req, res, options) => {
+    console.log(`[proxyReq] ${proxyReq.method} ${options.target}${req.url}`);
+  });
+
   // API 라우팅
   app.all('/api/log', (req, res) => handle(req, res));
 
