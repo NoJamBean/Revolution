@@ -1,20 +1,37 @@
 // server.js
 import next from 'next';
 import express from 'express';
+import http from 'http';
 import { createProxyServer } from 'http-proxy';
 
 const dev = process.env.NODE_ENV !== 'production';
-const app = next({ dev });
-const handle = app.getRequestHandler();
-const proxy = createProxyServer({
-  changeOrigin: true,
-  ws: true,
+const nextApp = next({ dev });
+await nextApp.prepare();
+
+const handle = nextApp.getRequestHandler();
+const app = express();
+const proxy = createProxyServer({ changeOrigin: true, ws: true });
+
+// 1) Next.js API: /api/log
+app.all('/api/log', (req, res) => handle(req, res));
+
+// 2) 그 외 /api/* → ALB API 백엔드
+app.all('/api/:path*', (req, res) => {
+  proxy.web(req, res, { target: 'http://alb.backend.internal' });
 });
 
-await app.prepare();
-const server = express();
+// 3) HTTP 폴링 등 /ws* → ALB WS 백엔드
+app.all('/ws*', (req, res) => {
+  proxy.web(req, res, { target: 'http://alb.backend.internal/ws' });
+});
 
-// 1) WebSocket 업그레이드 (upgrade 이벤트)
+// 4) 나머지 Next.js 페이지·정적·SSR
+app.all('*', (req, res) => handle(req, res));
+
+// 5) Express 앱을 HTTP 서버로 감싸기
+const server = http.createServer(app);
+
+// 6) HTTP 서버에 upgrade 리스너 등록
 server.on('upgrade', (req, socket, head) => {
   if (req.url.startsWith('/ws')) {
     proxy.ws(req, socket, head, {
@@ -23,30 +40,7 @@ server.on('upgrade', (req, socket, head) => {
   }
 });
 
-// 2) /api/log 은 Next.js API
-server.all('/api/log', (req, res) => {
-  return handle(req, res);
-});
-
-// 3) 그 외 모든 /api/* 요청은 ALB 백엔드로 프록시
-server.all('/api/:path*', (req, res) => {
-  proxy.web(req, res, {
-    target: 'http://alb.backend.internal',   // path 포함 자동 매핑됨
-  });
-});
-
-// 4) HTTP 폴링 등 /ws* 요청도 ALB
-server.all('/ws*', (req, res) => {
-  proxy.web(req, res, {
-    target: 'http://alb.backend.internal/ws',
-  });
-});
-
-// 5) 그 외 Next.js 페이지·API 정적·SSR
-server.all('*', (req, res) => {
-  return handle(req, res);
-});
-
+// 7) 포트 열기
 server.listen(3000, () => {
   console.log('> Custom server ready on http://localhost:3000');
 });
