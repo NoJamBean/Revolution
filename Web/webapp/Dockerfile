@@ -63,4 +63,4 @@ RUN yarn build
 EXPOSE 3000
 
 # Express 서버로 앱 실행
-CMD ["node", "server.js"]
+CMD ["node", "server.mjs"]
