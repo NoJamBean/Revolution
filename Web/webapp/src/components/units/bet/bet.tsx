@@ -193,7 +193,7 @@ export default function Betting() {
           home: home,
           away: away,
           wdl: oddType,
-          odds: odd,
+          odds: String(odd),
           price: price,
           status: state,
         },
