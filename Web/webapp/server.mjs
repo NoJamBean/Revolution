@@ -24,9 +24,7 @@ async function main() {
 
   app.use('/api', (req, res) => {
     proxy.web(req, res, {
-      target: 'http://alb.backend.internal',
-      ignorePath: false,
-      prependPath: false,
+      target: 'http://alb.backend.internal/api',
     }, (err) => {
       console.error('API proxy error:', err.message);
       res.status(502).send('Bad Gateway');
@@ -35,9 +33,7 @@ async function main() {
 
   app.use('/ws', (req, res) => {
     proxy.web(req, res, {
-      target: 'http://alb.backend.internal',
-      ignorePath: false,
-      prependPath: false,
+      target: 'http://alb.backend.internal/ws',
     }, (err) => {
       console.error('WS proxy error:', err.message);
       res.status(502).send('Bad Gateway');
@@ -51,7 +47,7 @@ async function main() {
   server.on('upgrade', (req, socket, head) => {
     if (req.url.startsWith('/ws')) {
       proxy.ws(req, socket, head, {
-        target: 'http://alb.backend.internal',
+        target: 'http://alb.backend.internal/ws',
         ignorePath: false,
         prependPath: false,
       });
