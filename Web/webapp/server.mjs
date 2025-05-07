@@ -46,7 +46,9 @@ nextApp.prepare().then(() => {
     if (req.url?.startsWith('/api/log')) {
       return handle(req, res); // Next.js API 직접 실행
     } else {
-      app(req, res); // Express → 프록시 or Next.js 페이지 처리
+      app(req, res, () => {
+        handle(req, res);
+      });
     }
   });
 
