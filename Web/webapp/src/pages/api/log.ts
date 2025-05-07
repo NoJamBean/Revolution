@@ -16,14 +16,18 @@ export default async function handler(
   try {
     const rawLog = req.body;
 
-    const sourceIPAddress = Array.isArray(req.headers['x-forwarded-for'])
+    const candidateIP = Array.isArray(req.headers['x-forwarded-for'])
       ? req.headers['x-forwarded-for'][0]
       : typeof req.headers['x-forwarded-for'] === 'string'
       ? req.headers['x-forwarded-for']
       : typeof req.socket.remoteAddress === 'string'
       ? req.socket.remoteAddress
       : '';
-
+      
+    const sourceIPAddress = candidateIP
+      .split(',')[0]
+      .replace(/:\d+$/, '');
+    
     const userAgent = req.headers['user-agent'] || '';
 
     const completeLog = {
