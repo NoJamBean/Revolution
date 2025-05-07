@@ -18,13 +18,6 @@ const proxy = httpProxy.createProxyServer({
 nextApp.prepare().then(() => {
   const app = express();
 
-  // ✅ /api 경로에서 log만 Next.js 처리 (body-parser 적용)
-  app.use('/api/log', bodyParser.json(), bodyParser.urlencoded({ extended: true }));
-  app.all('/api/log', (req, res) => {
-    return handle(req, res);
-  });
-
-  // ✅ 그 외 /api는 프록시 (body-parser 없이)
   app.use('/api', (req, res) => {
     proxy.web(req, res, {
       target: 'http://alb.backend.internal/api',
@@ -34,7 +27,6 @@ nextApp.prepare().then(() => {
     });
   });
 
-  // ✅ WebSocket 프록시
   app.use('/ws', (req, res) => {
     proxy.web(req, res, {
       target: 'http://alb.backend.internal/ws',
@@ -44,14 +36,20 @@ nextApp.prepare().then(() => {
     });
   });
 
-  // ✅ Next.js 라우트 처리
   const server = http.createServer((req, res) => {
-    app(req, res, () => {
-      handle(req, res);
-    });
+    if (req.url?.startsWith('/api/log')) {
+      bodyParser.json()(req, res, () => {
+        bodyParser.urlencoded({ extended: true })(req, res, () => {
+          handle(req, res);
+        });
+      });
+    } else {
+      app(req, res, () => {
+        handle(req, res);
+      });
+    }
   });
 
-  // ✅ WebSocket Upgrade 처리
   server.on('upgrade', (req, socket, head) => {
     if (req.url.startsWith('/ws')) {
       proxy.ws(req, socket, head, {
