@@ -295,9 +295,9 @@ namespace MyApi.Controllers
                         id = newUser.Id,
                         nickname = newUser.Nickname,
                         email = newUser.Email,
-                        phoneNumber = newUser.PhoneNumber,
+                        phonenumber = newUser.PhoneNumber,
                         balance = newUser.Balance,
-                        modifiedDate = newUser.ModifiedDate
+                        modifieddate = newUser.ModifiedDate
                     }
                 });
             }

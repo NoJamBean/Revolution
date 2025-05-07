@@ -29,7 +29,7 @@ export default function Info({ userData }: InfoProps) {
           </S.Info>
           <S.Info>
             <span>연락처</span>
-            <span>{userData?.phoneNumber}</span>
+            <span>{userData?.phonenumber}</span>
           </S.Info>
         </S.Info_Section_Line>
         <S.Info_Section_Line>
