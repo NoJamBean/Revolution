@@ -15,6 +15,7 @@ import {
 } from '@/src/api/gettargetmatch';
 import { getCaluclateUTCToKST } from '@/src/commons/utils/getcalculateDateKST';
 import { normalizeQueryParam } from '@/src/commons/utils/getmatchIdfromquery';
+import { sendLog } from '@/src/commons/utils/sendlogs';
 
 type SportMatchInfo = {
   sport: string;
@@ -78,7 +79,6 @@ export default function Betting() {
     const selectOdd = Number(selected);
 
     setSelectOdd(selectOdd);
-    setSelectOddType(key);
 
     //이전 선택금액 기록 reset
     resetBet();
@@ -205,6 +205,21 @@ export default function Betting() {
         }
       );
 
+      await sendLog({
+        eventSource: 'webapp.example.com',
+        awsRegion: 'ap-northeast-2',
+        eventTime: new Date().toISOString(),
+        eventName: 'BetSuccess',
+        requestParameters: {
+          httpMethod: 'POST',
+          requestPath: '/api/users/login',
+          queryString: JSON.stringify(result.data),
+          statusCode: result.status,
+        },
+        sourceIPAddress: '', // 서버에서 채움
+        userAgent: '', // 서버에서 채움
+      });
+
       router.push({
         pathname: '/mypage',
         query: {
@@ -212,7 +227,7 @@ export default function Betting() {
         },
       });
     } catch (error) {
-      console.log(error);
+      console.log(error, '에러남');
     }
   };
 
