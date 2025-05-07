@@ -159,7 +159,7 @@ export default function Betting() {
       const away = BettedMatchInfo?.teams?.away?.name;
 
       //odd type
-      const oddType = selectOddType.value.toUpperCase();
+      const oddType = selectOddType.toUpperCase();
 
       //odd (선택한 배당률)
       const odd = selectOdd;
