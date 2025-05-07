@@ -30,7 +30,7 @@ namespace MyApi.Data
 
     public class GameReadDbContext : DbContext
     {
-        public GameReadDbContext(DbContextOptions<GameDbContext> options) : base(options) { }
+        public GameReadDbContext(DbContextOptions<GameReadDbContext> options) : base(options) { }
 
         public DbSet<GameInfo> GameInfos { get; set; } = null!;
         public DbSet<GameResult> GameResults { get; set; } = null!;

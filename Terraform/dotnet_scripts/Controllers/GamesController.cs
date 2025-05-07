@@ -23,7 +23,7 @@ namespace MyApi.Controllers
         {
             _gameContext = gameContext;
             _gameReadContext = gameReadContext;
-            _userContext = _userContext;
+            _userContext = userContext;
             _userReadContext = userReadContext;
         }
 
@@ -65,7 +65,12 @@ namespace MyApi.Controllers
 
             try
             {
-                string userId = User.Claims.FirstOrDefault(c => c.Type == "cognito:username")?.Value;
+                if (User == null || User.Claims == null)
+                {
+                    return Unauthorized(new { message = "인증 정보가 없습니다." });
+                }
+
+                string? userId = User.Claims.FirstOrDefault(c => c.Type == "cognito:username")?.Value;
                 if (string.IsNullOrEmpty(userId))
                 {
                     return Unauthorized(new { message = "사용자 ID를 확인할 수 없습니다." });
@@ -79,7 +84,6 @@ namespace MyApi.Controllers
                     return NotFound(new { message = "사용자를 찾을 수 없습니다." });
                 }
 
-                // 베팅 금액이 소지금액보다 큰지 확인
                 if (newGame.Price > user.Balance)
                 {
                     return Conflict(new
@@ -101,10 +105,8 @@ namespace MyApi.Controllers
                     });
                 }
 
-                // 베팅 금액만큼 소지금액 차감
                 user.Balance -= newGame.Price;
 
-                // 변경된 소지금액을 DB에 저장
                 _userContext.Users.Update(user);
                 await _userContext.SaveChangesAsync();
 
@@ -123,7 +125,7 @@ namespace MyApi.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = "게임 정보 저장 중 서버 오류가 발생했습니다.", error = ex.Message });
+                return StatusCode(500, new { message = "게임 정보 저장 중 서버 오류가 발생했습니다.", error = ex.Message, stack = ex.StackTrace });
             }
         }
 
