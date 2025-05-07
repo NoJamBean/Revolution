@@ -109,7 +109,7 @@ export default function SignUp() {
           password: password,
           email: email,
           nickname: nickname,
-          phoneNumber: phoneNum,
+          phonenumber: phoneNum,
           balance: 0,
         },
         {
@@ -245,7 +245,7 @@ export default function SignUp() {
           password: password,
           email: email,
           nickname: nickname,
-          phoneNumber: phoneNum,
+          phonenumber: phoneNum,
           balance: 0,
         },
         {
