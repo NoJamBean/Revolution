@@ -51,7 +51,7 @@ resource "azurerm_linux_web_app_slot" "staging_slot" {
   virtual_network_subnet_id = azurerm_subnet.subnet.id
 
   app_settings = {
-    auto_swap_slot = "staging"
+    auto_swap_slot = "production"
     "WEBSITES_ENABLE_APP_SERVICE_STORAGE" = "false"
     "WEBSITES_CONTAINER_START_TIME_LIMIT" = "1800"
     "WEBSITES_PORT"                       = "3000"

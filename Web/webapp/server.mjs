@@ -21,6 +21,9 @@ nextApp.prepare().then(() => {
   app.use('/api', (req, res) => {
     proxy.web(req, res, {
       target: 'http://alb.backend.internal/api',
+      headers: {
+        ...req.headers,
+      },
     }, (err) => {
       console.error('API proxy error:', err.message);
       res.status(502).send('Bad Gateway');
@@ -30,6 +33,9 @@ nextApp.prepare().then(() => {
   app.use('/ws', (req, res) => {
     proxy.web(req, res, {
       target: 'http://alb.backend.internal/ws',
+      headers: {
+        ...req.headers,
+      },
     }, (err) => {
       console.error('WS proxy error:', err.message);
       res.status(502).send('Bad Gateway');
@@ -54,6 +60,9 @@ nextApp.prepare().then(() => {
     if (req.url.startsWith('/ws')) {
       proxy.ws(req, socket, head, {
         target: 'http://alb.backend.internal/ws',
+        headers: {
+          ...req.headers,
+        },
       });
     }
   });
