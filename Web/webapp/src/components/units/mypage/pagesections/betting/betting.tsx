@@ -131,7 +131,7 @@ export default function MyBetList({ userData }: InfoProps) {
     getUserBetList();
   }, []);
 
-  console.log('Betting 결과 확인요오오오오오오오옹', betList);
+  console.log('Betting 결과 확인용', betList);
 
   return (
     <S.InfoWrapper>

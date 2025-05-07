@@ -39,11 +39,6 @@ export default function App({ Component, pageProps }: AppProps) {
       setToken(loginToken);
     }
 
-    //
-    //
-    // 매 페이지 이동 시 로그 기록
-    console.log('라우팅이 다시 또 트리거됩니다요오오오오오오옹');
-
     const fullUrl = window.location.pathname + window.location.search;
 
     if ((window as any).__lastLoggedUrl === fullUrl) return;
