@@ -11,6 +11,7 @@ import { useDecodeToken } from '@/src/commons/utils/decodeusertoken';
 
 export default function Header() {
   const [userId, setUserId] = useState('');
+  const [userNickName, setUserNickName] = useState('');
 
   const router = useRouter();
 
@@ -25,8 +26,10 @@ export default function Header() {
       if (token) {
         const userInfo = await getDecodedToken(token);
         const userId = userInfo?.data?.id;
+        const userNickName = userInfo?.data?.nickname;
 
         setUserId(userId);
+        setUserNickName(userNickName);
       }
     };
 
@@ -130,7 +133,7 @@ export default function Header() {
           <S.LogIn_User_Container>
             <S.UserInfo onClick={clickMyPageInfo}>
               <S.Profile_Img src='/user_profile.png' />
-              <S.Profile_Name>{userId}</S.Profile_Name>
+              <S.Profile_Name>{userNickName}</S.Profile_Name>
             </S.UserInfo>
             <S.LogOut onClick={logout}>LOGOUT</S.LogOut>
           </S.LogIn_User_Container>

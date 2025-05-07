@@ -19,7 +19,7 @@ export interface userDataProps {
   id: string;
   nickname: string;
   email: string;
-  phoneNumber: string;
+  phonenumber: string;
   balance: number;
 }
 

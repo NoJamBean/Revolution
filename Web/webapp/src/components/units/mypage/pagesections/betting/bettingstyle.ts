@@ -92,7 +92,7 @@ export const Bet_InfoBlock = styled.div`
   cursor: pointer;
 
   :nth-of-type(1) {
-    margin-top: 50px;
+    margin-top: 40px;
   }
 
   :not(:nth-of-type(1)) {
