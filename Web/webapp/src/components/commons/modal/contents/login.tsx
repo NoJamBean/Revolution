@@ -74,23 +74,23 @@ export default function Login() {
 
       alert('환영합니다! 토토로 토토로');
       closeModal();
-    } catch (error) {
+    } catch (error: any) {
       const loginBody = { id: userMail, password: password };
 
-      // await sendLog({
-      //   eventSource: 'webapp.example.com',
-      //   awsRegion: 'ap-northeast-2',
-      //   eventTime: new Date().toISOString(),
-      //   eventName: 'LoginSuccess',
-      //   requestParameters: {
-      //     httpMethod: 'POST',
-      //     requestPath: '/api/users/login',
-      //     queryString: JSON.stringify(loginBody),
-      //     statusCode: result.status,
-      //   },
-      //   sourceIPAddress: '', // 서버에서 채움
-      //   userAgent: '', // 서버에서 채움
-      // });
+      await sendLog({
+        eventSource: 'webapp.example.com',
+        awsRegion: 'ap-northeast-2',
+        eventTime: new Date().toISOString(),
+        eventName: 'LoginFailed',
+        requestParameters: {
+          httpMethod: 'POST',
+          requestPath: '/api/users/login',
+          queryString: JSON.stringify(loginBody),
+          statusCode: error.status,
+        },
+        sourceIPAddress: '', // 서버에서 채움
+        userAgent: '', // 서버에서 채움
+      });
 
       console.log(error);
       alert('로그인 실패!! 에러!!');
