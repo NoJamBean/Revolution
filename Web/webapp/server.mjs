@@ -1,32 +1,9 @@
-import next from 'next';
-import express from 'express';
-import http from 'http';
-import httpProxy from 'http-proxy';
-import bodyParser from 'body-parser';
-
-const dev = process.env.NODE_ENV !== 'production';
-const PORT = process.env.PORT || 3000;
-
-const nextApp = next({ dev });
-const handle = nextApp.getRequestHandler();
-
-const proxy = httpProxy.createProxyServer({
-  changeOrigin: true,
-  ws: true,
-});
-
-proxy.on('proxyReq', (proxyReq, req, res, options) => {
-  console.log(`[proxyReq] ${proxyReq.method} ${options.target}${req.url}`);
-});
-
 nextApp.prepare().then(() => {
   const app = express();
 
-  app.use(bodyParser.json());
-  app.use(bodyParser.urlencoded({ extended: true }));
-
   app.use('/api', (req, res, next) => {
-    if (req.url.startsWith('/log')) return next();
+    if (req.url.startsWith('/log')) return next(); 
+
     proxy.web(req, res, { target: 'http://alb.backend.internal/api' }, (err) => {
       console.error('API proxy error:', err.message);
       res.status(502).send('Bad Gateway');
@@ -42,9 +19,12 @@ nextApp.prepare().then(() => {
     });
   });
 
+  app.use(bodyParser.json());
+  app.use(bodyParser.urlencoded({ extended: true }));
+
   const server = http.createServer((req, res) => {
     if (req.url?.startsWith('/api/log')) {
-      return handle(req, res); // Next.js API 직접 실행
+      return handle(req, res); 
     } else {
       app(req, res, () => {
         handle(req, res);
@@ -52,7 +32,7 @@ nextApp.prepare().then(() => {
     }
   });
 
-  // ✅ WebSocket upgrade 처리
+  // WebSocket 업그레이드 처리
   server.on('upgrade', (req, socket, head) => {
     if (req.url.startsWith('/ws')) {
       proxy.ws(req, socket, head, {
