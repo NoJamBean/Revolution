@@ -405,6 +405,14 @@ resource "aws_s3_object" "LoggingMidleWare" {
   source_hash = filemd5("${path.module}/dotnet_scripts/Services/RequestLoggingMiddleware.cs")
 }
 
+resource "aws_s3_object" "LowerCase" {
+  bucket      = aws_s3_bucket.long_user_data_bucket.id
+  key         = "dotnet_scripts/Services/LowercaseNamingStrategy.cs"
+  source      = "${path.module}/dotnet_scripts/Services/LowercaseNamingStrategy.cs"
+  acl         = "private"
+  source_hash = filemd5("${path.module}/dotnet_scripts/Services/LowercaseNamingStrategy.cs")
+}
+
 #WEB_SOCKET_FILES
 resource "aws_s3_object" "ws_package_json" {
   bucket      = aws_s3_bucket.long_user_data_bucket.id

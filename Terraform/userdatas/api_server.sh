@@ -48,6 +48,7 @@ sudo dotnet add package Serilog.AspNetCore --version 4.1.0
 sudo dotnet add package Serilog.Sinks.Console --version 4.1.0
 sudo dotnet add package System.IO.Pipelines --version 6.0.0
 sudo dotnet add package System.Text.Json --version 6.0.0
+sudo dotnet add package Microsoft.AspNetCore.Mvc.NewtonsoftJson --version 6.0.21
 
 sudo chown -R ec2-user:ec2-user ~/.dotnet
 sudo chmod -R 755 ~/.dotnet
@@ -80,6 +81,7 @@ sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/Services/BcryptPasswordHasher.cs $
 sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/Services/CognitoService.cs $LOCAL_PATH/Service/CognitoService.cs --region ap-northeast-2
 sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/Services/IPasswordHasher.cs $LOCAL_PATH/Service/IPasswordHasher.cs --region ap-northeast-2
 sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/Services/RequestLoggingMiddleware.cs $LOCAL_PATH/Service/RequestLoggingMiddleware.cs --region ap-northeast-2
+sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/Services/LowercaseNamingStrategy.cs $LOCAL_PATH/Service/LowercaseNamingStrategy.cs --region ap-northeast-2
 
 sudo aws s3 cp s3://$S3_BUCKET/dotnet_scripts/dotnet_run.sh ~/run.sh --region ap-northeast-2
 

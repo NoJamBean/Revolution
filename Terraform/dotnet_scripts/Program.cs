@@ -16,6 +16,8 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using MyApi.Data;
 using MyApi.Services;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Serilog;
 using System;
@@ -26,7 +28,6 @@ using System.Net;
 using System.Security.Claims;
 using System.Text.Json;
 using System.Threading.Tasks;
-
 
 var configBuilder = new ConfigurationBuilder()
     .SetBasePath(Directory.GetCurrentDirectory())
@@ -89,12 +90,16 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-builder.Services.AddControllers().AddJsonOptions(options =>
-{
-    options.JsonSerializerOptions.PropertyNamingPolicy = null;
-    options.JsonSerializerOptions.PropertyNameCaseInsensitive = true; 
-    options.JsonSerializerOptions.WriteIndented = true;
-});
+builder.Services
+    .AddControllers()
+    .AddNewtonsoftJson(options =>
+    {
+        options.SerializerSettings.ContractResolver = new DefaultContractResolver
+        {
+            NamingStrategy = new LowercaseNamingStrategy()
+        };
+        options.SerializerSettings.Formatting = Formatting.Indented;
+    });
 
 //CORS 정책 설정
 builder.Services.AddCors(options =>
@@ -301,7 +306,7 @@ async Task UploadToS3(string filePath, string httpMethod = "PUT", string request
             }
         };
 
-        string jsonLog = JsonSerializer.Serialize(logObject, new JsonSerializerOptions { WriteIndented = false });
+        string jsonLog = System.Text.Json.JsonSerializer.Serialize(logObject, new JsonSerializerOptions { WriteIndented = false });
         Log.Information(jsonLog);
 
         processedFiles.TryRemove(filePath, out _);

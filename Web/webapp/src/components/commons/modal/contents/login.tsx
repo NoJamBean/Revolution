@@ -67,10 +67,10 @@ export default function Login() {
 
       // 받아온 토큰 전역관리 state 저장
       const tokens = result?.data?.tokens;
-      const { idToken } = tokens;
+      const { idtoken } = tokens;
 
       const setToken = useAuthStore.getState().setToken;
-      setToken(idToken);
+      setToken(idtoken);
 
       alert('환영합니다! 토토로 토토로');
       closeModal();
