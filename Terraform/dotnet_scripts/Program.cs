@@ -91,7 +91,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
-    options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+    options.JsonSerializerOptions.PropertyNamingPolicy = null;
+    options.JsonSerializerOptions.PropertyNameCaseInsensitive = true; 
     options.JsonSerializerOptions.WriteIndented = true;
 });
 
@@ -103,7 +104,7 @@ builder.Services.AddCors(options =>
         policy.SetIsOriginAllowed(origin =>
         {
             if (origin.StartsWith("http://192.168.0.")) return true;
-            if (origin == "http://localhost:3000") return true;
+            if (origin.Contains("http://localhost")) return true;
             if (origin == "http://nat.1bean.shop") return true;
             if (origin.Contains("www.1bean.shop")) return true;
             if (origin.Contains("backend.internal")) return true;

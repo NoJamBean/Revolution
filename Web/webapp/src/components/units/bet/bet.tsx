@@ -77,6 +77,9 @@ export default function Betting() {
     const selected = e.currentTarget.getAttribute('data-odd');
     const selectOdd = Number(selected);
 
+    const wdl = key.toUpperCase();
+    setSelectOddType(wdl);
+
     setSelectOdd(selectOdd);
     setSelectOddType(key);
 
@@ -193,7 +196,7 @@ export default function Betting() {
           home: home,
           away: away,
           wdl: oddType,
-          odds: String(odd),
+          odds: odd,
           price: price,
           status: state,
         },
