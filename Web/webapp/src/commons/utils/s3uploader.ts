@@ -4,10 +4,10 @@ import { v4 as uuidv4 } from 'uuid';
 const s3 = new S3Client({
   region: 'ap-northeast-2',
   // 필요한 경우 아래 credentials 주석 해제 후 환경변수로 설정
-  // credentials: {
-  //   accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-  //   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
-  // },
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+  },
 });
 
 export async function uploadToS3(logObject: object) {
