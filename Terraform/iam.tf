@@ -1,3 +1,55 @@
+resource "aws_iam_role" "external_dns" {
+  name = "eks-external-dns-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Principal = {
+        Federated = aws_iam_openid_connect_provider.eks.arn
+      }
+      Action = "sts:AssumeRoleWithWebIdentity"
+      Condition = {
+        StringEquals = {
+          "${replace(aws_eks_cluster.main.identity[0].oidc[0].issuer, "https://", "")}:sub" = "system:serviceaccount:kube-system:external-dns"
+        }
+      }
+    }]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "external_dns" {
+  role       = aws_iam_role.external_dns.name
+  policy_arn = aws_iam_policy.external_dns.arn
+}
+
+data "aws_iam_policy_document" "external_dns" {
+  statement {
+    effect = "Allow"
+
+    actions = [
+      "route53:ChangeResourceRecordSets",
+      "route53:ListHostedZones",
+      "route53:ListResourceRecordSets"
+    ]
+
+    resources = ["arn:aws:route53:::hostedzone/*"]
+  }
+
+  statement {
+    effect = "Allow"
+
+    actions = ["route53:ListHostedZones"]
+
+    resources = ["*"]
+  }
+}
+
+resource "aws_iam_policy" "external_dns" {
+  name   = "ExternalDNSPolicy"
+  policy = data.aws_iam_policy_document.external_dns.json
+}
+
 resource "aws_iam_role" "eks_cluster_role" {
   name = "eks-cluster-role"
 

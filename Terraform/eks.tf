@@ -34,11 +34,13 @@ resource "aws_eks_node_group" "ng" {
 }
 
 
-resource "kubernetes_config_map" "aws_auth" {
+resource "kubernetes_config_map_v1_data" "aws_auth" {
   metadata {
     name      = "aws-auth"
     namespace = "kube-system"
   }
+
+  force = true
 
   data = {
     mapRoles = yamlencode([
@@ -71,9 +73,13 @@ data "aws_eks_cluster_auth" "token" {
   depends_on = [ aws_eks_cluster.main ]
 }
 
+data "aws_eks_cluster" "main" {
+  name = aws_eks_cluster.main.name
+}
+
 provider "kubernetes" {
-  host                   = aws_eks_cluster.main.endpoint
-  cluster_ca_certificate = base64decode(aws_eks_cluster.main.certificate_authority[0].data)
+  host                   = data.aws_eks_cluster.main.endpoint
+  cluster_ca_certificate = base64decode(data.aws_eks_cluster.main.certificate_authority[0].data)
   token                  = data.aws_eks_cluster_auth.token.token
 }
 
@@ -106,9 +112,10 @@ resource "kubernetes_ingress_v1" "nextjs" {
       "kubernetes.io/ingress.class"                         = "alb"
       "alb.ingress.kubernetes.io/scheme"                    = "internet-facing"
       "alb.ingress.kubernetes.io/listen-ports"              = "[{\"HTTP\": 80}, {\"HTTPS\": 443}]"
-      "alb.ingress.kubernetes.io/certificate-arn"           = aws_acm_certificate.alb_cert.arn
+      "alb.ingress.kubernetes.io/certificate-arn"           = data.aws_acm_certificate.alb_cert.arn
       "alb.ingress.kubernetes.io/ssl-redirect"              = "443"
       "alb.ingress.kubernetes.io/target-type"               = "ip"
+      "external-dns.alpha.kubernetes.io/hostname"           = "www.1bean.shop"
     }
   }
 
@@ -138,10 +145,6 @@ resource "kubernetes_ingress_v1" "nextjs" {
       }
     }
   }
-
-  depends_on = [
-    aws_acm_certificate_validation.alb_cert  # 인증서 유효화 완료 후에만 생성
-  ]
 }
 
 # 2. IAM Policy 가져오기
@@ -191,6 +194,16 @@ resource "kubernetes_service_account" "alb" {
   }
 }
 
+resource "kubernetes_service_account" "external_dns" {
+  metadata {
+    name      = "external-dns"
+    namespace = "kube-system"
+    annotations = {
+      "eks.amazonaws.com/role-arn" = aws_iam_role.external_dns.arn
+    }
+  }
+}
+
 # 5. Helm Chart로 ALB Controller 설치
 resource "helm_release" "alb_controller" {
   name       = "aws-load-balancer-controller"
@@ -223,7 +236,68 @@ resource "helm_release" "alb_controller" {
     value = kubernetes_service_account.alb.metadata[0].name
   }
 
-  depends_on = [aws_eks_cluster.main, aws_eks_node_group.ng]
+  depends_on = [
+    null_resource.update_kubeconfig,
+    aws_eks_cluster.main,
+    aws_eks_node_group.ng,
+    kubernetes_service_account.alb,
+    kubernetes_config_map_v1_data.aws_auth,
+    null_resource.wait_for_eks_endpoint
+  ]
+}
+
+resource "helm_release" "external_dns" {
+  name       = "external-dns"
+  namespace  = "kube-system"
+  repository = "https://kubernetes-sigs.github.io/external-dns/"
+  chart      = "external-dns"
+  version    = "1.13.1" # 최신 확인 필요
+  
+  timeout = 600
+
+  set {
+    name  = "aws.zoneIdFilters[0]"
+    value = data.aws_route53_zone.public.zone_id
+  }
+
+  set {
+    name  = "provider"
+    value = "aws"
+  }
+
+  set {
+    name  = "aws.zoneType"
+    value = "public"
+  }
+
+  set {
+    name  = "policy"
+    value = "upsert-only"
+  }
+
+  set {
+    name  = "serviceAccount.create"
+    value = "false"
+  }
+
+  set {
+    name  = "serviceAccount.name"
+    value = kubernetes_service_account.external_dns.metadata[0].name
+  }
+
+  set {
+    name  = "txtOwnerId"
+    value = "external-dns-${aws_eks_cluster.main.name}"
+  }
+
+  depends_on = [
+    null_resource.update_kubeconfig,
+    aws_eks_cluster.main,
+    aws_eks_node_group.ng,
+    kubernetes_service_account.alb,
+    kubernetes_config_map_v1_data.aws_auth,
+    null_resource.wait_for_eks_endpoint
+  ]
 }
 
 resource "aws_iam_openid_connect_provider" "eks" {
@@ -232,4 +306,103 @@ resource "aws_iam_openid_connect_provider" "eks" {
   client_id_list = ["sts.amazonaws.com"]
 
   thumbprint_list = ["9e99a48a9960b14926bb7f3b02e22da0ecd2b066"] # AWS 기본 CA thumbprint
+}
+
+resource "null_resource" "wait_for_eks_endpoint" {
+  provisioner "local-exec" {
+    command = <<-EOT
+      $endpoint = "${aws_eks_cluster.main.endpoint}".Replace("https://", "")
+      Write-Host "🔍 Waiting for EKS endpoint to resolve: $endpoint"
+
+      for ($i = 0; $i -lt 30; $i++) {
+        $dns = Resolve-DnsName -Name $endpoint -ErrorAction SilentlyContinue
+        if ($dns) {
+          Write-Host "✅ EKS endpoint resolved successfully!"
+          exit 0
+        } else {
+          Write-Host "⏳ Waiting... ($i/30)"
+          Start-Sleep -Seconds 10
+        }
+      }
+
+      Write-Error "❌ Timed out waiting for EKS endpoint to resolve."
+      exit 1
+    EOT
+    interpreter = ["PowerShell", "-Command"]
+  }
+
+  depends_on = [
+    aws_eks_cluster.main
+  ]
+}
+
+resource "kubernetes_deployment" "nextjs" {
+  metadata {
+    name      = "nextjs-app"
+    namespace = "default"
+    labels = {
+      app = "nextjs-app"
+    }
+  }
+
+  spec {
+    replicas = 1
+
+    selector {
+      match_labels = {
+        app = "nextjs-app"
+      }
+    }
+
+    template {
+      metadata {
+        labels = {
+          app = "nextjs-app"
+        }
+      }
+
+      spec {
+        container {
+          name  = "nextjs"
+          image = "docker.io/wonbinjung/nextjs-app:latest"  # ❗ 실제 이미지 명시
+          port {
+            container_port = 3000
+          }
+        }
+      }
+    }
+  }
+}
+
+resource "null_resource" "update_kubeconfig" {
+  provisioner "local-exec" {
+    command = <<-EOT
+      if ($IsWindows) {
+        aws eks update-kubeconfig --name my-eks --region ap-northeast-2
+      } else {
+        aws eks update-kubeconfig --name my-eks --region ap-northeast-2
+      }
+    EOT
+    interpreter = ["PowerShell", "-Command"]
+  }
+
+  depends_on = [aws_eks_cluster.main]
+}
+
+resource "null_resource" "remove_kubeconfig" {
+  provisioner "local-exec" {
+    when    = destroy
+    command = <<-EOT
+      if ($IsWindows) {
+        Remove-Item -Path "$env:USERPROFILE\\.kube\\config" -Force
+      } else {
+        rm -f ~/.kube/config
+      }
+    EOT
+    interpreter = ["PowerShell", "-Command"]
+  }
+
+  triggers = {
+    always_run = timestamp()
+  }
 }
