@@ -70,18 +70,32 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      # - name: Set AWS credentials as App Settings
-      #   uses: azure/appservice-settings@v1
-      #   with:
-      #     app-name: app-service-webapp
-      #     resource-group-name: rg-webapp
-      #     slot-name: production
-      #     app-settings-json: >
-      #       [
-      #         { "name": "AWS_ACCESS_KEY_ID", "value": "${{ secrets.AWS_ACCESS_KEY_ID }}", "slotSetting": false },
-      #         { "name": "AWS_SECRET_ACCESS_KEY", "value": "${{ secrets.AWS_SECRET_ACCESS_KEY }}", "slotSetting": false },
-      #         { "name": "AWS_REGION", "value": "ap-northeast-2", "slotSetting": false }
-      #       ]
+      - name: Set AWS credentials as App Settings
+        uses: azure/appservice-settings@v1
+        with:
+          app-name: app-service-webapp
+          resource-group-name: rg-webapp
+          slot-name: production
+          app-settings-json: >
+            [
+              { "name": "AWS_ACCESS_KEY_ID", "value": "${{ secrets.AWS_ACCESS_KEY_ID }}", "slotSetting": false },
+              { "name": "AWS_SECRET_ACCESS_KEY", "value": "${{ secrets.AWS_SECRET_ACCESS_KEY }}", "slotSetting": false },
+              { "name": "AWS_REGION", "value": "ap-northeast-2", "slotSetting": false }
+            ]
+        
+      - name: Deploy to Azure Web App Staging Slot
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: app-service-webapp
+          resource-group-name: rg-webapp
+          images: ${{ secrets.DOCKER_USERNAME }}/nextjs-app:latest
+          slot-name: production     # Green 환경 (새로운 버전 배포)
+
+      - name: Swap Slots (staging → production)
+        uses: azure/cli@v1
+        with:
+          azcliversion: latest
+          inlineScript: az webapp deployment slot swap --name app-service-webapp --resource-group rg-webapp --slot staging --target-slot production
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
@@ -94,11 +108,19 @@ jobs:
         uses: azure/setup-kubectl@v3  # AWS도 문제 없이 사용 가능
         with:
           version: v1.28.0
-
+      
       - name: Update kubeconfig for EKS
         run: |
           aws eks update-kubeconfig --name my-eks --region ap-northeast-2
 
+      - name: Create AWS secret in Kubernetes
+        run: |
+          kubectl create secret generic aws-credentials \
+            --from-literal=AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} \
+            --from-literal=AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} \
+            --from-literal=AWS_REGION=ap-northeast-2 \
+            --namespace default \
+            --dry-run=client -o yaml | kubectl apply -f -
 
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -111,19 +133,7 @@ jobs:
 
 
       #Azure App Service 배포
-      # - name: Deploy to Azure Web App Staging Slot
-      #   uses: azure/webapps-deploy@v3
-      #   with:
-      #     app-name: app-service-webapp
-      #     resource-group-name: rg-webapp
-      #     images: ${{ secrets.DOCKER_USERNAME }}/nextjs-app:latest
-      #     slot-name: production     # Green 환경 (새로운 버전 배포)
-
-      # - name: Swap Slots (staging → production)
-      #   uses: azure/cli@v1
-      #   with:
-      #     azcliversion: latest
-      #     inlineScript: az webapp deployment slot swap --name app-service-webapp --resource-group rg-webapp --slot staging --target-slot production
+  
 
 
 #  Code Deploy 방식 - [이전 방식]
