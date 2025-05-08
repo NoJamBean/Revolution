@@ -99,10 +99,13 @@ jobs:
         run: |
           aws eks update-kubeconfig --name my-eks --region ap-northeast-2
 
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Apply Kubernetes Manifests
         run: |
-          cd Terraform/k8s
-          kubectl apply -f .
+          kubectl apply -f Terraform/k8s
 
 
 
