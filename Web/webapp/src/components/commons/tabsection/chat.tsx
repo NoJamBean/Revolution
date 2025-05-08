@@ -143,7 +143,11 @@ export default function Chat() {
         {messages.map((msg: any, idx) => (
           <S.Chat key={idx} isMine={msg.id === userInfoData?.nickname}>
             <S.UserImg_Box isMine={msg.id === userInfoData?.nickname}>
-              <S.User_Img_Icon src='/chatuser1.png' />
+              <S.User_Img_Icon
+                src={
+                  msg.id === userInfoData?.nickname ? '/me.png' : '/other.png'
+                }
+              />
               <S.User_Name>{msg.id}</S.User_Name>
             </S.UserImg_Box>
             <S.Chat_Info_Box isMine={msg.id === userInfoData?.nickname}>
