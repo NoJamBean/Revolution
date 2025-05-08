@@ -12,8 +12,12 @@ spec:
       labels:
         app: nextjs-app
     spec:
+      serviceAccountName: nextjs-sa
       containers:
         - name: app
           image: wonbinjung/nextjs-app:latest
           ports:
             - containerPort: 3000
+          envFrom:
+            - secretRef:
+                name: aws-credentials
