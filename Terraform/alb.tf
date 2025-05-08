@@ -188,11 +188,11 @@ resource "aws_lb_target_group_attachment" "api_tg_attachment_1" {
   port             = 80
 }
 
-resource "aws_lb_target_group_attachment" "api_tg_attachment_2" {
-  target_group_arn = aws_lb_target_group.api_tg.arn
-  target_id        = aws_instance.api_server_2.id
-  port             = 80
-}
+# resource "aws_lb_target_group_attachment" "api_tg_attachment_2" {
+#   target_group_arn = aws_lb_target_group.api_tg.arn
+#   target_id        = aws_instance.api_server_2.id
+#   port             = 80
+# }
 
 resource "aws_lb_target_group_attachment" "websocket_tg_attachment_1" {
   target_group_arn = aws_lb_target_group.websocket_tg.arn
@@ -200,9 +200,9 @@ resource "aws_lb_target_group_attachment" "websocket_tg_attachment_1" {
   port             = 3001
 }
 
-resource "aws_lb_target_group_attachment" "websocket_tg_attachment_2" {
-  target_group_arn = aws_lb_target_group.websocket_tg.arn
-  target_id        = aws_instance.websocket_2.id
-  port             = 3001
-}
+# resource "aws_lb_target_group_attachment" "websocket_tg_attachment_2" {
+#   target_group_arn = aws_lb_target_group.websocket_tg.arn
+#   target_id        = aws_instance.websocket_2.id
+#   port             = 3001
+# }
 

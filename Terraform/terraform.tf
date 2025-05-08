@@ -23,16 +23,16 @@ provider "aws" {
   region = "ap-northeast-2"
 }
 
-provider "aws" {
-  alias  = "singapore"
-  region = "ap-southeast-1"
-}
+# provider "aws" {
+#   alias  = "singapore"
+#   region = "ap-southeast-1"
+# }
 
-# azure용 provider
-provider "azurerm" {
-  features {}
-  subscription_id = "29ec5d86-72b1-4f74-9d88-711d967e3b86"
-}
+# # azure용 provider
+# provider "azurerm" {
+#   features {}
+#   subscription_id = "29ec5d86-72b1-4f74-9d88-711d967e3b86"
+# }
 
 provider "helm" {
   kubernetes {

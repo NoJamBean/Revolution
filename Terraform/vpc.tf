@@ -81,7 +81,7 @@ resource "aws_route_table" "routetable" {
     app   = {}
     nat   = {}
     back1 = {}
-    back2 = {}
+    # back2 = {}
     log1  = {}
     log2  = {}
   }
@@ -105,9 +105,9 @@ resource "aws_route" "internet_access" {
 resource "aws_route" "nat_instance_route" {
   for_each = {
     rt1 = { rt_id = aws_route_table.routetable["back1"].id, eni = aws_instance.nat_instance1.primary_network_interface_id }
-    rt2 = { rt_id = aws_route_table.routetable["back2"].id, eni = aws_instance.nat_instance2.primary_network_interface_id }
+    # rt2 = { rt_id = aws_route_table.routetable["back2"].id, eni = aws_instance.nat_instance2.primary_network_interface_id }
     rt3 = { rt_id = aws_route_table.routetable["log1"].id, eni = aws_instance.nat_instance1.primary_network_interface_id }
-    rt4 = { rt_id = aws_route_table.routetable["log2"].id, eni = aws_instance.nat_instance2.primary_network_interface_id }
+    # rt4 = { rt_id = aws_route_table.routetable["log2"].id, eni = aws_instance.nat_instance2.primary_network_interface_id }
   }
 
   route_table_id         = each.value.rt_id
@@ -115,15 +115,15 @@ resource "aws_route" "nat_instance_route" {
   network_interface_id   = each.value.eni
 }
 
-resource "aws_route" "to_azure" {
-  for_each = {
-    rt1 = aws_route_table.routetable["back1"].id
-    rt2 = aws_route_table.routetable["back2"].id
-  }
-  route_table_id         = each.value
-  destination_cidr_block = "10.2.0.0/16"       # Azure VNet CIDR
-  gateway_id         = aws_vpn_gateway.vpn_gateway.id
-}
+# resource "aws_route" "to_azure" {
+#   for_each = {
+#     rt1 = aws_route_table.routetable["back1"].id
+#     rt2 = aws_route_table.routetable["back2"].id
+#   }
+#   route_table_id         = each.value
+#   destination_cidr_block = "10.2.0.0/16"       # Azure VNet CIDR
+#   gateway_id         = aws_vpn_gateway.vpn_gateway.id
+# }
 
 #트랜짓게이트웨이를 통해 싱가포르로
 # resource "aws_route" "back_to_singapore" {
@@ -143,15 +143,15 @@ resource "aws_route_table_association" "routetable_association" {
     app1 = { route_table_id = aws_route_table.routetable["app"].id, subnet_id = aws_subnet.subnet["app1"].id }
     app2 = { route_table_id = aws_route_table.routetable["app"].id, subnet_id = aws_subnet.subnet["app2"].id }
     nat1 = { route_table_id = aws_route_table.routetable["nat"].id, subnet_id = aws_subnet.subnet["nat1"].id }
-    nat2 = { route_table_id = aws_route_table.routetable["nat"].id, subnet_id = aws_subnet.subnet["nat2"].id }
+    # nat2 = { route_table_id = aws_route_table.routetable["nat"].id, subnet_id = aws_subnet.subnet["nat2"].id }
     ws1  = { route_table_id = aws_route_table.routetable["back1"].id, subnet_id = aws_subnet.subnet["ws1"].id }
-    ws2  = { route_table_id = aws_route_table.routetable["back2"].id, subnet_id = aws_subnet.subnet["ws2"].id }
+    # ws2  = { route_table_id = aws_route_table.routetable["back2"].id, subnet_id = aws_subnet.subnet["ws2"].id }
     api1 = { route_table_id = aws_route_table.routetable["back1"].id, subnet_id = aws_subnet.subnet["api1"].id }
-    api2 = { route_table_id = aws_route_table.routetable["back2"].id, subnet_id = aws_subnet.subnet["api2"].id }
+    # api2 = { route_table_id = aws_route_table.routetable["back2"].id, subnet_id = aws_subnet.subnet["api2"].id }
     rds1 = { route_table_id = aws_route_table.routetable["back1"].id, subnet_id = aws_subnet.subnet["rds1"].id }
-    rds2 = { route_table_id = aws_route_table.routetable["back2"].id, subnet_id=aws_subnet.subnet["rds2"].id}
+    # rds2 = { route_table_id = aws_route_table.routetable["back2"].id, subnet_id=aws_subnet.subnet["rds2"].id}
     redis1 = { route_table_id = aws_route_table.routetable["back1"].id, subnet_id = aws_subnet.subnet["redis1"].id }
-    redis2 = { route_table_id = aws_route_table.routetable["back2"].id, subnet_id = aws_subnet.subnet["redis2"].id }
+    # redis2 = { route_table_id = aws_route_table.routetable["back2"].id, subnet_id = aws_subnet.subnet["redis2"].id }
     log1 = { route_table_id = aws_route_table.routetable["log1"].id, subnet_id = aws_subnet.subnet["log1"].id }
     log2 = { route_table_id = aws_route_table.routetable["log1"].id, subnet_id = aws_subnet.subnet["log2"].id }
     log3 = { route_table_id=aws_route_table.routetable["log2"].id, subnet_id=aws_subnet.subnet["log3"].id}
