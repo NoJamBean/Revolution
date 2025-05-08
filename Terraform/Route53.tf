@@ -109,6 +109,15 @@ resource "aws_route53_zone_association" "private_zone_association" {
 #   request_interval  = 30
 # }
 
+resource "aws_route53_record" "eks_web_app" {
+  zone_id = data.aws_route53_zone.public.zone_id
+  name    = "www.${var.public_domain_name}"
+  type    = "CNAME"
+
+  ttl     = 60
+  records = [kubernetes_service.nextjs.status[0].load_balancer[0].ingress[0].hostname]
+}
+
 # resource "aws_route53_record" "web_app_service_cname_record" {
 #   zone_id = data.aws_route53_zone.public.zone_id
 #   name    = "www.${var.public_domain_name}"  # 기존 도메인 이름
