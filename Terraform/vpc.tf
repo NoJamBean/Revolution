@@ -46,9 +46,12 @@ resource "aws_subnet" "subnet" {
   cidr_block              = each.value.cidr_block
   availability_zone       = each.value.availability_zone
   map_public_ip_on_launch = each.value.map_public_ip_on_launch
-  tags = {
+  tags = merge({
     Name = each.key
-  }
+    "kubernetes.io/cluster/my-eks" = "shared"
+  }, contains(["app1", "app2"], each.key) ? {
+    "kubernetes.io/role/elb" = "1"
+  } : {})
 }
 
 # RDS 서브넷 그룹 생성
