@@ -376,14 +376,8 @@ resource "kubernetes_deployment" "nextjs" {
 
 resource "null_resource" "update_kubeconfig" {
   provisioner "local-exec" {
-    command = <<-EOT
-      if ($IsWindows) {
-        aws eks update-kubeconfig --name my-eks --region ap-northeast-2
-      } else {
-        aws eks update-kubeconfig --name my-eks --region ap-northeast-2
-      }
-    EOT
-    interpreter = ["PowerShell", "-Command"]
+    command = "aws eks update-kubeconfig --name my-eks --region ap-northeast-2"
+    interpreter = ["PowerShell", "-Command"]  # Windows 환경
   }
 
   depends_on = [aws_eks_cluster.main]
@@ -392,13 +386,7 @@ resource "null_resource" "update_kubeconfig" {
 resource "null_resource" "remove_kubeconfig" {
   provisioner "local-exec" {
     when    = destroy
-    command = <<-EOT
-      if ($IsWindows) {
-        Remove-Item -Path "$env:USERPROFILE\\.kube\\config" -Force
-      } else {
-        rm -f ~/.kube/config
-      }
-    EOT
+    command = "Remove-Item -Path \"$env:USERPROFILE\\.kube\\config\" -Force"
     interpreter = ["PowerShell", "-Command"]
   }
 
