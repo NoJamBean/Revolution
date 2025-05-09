@@ -122,6 +122,10 @@ jobs:
             --namespace default \
             --dry-run=client -o yaml | kubectl apply -f -
 
+      - name: Delete existing Deployment (if any)
+        run: |
+          kubectl delete deployment nextjs-app --ignore-not-found
+
       - name: Checkout repository
         uses: actions/checkout@v4
 

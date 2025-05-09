@@ -14,7 +14,7 @@ spec:
     spec:
       serviceAccountName: nextjs-sa
       containers:
-        - name: app
+        - name: nextjs
           image: wonbinjung/nextjs-app:latest
           ports:
             - containerPort: 3000

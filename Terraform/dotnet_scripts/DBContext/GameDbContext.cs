@@ -75,11 +75,11 @@ namespace MyApi.Data
         public DateTime GameDate { get; set; }
 
         [Column("home")]
-        [MaxLength(20)]
+        [MaxLength(50)]
         public string? Home { get; set; }
 
         [Column("away")]
-        [MaxLength(20)]
+        [MaxLength(50)]
         public string? Away { get; set; }
 
         [Column("wdl")]
@@ -124,11 +124,11 @@ namespace MyApi.Data
         public DateTime GameDate { get; set; }
 
         [Column("home")]
-        [MaxLength(20)]
+        [MaxLength(50)]
         public string? Home { get; set; }
 
         [Column("away")]
-        [MaxLength(20)]
+        [MaxLength(50)]
         public string? Away { get; set; }
 
         [Column("odds", TypeName = "decimal(5,2)")]
