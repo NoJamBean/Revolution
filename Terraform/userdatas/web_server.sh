@@ -110,22 +110,6 @@ chown -R ubuntu:ubuntu /home/ubuntu/.docker
 
 # sudo systemctl restart nginx
 
-USER_NAME=ubuntu
-# Create a folder
-sudo -u $USER_NAME mkdir -p /home/$USER_NAME/actions-runner
-cd /home/$USER_NAME/actions-runner
-
-# Download the latest runner package
-sudo -u $USER_NAME curl -o actions-runner-linux-x64-2.323.0.tar.gz -L https://github.com/actions/runner/releases/download/v2.323.0/actions-runner-linux-x64-2.323.0.tar.gz
-# Optional: Validate the hash
-sudo -u $USER_NAME echo "0dbc9bf5a58620fc52cb6cc0448abcca964a8d74b5f39773b7afcad9ab691e19  actions-runner-linux-x64-2.323.0.tar.gz" | shasum -a 256 -c
-# Extract the installer
-sudo -u $USER_NAME tar xzf ./actions-runner-linux-x64-2.323.0.tar.gz
-
-# Create the runner and start the configuration experience
-sudo -u $USER_NAME ./config.sh --url https://github.com/NoJamBean/Revolution --token AZN76PSTFBMFFDIG35YAEBLICO2RQ
-sudo -u $USER_NAME ./run.sh
-
 sudo usermod -aG docker $USER
 sudo chmod 666 /var/run/docker.sock
 sudo systemctl restart docker
